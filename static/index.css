@@ -1,0 +1,102 @@
+:root {
+    --primary: #2E7D32;
+    --primary-foreground: #ffffff;
+    --secondary: #f8f9fa;
+    --secondary-foreground: #343a40;
+    --accent: #FB8C00;
+    --accent-foreground: #ffffff;
+    --background: #ffffff;
+    --foreground: #212529;
+    --card: #ffffff;
+    --card-foreground: #212529;
+    --border: #dee2e6;
+    --input: #ced4da;
+    --ring: #2E7D32;
+    }
+    
+    body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    
+    .navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .navbar-brand img {
+    border-radius: 8px;
+    }
+    
+    .hero-section {
+    position: relative;
+    height: 600px;
+    overflow: hidden;
+    }
+    
+    .hero-section .carousel-item {
+    height: 600px;
+    }
+    
+    .hero-section img {
+    object-fit: cover;
+    height: 100%;
+    filter: brightness(0.7);
+    }
+    
+    .carousel-caption {
+    bottom: 50%;
+    transform: translateY(50%);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .carousel-caption h1 {
+    font-size: 3.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    }
+    
+    .btn-success {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    padding: 0.8rem 2rem;
+    }
+    
+    .btn-success:hover {
+    background-color: darken(var(--primary), 10%);
+    border-color: darken(var(--primary), 10%);
+    }
+    
+    #about img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+    transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    
+    .social-icons i {
+    font-size: 1.5rem;
+    cursor: pointer;
+    }
+    
+    .social-icons i:hover {
+    color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+    .carousel-caption h1 {
+    font-size: 2rem;
+    }
+    
+    .hero-section {
+    height: 400px;
+    }
+    
+    .hero-section .carousel-item {
+    height: 400px;
+    }
+    }
+    

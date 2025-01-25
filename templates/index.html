@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm Fresh Market</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body>
+<header class="sticky-top">
+<nav class="navbar navbar-expand-lg bg-light navbar-light">
+<div class="container">
+<a class="navbar-brand" href="#">
+<img src="https://images.unsplash.com/photo-1595351298020-038700609878" alt="Farm Fresh Logo" height="40">
+Sustainable Food Supply Chain
+</a>
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+<span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse" id="navbarNav">
+<form class="d-flex mx-auto">
+<input class="form-control me-2" type="search" placeholder="Search products...">
+<button class="btn btn-outline-success" type="submit">Search</button>
+</form>
+<ul class="navbar-nav ms-auto">
+<!-- <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+<li class="nav-item"><a class="nav-link" href="#producers">Producers</a></li>
+<li class="nav-item"><a class="nav-link" href="#products">Products</a></li>
+<li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>  -->
+<li class="nav-item"><a class="btn btn-outline-primary ms-2" href = "/login" >Login</a></li>
+<li class="nav-item"><a class="btn btn-primary ms-2" href = "/register">Register</a></li>
+<!-- <li class="nav-item"><a class="nav-link position-relative" href="#cart"> 
+<i class="bi bi-cart3 fs-5"></i>
+<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>-->
+</a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+</header>
+
+<section class="hero-section">
+<div class="carousel slide" data-bs-ride="carousel">
+<div class="carousel-inner">
+<div class="carousel-item active">
+<img src="https://images.unsplash.com/photo-1498579397066-22750a3cb424" class="d-block w-100" alt="Fresh Produce">
+<div class="carousel-caption">
+<h1>From Farm to Table</h1>
+<p>Connect directly with local food producers</p>
+<button class="btn btn-success btn-lg">Explore Products</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="about" class="py-5">
+<div class="container">
+<div class="row align-items-center">
+<div class="col-md-6">
+<h2>About Us</h2>
+<p class="lead">We connect passionate local food producers with conscious consumers, bringing fresh, quality products directly to your table.</p>
+<p>Our marketplace ensures fair prices for producers while providing customers with transparent sourcing and exceptional quality.</p>
+</div>
+<div class="col-md-6">
+<img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc" class="img-fluid rounded" alt="Farmers Working">
+</div>
+</div>
+</div>
+</section>
+
+<section id="how-it-works" class="py-5 bg-light">
+<div class="container">
+<h2 class="text-center mb-5">How It Works</h2>
+<div class="row g-4">
+<div class="col-md-4 text-center">
+<div class="card h-100 border-0 bg-transparent">
+<i class="bi bi-search display-4 text-success"></i>
+<div class="card-body">
+<h5>Browse Producers</h5>
+<p>Discover local farmers and artisans in your area</p>
+</div>
+</div>
+</div>
+<div class="col-md-4 text-center">
+<div class="card h-100 border-0 bg-transparent">
+<i class="bi bi-cart-check display-4 text-success"></i>
+<div class="card-body">
+<h5>Select Products</h5>
+<p>Choose from fresh, locally sourced products</p>
+</div>
+</div>
+</div>
+<div class="col-md-4 text-center">
+<div class="card h-100 border-0 bg-transparent">
+<i class="bi bi-truck display-4 text-success"></i>
+<div class="card-body">
+<h5>Get Delivery</h5>
+<p>Receive your order fresh at your doorstep</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="products" class="py-5">
+<div class="container">
+<h2 class="text-center mb-5">Featured Products</h2>
+<div class="row g-4">
+<div class="col-md-3">
+<div class="card h-100">
+<img src="https://images.unsplash.com/photo-1518843875459-f738682238a6" class="card-img-top" alt="Organic Vegetables">
+<div class="card-body">
+<h5 class="card-title">Organic Vegetables</h5>
+<p class="card-text">Fresh, locally grown organic vegetables</p>
+<p class="text-success fw-bold">$4.99/lb</p>
+<button class="btn btn-success w-100">Add to Cart</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="contact" class="py-5 bg-light">
+<div class="container">
+<div class="row">
+<div class="col-md-6">
+<h2>Contact Us</h2>
+<form>
+<div class="mb-3">
+<input type="text" class="form-control" placeholder="Your Name">
+</div>
+<div class="mb-3">
+<input type="email" class="form-control" placeholder="Your Email">
+</div>
+<div class="mb-3">
+<textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
+</div>
+<button type="submit" class="btn btn-success">Send Message</button>
+</form>
+</div>
+<div class="col-md-6">
+<h2>Our Location</h2>
+<img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc" class="img-fluid rounded" alt="Location">
+<p class="mt-3">
+123 Farm Fresh Street<br>
+Local Market District<br>
+Country, 12345
+</p>
+</div>
+</div>
+</div>
+</section>
+
+<footer class="bg-dark text-light py-4">
+<div class="container">
+<div class="row">
+<div class="col-md-4">
+<h5>Farm Fresh Market</h5>
+<p>Connecting farmers and consumers directly</p>
+</div>
+<div class="col-md-4">
+<h5>Quick Links</h5>
+<ul class="list-unstyled">
+<li><a href="#" class="text-light">About Us</a></li>
+<li><a href="#" class="text-light">Products</a></li>
+<li><a href="#" class="text-light">Contact</a></li>
+</ul>
+</div>
+<div class="col-md-4">
+<h5>Follow Us</h5>
+<div class="social-icons">
+<i class="bi bi-facebook me-2"></i>
+<i class="bi bi-twitter me-2"></i>
+<i class="bi bi-instagram"></i>
+</div>
+</div>
+</div>
+</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

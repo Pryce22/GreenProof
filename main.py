@@ -10,7 +10,7 @@ app.secret_key = app.config['SECRET_KEY']
 def home():
     user_id = session.get('user_id')
     username = session.get('username')
-    return render_template('home.html', user_id=user_id, username=username)
+    return render_template('index.html', user_id=user_id, username=username)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
