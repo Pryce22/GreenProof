@@ -1,12 +1,13 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-import models.user as user_model
+from app.models import user as user_model
 import uuid
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import json
+import os
 
-USER_FILE = 'users.json'
+USER_FILE = os.path.join(os.path.dirname(__file__), '../data/user.json')
 
 def create_user(email, username, password):
     id = str(uuid.uuid4())
@@ -95,11 +96,27 @@ def save_users_to_file(users):
     with open(USER_FILE, 'w') as file:
         json.dump(users, file)
 
-
-
 def load_users_from_file():
     try:
         with open(USER_FILE, 'r') as file:
             return json.load(file)
     except FileNotFoundError:
         return []
+
+def get_user_tokens(user_id):
+    users = load_users_from_file()
+    user = next((user for user in users if user['id'] == user_id), None)
+    if user:
+        return user.get('tokens', [])
+    return []
+
+def add_token_to_user(user_id, token):
+    users = load_users_from_file()
+    for user in users:
+        if user['id'] == user_id:
+            if 'tokens' not in user:
+                user['tokens'] = []
+            user['tokens'].append(token)
+            save_users_to_file(users)
+            return True
+    return False
