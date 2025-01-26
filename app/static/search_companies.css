@@ -25,6 +25,16 @@ body {
     transition: transform 0.2s, box-shadow 0.2s;
     border-radius: var(--radius);
     border: 1px solid var(--border);
+    height: 220px; /* Reduced height */
+    width: 100%;
+    display: flex;
+    flex-direction: row; /* Changed to row to make it horizontal */
+}
+
+.card-img-container {
+    width: 40%; /* Takes up 40% of the card width */
+    height: 100%;
+    overflow: hidden;
 }
 
 .company-card:hover {
@@ -33,15 +43,35 @@ body {
 }
 
 .company-logo {
-    height: 200px;
-    object-fit: cover;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This will make the image cover the container while maintaining aspect ratio */
+    object-position: center; /* Centers the image within its container */
     border-top-left-radius: var(--radius);
-    border-top-right-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    border-top-right-radius: 0;
+}
+
+.card-body {
+    width: 60%; /* Takes up 60% of the card width */
+    height: 100%;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .card-title {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
     color: var(--card-foreground);
     font-weight: 600;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    color: var(--card-foreground);
+    opacity: 0.8;
 }
 
 .btn-primary {
@@ -61,7 +91,48 @@ body {
 }
 
 @media (max-width: 768px) {
-    .company-logo {
-        height: 160px;
+    .company-card {
+        height: 180px;
+    }
+    
+    .card-body {
+        padding: 1rem;
     }
 }
+
+
+#about img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+    transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    
+    .social-icons i {
+    font-size: 1.5rem;
+    cursor: pointer;
+    }
+    
+    .social-icons i:hover {
+    color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+    .carousel-caption h1 {
+    font-size: 2rem;
+    }
+    
+    .hero-section {
+    height: 400px;
+    }
+    
+    .hero-section .carousel-item {
+    height: 400px;
+    }
+    }
+
