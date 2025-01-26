@@ -24,6 +24,13 @@ def login():
             return redirect(url_for('dashboard', user_id=user['id']))
     return render_template('login.html')
 
+@app.route('/MFA', methods=['GET', 'POST'])
+def MFA():
+    #if request.method == 'POST':
+        #token = request.form['token']
+        #if user_controller.verify_token(token):
+    return render_template('MFA.html')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -47,6 +54,14 @@ def add_token(user_id):
     token = request.form['token']
     user_controller.add_token_to_user(user_id, token)
     return redirect(url_for('dashboard', user_id=user_id))
+
+@app.route('/profile')
+def profile():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('login'))
+    user = user_controller.get_user_by_id(user_id)
+    return render_template('profile.html', user=user)
 
 @app.route('/logout')
 def logout():

@@ -29,13 +29,22 @@ Sustainable Food Supply Chain
 <li class="nav-item"><a class="nav-link" href="#producers">Producers</a></li>
 <li class="nav-item"><a class="nav-link" href="#products">Products</a></li>
 <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>  -->
-<li class="nav-item"><a class="btn btn-outline-primary ms-2" href = "/login" >Login</a></li>
-<li class="nav-item"><a class="btn btn-primary ms-2" href = "/register">Register</a></li>
-<!-- <li class="nav-item"><a class="nav-link position-relative" href="#cart"> 
-<i class="bi bi-cart3 fs-5"></i>
-<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>-->
+{% if user_id %}
+<li class="nav-item dropdown">
+<a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+<i class="bi bi-person-circle"></i> {{ username }}
 </a>
+<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+<li><a class="dropdown-item" href="/profile">Profile</a></li>
+<li><a class="dropdown-item" href="/logout">Logout</a></li>
+<li class= "nav-item"><a class="btn btn-primary me-auto" href="/">Home</a></li>
+</ul>
 </li>
+{% else %}
+<li class= "nav-item"><a class="btn btn-primary me-auto" href="/">Home</a></li>
+<li class="nav-item"><a class="btn btn-outline-primary ms-2" href="/login">Login</a></li>
+<li class="nav-item"><a class="btn btn-primary ms-2" href="/register">Sign in</a></li>
+{% endif %}
 </ul>
 </div>
 </div>
