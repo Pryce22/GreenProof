@@ -25,6 +25,12 @@
     .navbar-brand img {
     border-radius: 8px;
     }
+
+    .navbar .container {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
     
     .hero-section {
     position: relative;
@@ -63,6 +69,19 @@
     .btn-success:hover {
     background-color: darken(var(--primary), 10%);
     border-color: darken(var(--primary), 10%);
+    }
+
+    .btn-profile {
+        font-size: 1.25rem; /* Aumenta la dimensione del testo */
+        padding: 0rem 0rem; /* Aumenta il padding */
+        border-radius: 0.25rem; /* Arrotonda gli angoli */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombra */
+        transition: transform 0.3s; /* Aggiunge una transizione */
+        margin-right: 0 !important; /* Rimuove il margine destro */
+    }
+    
+    .btn-profile:hover {
+        transform: scale(1.05); /* Ingrandisce leggermente il bottone al passaggio del mouse */
     }
     
     #about img {

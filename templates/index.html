@@ -9,47 +9,36 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body>
-<header class="sticky-top">
-<nav class="navbar navbar-expand-lg bg-light navbar-light">
-<div class="container">
-<a class="navbar-brand" href="#">
-<img src="https://images.unsplash.com/photo-1595351298020-038700609878" alt="Farm Fresh Logo" height="40">
-Sustainable Food Supply Chain
-</a>
-<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-<span class="navbar-toggler-icon"></span>
-</button>
-<div class="collapse navbar-collapse" id="navbarNav">
-<form class="d-flex mx-auto">
-<input class="form-control me-2" type="search" placeholder="Search products...">
-<button class="btn btn-outline-success" type="submit">Search</button>
-</form>
-<ul class="navbar-nav ms-auto">
-<!-- <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
-<li class="nav-item"><a class="nav-link" href="#producers">Producers</a></li>
-<li class="nav-item"><a class="nav-link" href="#products">Products</a></li>
-<li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>  -->
-{% if user_id %}
-<li class="nav-item dropdown">
-<a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-<i class="bi bi-person-circle"></i> {{ username }}
-</a>
-<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-<li><a class="dropdown-item" href="/profile">Profile</a></li>
-<li><a class="dropdown-item" href="/logout">Logout</a></li>
-<li class= "nav-item"><a class="btn btn-primary me-auto" href="/">Home</a></li>
-</ul>
-</li>
-{% else %}
-<li class= "nav-item"><a class="btn btn-primary me-auto" href="/">Home</a></li>
-<li class="nav-item"><a class="btn btn-outline-primary ms-2" href="/login">Login</a></li>
-<li class="nav-item"><a class="btn btn-primary ms-2" href="/register">Sign in</a></li>
-{% endif %}
-</ul>
-</div>
-</div>
-</nav>
-</header>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <!-- Left section -->
+                <a class="navbar-brand" href="#">
+                    <img src="https://images.unsplash.com/photo-1595351298020-038700609878" alt="Farm Fresh Logo" height="40">
+                    Sustainable Food Supply Chain
+                </a>
+        
+                <!-- Center section -->
+                <form class="d-flex justify-content-center flex-grow-1 mx-4" style="max-width: 500px;">
+                    <input class="form-control me-2" type="search" placeholder="Search products...">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+                
+                <!-- Right section -->
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                    <a class="btn btn-primary" href="/">Home</a>
+                    <a class="btn btn-primary btn-profile ms-2" href="/profile"><i class="bi bi-person-circle"></i></a>
+                    {% else %}
+                    <a class="btn btn-primary" href="/">Home</a>
+                    <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                    <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    <a class="btn btn-primary btn-profile ms-2" href="/profile"><i class="bi bi-person-circle"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
 
 <section class="hero-section">
 <div class="carousel slide" data-bs-ride="carousel">
