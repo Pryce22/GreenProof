@@ -2,7 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from app.config import Config
 from app.controllers import user_controller
 
-app = Flask(__name__)
+app = Flask(__name__,
+            static_folder='app/static',
+            template_folder='app/templates')
 app.config.from_object(Config)
 app.secret_key = app.config['SECRET_KEY']
 

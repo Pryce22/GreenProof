@@ -13,27 +13,29 @@
         <nav class="navbar navbar-expand-lg bg-light navbar-light">
             <div class="container-fluid px-4">
                 <!-- Left section -->
-                <a class="navbar-brand" href="#">
-                    <img src="https://images.unsplash.com/photo-1595351298020-038700609878" alt="Farm Fresh Logo" height="40">
-                    Sustainable Food Supply Chain
-                </a>
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="Home" height="30">
+                    </a>
+                    <a class="navbar-brand mb-0" href="#">
+                        Sustainable Food Supply Chain
+                    </a>
+                </div>
         
                 <!-- Center section -->
                 <form class="d-flex justify-content-center flex-grow-1 mx-4" style="max-width: 500px;">
                     <input class="form-control me-2" type="search" placeholder="Search products...">
                     <a class="btn btn-outline-success" href="/search_companies" type="submit">Search</a>
                 </form>
-                
+
                 <!-- Right section -->
                 <div class="d-flex align-items-center">
                     {% if user_id %}
                     <a class="btn btn-primary" href="/">Home</a>
                     <a class="btn btn-primary btn-profile ms-2" href="/profile"><i class="bi bi-person-circle"></i></a>
                     {% else %}
-                    <a class="btn btn-primary" href="/">Home</a>
                     <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
                     <a class="btn btn-primary ms-2" href="/register">Sign in</a>
-                    <a class="btn btn-primary btn-profile ms-2" href="/profile"><i class="bi bi-person-circle"></i></a>
                     {% endif %}
                 </div>
             </div>
