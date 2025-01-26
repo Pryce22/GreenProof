@@ -55,6 +55,10 @@ def add_token(user_id):
     user_controller.add_token_to_user(user_id, token)
     return redirect(url_for('dashboard', user_id=user_id))
 
+@app.route('/search_companies', methods=['GET', 'POST'])
+def seach_companies():
+    return render_template('search_companies.html')
+
 @app.route('/profile')
 def profile():
     user_id = session.get('user_id')
