@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="information_company.css">
+</head>
+<body>
+    <header class="py-5 text-center bg-gradient">
+        <h1 class="display-3 fw-bold text-black">EcoTech Solutions</h1>
+    </header>
+
+    <main class="container py-5">
+        <section class="row align-items-center mb-5">
+            <!--
+            <div class="col-lg-4 mb-4 mb-lg-0">
+                <img src="{{ url_for('static', filename='images/torre.jpg') }}" alt="Company Logo" class="img-fluid rounded shadow-lg">
+            </div>-->
+            <div class="card-img-container col-lg-4 ">
+                <img src="https://images.unsplash.com/photo-1554469384-e58fac16e23a" class="card-img-top company-logo rounded shadow-lg" alt="Company 1"  height="400">
+            </div>
+            <div class="col-lg-8">
+                <div class="card-body">
+                    <span class="badge bg-success mb-3">Clean Technology</span>
+                    <h2 class="card-title h3 mb-4">About Us</h2>
+                    <p class="card-text">EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                        EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                        EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                        EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                        EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                        EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                        EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
+                       </p>
+                </div>
+            </div>
+           <!--
+            <div class="col-lg-8">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-3">Clean Technology</span>
+                        <h2 class="card-title h3 mb-4">About Us</h2>
+                        <p class="card-text">EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.</p>
+                    </div>
+                </div>
+            </div>--> 
+        </section>
+
+        <section class="mb-5">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <h2 class="h3 mb-4">CO2 Token Status</h2>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Total Tokens</span>
+                        <span class="fw-bold">10,000</span>
+                    </div>
+                    <div class="progress mb-4" style="height: 25px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
+                    </div>
+                    <p class="text-muted">Each token represents 1 metric ton of CO2 offset through our green initiatives.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="row mb-5">
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow h-100">
+                    <div class="card-body">
+                        <h2 class="h3 mb-4">Administration</h2>
+                        <div class="list-group">
+                            <div class="list-group-item border-0 d-flex align-items-center gap-3">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80" class="rounded-circle" width="50" height="50" alt="Admin 1">
+                                <div>
+                                    <h6 class="mb-0">Sarah Johnson</h6>
+                                    <small class="text-muted">CEO</small>
+                                </div>
+                            </div>
+                            <div class="list-group-item border-0 d-flex align-items-center gap-3">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e" class="rounded-circle" width="50" height="50" alt="Admin 2">
+                                <div>
+                                    <h6 class="mb-0">Michael Chen</h6>
+                                    <small class="text-muted">CTO</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow h-100">
+                    <div class="card-body">
+                        <h2 class="h3 mb-4">Contact Information</h2>
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="bi bi-telephone-fill me-2"></i>
+                                +1 (555) 123-4567
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-envelope-fill me-2"></i>
+                                contact@ecotech.com
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-geo-alt-fill me-2"></i>
+                                123 Green Street, San Francisco, CA 94105, USA
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-4">
+        <h5>Farm Fresh Market</h5>
+        <p>Connecting farmers and consumers directly</p>
+        </div>
+        <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+        <li><a href="#" class="text-light">About Us</a></li>
+        <li><a href="#" class="text-light">Products</a></li>
+        <li><a href="#" class="text-light">Contact</a></li>
+        </ul>
+        </div>
+        <div class="col-md-4">
+        <h5>Follow Us</h5>
+        <div class="social-icons">
+        <i class="bi bi-facebook me-2"></i>
+        <i class="bi bi-twitter-x me-2"></i>
+        <i class="bi bi-instagram"></i>
+        </div>
+        </div>
+        </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

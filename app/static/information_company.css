@@ -1,0 +1,95 @@
+:root {
+    --primary: #10B981;
+    --primary-foreground: #ffffff;
+    --secondary: #6B7280;
+    --secondary-foreground: #FFFFFF;
+    --background: #FFFFFF;
+    --foreground: #1F2937;
+    --card: #FFFFFF;
+    --card-foreground: #1F2937;
+    --border: #E5E7EB;
+    --ring: #10B981;
+}
+
+
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+.bg-gradient {
+    background: linear-gradient(45deg, var(--primary), #059669);
+}
+
+.card {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.list-group-item {
+    background-color: var(--card);
+    transition: background-color 0.3s ease;
+}
+
+.list-group-item:hover {
+    background-color: var(--border);
+}
+
+
+img {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+
+@media print {
+    .card {
+        border: 1px solid var(--border) !important;
+        box-shadow: none !important;
+    }
+}
+
+
+
+#about img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+    transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    
+    .social-icons i {
+    font-size: 1.5rem;
+    cursor: pointer;
+    }
+    
+    .social-icons i:hover {
+    color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+    .carousel-caption h1 {
+    font-size: 2rem;
+    }
+    
+    .hero-section {
+    height: 400px;
+    }
+    
+    .hero-section .carousel-item {
+    height: 400px;
+    }
+    }
+

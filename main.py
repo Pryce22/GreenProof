@@ -61,6 +61,10 @@ def add_token(user_id):
 def seach_companies():
     return render_template('search_companies.html')
 
+@app.route('/information_company', methods=['GET', 'POST'])
+def information_company():
+    return render_template('information_company.html')
+
 @app.route('/profile')
 def profile():
     user_id = session.get('user_id')
