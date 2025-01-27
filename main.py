@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+import geonamescache
 from app.config import Config
 from app.controllers import user_controller
 
@@ -64,6 +65,67 @@ def seach_companies():
 @app.route('/information_company', methods=['GET', 'POST'])
 def information_company():
     return render_template('information_company.html')
+
+
+@app.route('/password_recover', methods=['GET', 'POST'])
+def password_recover():
+    return render_template('password_recover.html')
+
+@app.route('/company_register', methods=['GET', 'POST'])
+def company_register():
+    return render_template('company_register.html')
+
+"""
+@app.route('/api/countries')
+def get_countries():
+    response = requests.get('https://restcountries.com/v3.1/all')
+    countries = response.json()
+    eu_countries = [country for country in countries if 'EU' in country.get('regionalBlocs', [])]
+    return jsonify([{
+        'id': country['cca2'],
+        'name': country['name']['common']
+    } for country in eu_countries])
+"""
+# Inizializza geonamescache
+gc = geonamescache.GeonamesCache()
+
+@app.route('/get_countries', methods=['GET'])
+def get_countries():
+    # Prendi il termine di ricerca dalla query
+    query = request.args.get('query', '')
+    
+    # Ottieni la lista di paesi
+    countries = gc.get_countries()
+    
+    # Filtra i paesi che corrispondono al termine di ricerca
+    filtered_countries = [
+        {"id": country_code, "text": country_info['name']}
+        for country_code, country_info in countries.items()
+        if query.lower() in country_info['name'].lower()  # Controlla se il nome del paese contiene il termine
+    ]
+    
+    return jsonify(filtered_countries)
+
+@app.route('/get_cities', methods=['GET'])
+def get_cities():
+    country_code = request.args.get('country_code')  # Ottieni il codice del paese dalla query string
+    if not country_code:
+        return jsonify({'error': 'Country code is required'}), 400
+
+    # Ottieni tutte le città dalla cache
+    cities = gc.get_cities()
+
+    # Aggiungi un controllo per verificare che i dati siano nel formato corretto
+    if isinstance(cities, dict):
+        cities_in_country = []
+        for city_key, city in cities.items():
+            if city['countrycode'] == country_code:
+                cities_in_country.append(city['name'])
+    else:
+        return jsonify({'error': 'Data format is incorrect'}), 500
+
+    return jsonify(cities_in_country)
+
 
 @app.route('/profile')
 def profile():
