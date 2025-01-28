@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company Registration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="company_register.css">
 
     <!--Link per select2 per mappe-->
@@ -62,22 +63,7 @@
                                 </select>
                                 <div class="invalid-feedback">Please select a city</div>
                             </div>
-                            <!--
-                            <div class="mb-3">
-                                <label for="country" class="form-label">Country*</label>
-                                <select class="form-select" id="country" required>
-                                    <option value="" selected disabled>Select Country</option>
-                                    <option value="us">United States</option>
-                                    <option value="uk">United Kingdom</option>
-                                    <option value="ca">Canada</option>
-                                </select>
-                                <div class="invalid-feedback">Please select a country</div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="city" class="form-label">City*</label>
-                                <input type="text" class="form-control" id="city" required>
-                                <div class="invalid-feedback">Please enter your city</div>
-                            </div>-->
+                            
                             <div class="mb-3">
                                 <label for="address" class="form-label">Address*</label>
                                 <textarea class="form-control" id="address" rows="2" required minlength="5"></textarea>
@@ -116,6 +102,34 @@
             </div>
         </div>
     </div>
+
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-4">
+        <h5>Farm Fresh Market</h5>
+        <p>Connecting farmers and consumers directly</p>
+        </div>
+        <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+        <li><a href="#" class="text-light">About Us</a></li>
+        <li><a href="#" class="text-light">Products</a></li>
+        <li><a href="#" class="text-light">Contact</a></li>
+        </ul>
+        </div>
+        <div class="col-md-4">
+        <h5>Follow Us</h5>
+        <div class="social-icons">
+        <i class="bi bi-facebook me-2"></i>
+        <i class="bi bi-twitter-x me-2"></i>
+        <i class="bi bi-instagram"></i>
+        </div>
+        </div>
+        </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>

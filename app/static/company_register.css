@@ -38,6 +38,7 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(0, 112, 243, 0.25);
 }
 
+
 .btn-primary {
     background-color: var(--primary);
     border-color: var(--primary);
@@ -81,3 +82,40 @@ body {
     opacity: 0.65;
     cursor: not-allowed;
 }
+
+
+#about img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+    transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    
+    .social-icons i {
+    font-size: 1.5rem;
+    cursor: pointer;
+    }
+    
+    .social-icons i:hover {
+    color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+    .carousel-caption h1 {
+    font-size: 2rem;
+    }
+    
+    .hero-section {
+    height: 400px;
+    }
+    
+    .hero-section .carousel-item {
+    height: 400px;
+    }
+    }
+
