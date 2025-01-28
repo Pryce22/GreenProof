@@ -9,6 +9,21 @@
 <link rel="stylesheet" href="MFA.css">
 </head>
 <body class="bg-light">
+        <header class="sticky-top">
+            <nav class="navbar navbar-expand-lg bg-light navbar-light">
+                <div class="container-fluid px-4">
+                    <!-- Left section -->
+                    <div class="d-flex align-items-center">
+                        <a href="/" class="nav-link p-0 me-2">
+                            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                        </a>
+                        <a class="navbar-brand mb-0" href="/">
+                            Sustainable Food Supply Chain
+                        </a>
+                    </div>
+                </div>
+            </nav>
+        </header>
 <div class="container min-vh-100 d-flex align-items-center justify-content-center">
     <div class="card auth-card shadow-lg">
         <div class="card-body p-4 p-md-5">
@@ -20,11 +35,11 @@
             <form id="twoFactorForm" novalidate>
                 <div class="mb-4">
                     <label for="verificationCode" class="form-label visually-hidden">Verification Code</label>
-                    <input type="text" class="form-control form-control-lg text-center" id="verificationCode" maxlength="5" pattern="[A-Za-z0-9]{5}" required aria-describedby="codeHelp" autocomplete="off">
+                    <input type="text" name="verificationCode" class="form-control form-control-lg text-center" id="verificationCode" maxlength="5" pattern="[A-Za-z0-9]{5}" required aria-describedby="codeHelp" autocomplete="off">
                     <div class="invalid-feedback">Please enter a valid 5-character code</div>
-                    <div id="codeHelp" class="form-text text-center">Code expires in <span id="timer">05:00</span></div>
+                    <div id="codeHelp" class="form-text text-center">Code expires in <span id="timer">02:00</span></div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 btn-lg mb-3" disabled>Verify Code</button>
+                <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">Verify Code</button>
                 <div class="text-center">
                     <button type="button" class="btn btn-link" id="resendCode">Resend Code</button>
                     <button type="button" class="btn btn-link text-muted">Back to Login</button>
@@ -33,9 +48,116 @@
             <div class="alert alert-success d-none mt-3" role="alert">
                 <i class="bi bi-check-circle-fill me-2"></i>Verification successful!
             </div>
+            <div class="alert alert-danger d-none mt-3" role="alert" id="timeoutAlert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>Verification code expired. Please resend the code.
+            </div>
         </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let timer;
+        let timeLeft = 120; // 2 minutes in seconds
+
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 120;
+            updateTimerDisplay();
+            timer = setInterval(function () {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    document.getElementById('timeoutAlert').classList.remove('d-none');
+                    document.querySelector('button[type="submit"]').disabled = true;
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        document.getElementById('resendCode').addEventListener('click', function () {
+            fetch('/resend-verification', {
+                method: 'POST',
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    startTimer();
+                    document.getElementById('timeoutAlert').classList.add('d-none');
+                    document.querySelector('button[type="submit"]').disabled = false;
+                    
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        New verification code has been sent to your email.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    form.insertAdjacentElement('beforebegin', alertDiv);
+                } else {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    form.insertAdjacentElement('beforebegin', alertDiv);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        startTimer();
+
+        // Handle form submission
+        const form = document.getElementById('twoFactorForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('verificationCode', document.getElementById('verificationCode').value);
+            
+            fetch('/MFA', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect; // Questo reindirizzerà alla home con la sessione già impostata
+                } else {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    form.insertAdjacentElement('beforebegin', alertDiv);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                alertDiv.role = 'alert';
+                alertDiv.innerHTML = `
+                    An error occurred. Please try again later.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                form.insertAdjacentElement('beforebegin', alertDiv);
+            });
+        });
+    });
+</script>
 </body>
 </html>

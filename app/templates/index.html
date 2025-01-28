@@ -17,7 +17,7 @@
                     <a href="/" class="nav-link p-0 me-2">
                         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
                     </a>
-                    <a class="navbar-brand mb-0" href="#">
+                    <a class="navbar-brand mb-0" href="/">
                         Sustainable Food Supply Chain
                     </a>
                 </div>
@@ -31,7 +31,6 @@
                 <!-- Right section -->
                 <div class="d-flex align-items-center">
                     {% if user_id %}
-                    <a class="btn btn-primary" href="/">Home</a>
                     <a class="btn btn-primary btn-profile ms-2" href="/profile"><i class="bi bi-person-circle"></i></a>
                     {% else %}
                     <a class="btn btn-outline-primary ms-2" href="/login">Login</a>

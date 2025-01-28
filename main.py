@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import geonamescache
+import re
 from app.config import Config
 from app.controllers import user_controller
+import uuid
 
 app = Flask(__name__,
             static_folder='app/static',
@@ -11,9 +13,8 @@ app.secret_key = app.config['SECRET_KEY']
 
 @app.route('/')
 def home():
-    user_id = session.get('user_id')
-    username = session.get('username')
-    return render_template('index.html', user_id=user_id, username=username)
+    user_id = session.get('id')
+    return render_template('index.html', user_id=user_id)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -22,30 +23,89 @@ def login():
         password = request.form['password']
         user = user_controller.login_user(email, password)
         if user:
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            return redirect(url_for('dashboard', user_id=user['id']))
+            session['id'] = user['id']
+            return redirect(url_for('home'))
     return render_template('login.html')
 
 @app.route('/MFA', methods=['GET', 'POST'])
 def MFA():
-    #if request.method == 'POST':
-        #token = request.form['token']
-        #if user_controller.verify_token(token):
+    if request.method == 'POST':
+        token = request.form.get('verificationCode')
+        if not token:
+            return jsonify({'success': False, 'error': 'Verification code is required'})
+            
+        pending_registration = session.get('pending_registration')
+        if not pending_registration:
+            return jsonify({'success': False, 'error': 'Session expired. Please register again.'})
+        
+        if user_controller.verify_token(token, pending_registration['email']):
+            if user_controller.create_user(
+                id=pending_registration['id'],
+                email=pending_registration['email'],
+                name=pending_registration['name'],
+                surname=pending_registration['surname'],
+                password=pending_registration['password'],
+                phone_number=pending_registration['phone_number'],
+                birthday=pending_registration['birth_date']
+            ):
+                session.pop('pending_registration', None)
+                user = user_controller.get_user_by_email(pending_registration['email'])
+                if user:
+                    session['id'] = user['id']
+                    return jsonify({'success': True, 'redirect': url_for('home')})
+            return jsonify({'success': False, 'error': 'Failed to create account'})
+        
+        return jsonify({'success': False, 'error': 'Invalid verification code'})
+        
     return render_template('MFA.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         email = request.form['email']
-        username = request.form['username']
+        first_name = request.form['firstName']
+        surname = request.form['surname']
         password = request.form['password']
-        if user_controller.create_user(email, username, password):
-            user = user_controller.login_user(email, password)
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            return redirect(url_for('dashboard', user_id=user['id']))
+        confirm_password = request.form['confirmPassword']
+        phone_number = request.form['phone']
+        birth_date = request.form['birthDate']
+        id = uuid.uuid4().int & (1<<32)-1
+        
+        # Check if passwords match and pattern
+        if password != confirm_password:
+            return jsonify({'success': False, 'error': 'Passwords do not match'})
+        
+        password_pattern = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
+        if not password_pattern.match(password):
+            return jsonify({'success': False, 'error': 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character'})
+
+        # Store registration data in session
+        session['pending_registration'] = {
+            'id': id,
+            'email': email,
+            'name': first_name,
+            'surname': surname,
+            'password': password,
+            'phone_number': phone_number,
+            'birth_date': birth_date
+        }
+        
+        # Send verification email
+        if user_controller.send_verification_email(email):
+            return jsonify({'success': True, 'redirect': url_for('MFA')})
+        return jsonify({'success': False, 'error': 'Failed to send verification email'})
+    
     return render_template('register.html')
+
+@app.route('/resend-verification', methods=['POST'])
+def resend_verification():
+    pending_registration = session.get('pending_registration')
+    if not pending_registration:
+        return jsonify({'success': False, 'error': 'Session expired. Please register again.'})
+    
+    if user_controller.send_verification_email(pending_registration['email']):
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Failed to send verification email'})
 
 @app.route('/dashboard/<user_id>')
 def dashboard(user_id):
@@ -60,11 +120,13 @@ def add_token(user_id):
 
 @app.route('/search_companies', methods=['GET', 'POST'])
 def seach_companies():
-    return render_template('search_companies.html')
+    user_id = session.get('id')
+    return render_template('search_companies.html', user_id=user_id)
 
 @app.route('/information_company', methods=['GET', 'POST'])
 def information_company():
-    return render_template('information_company.html')
+    user_id = session.get('id')
+    return render_template('information_company.html', user_id=user_id)
 
 
 @app.route('/password_recover', methods=['GET', 'POST'])
@@ -73,19 +135,9 @@ def password_recover():
 
 @app.route('/company_register', methods=['GET', 'POST'])
 def company_register():
-    return render_template('company_register.html')
+    user_id = session.get('id')
+    return render_template('company_register.html', user_id=user_id)
 
-"""
-@app.route('/api/countries')
-def get_countries():
-    response = requests.get('https://restcountries.com/v3.1/all')
-    countries = response.json()
-    eu_countries = [country for country in countries if 'EU' in country.get('regionalBlocs', [])]
-    return jsonify([{
-        'id': country['cca2'],
-        'name': country['name']['common']
-    } for country in eu_countries])
-"""
 # Inizializza geonamescache
 gc = geonamescache.GeonamesCache()
 
