@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Profile</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="user_profile.css">
+</head>
+<body>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <!-- Left section -->
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                    </a>
+                    <a class="navbar-brand mb-0" href="/">
+                        Sustainable Food Supply Chain
+                    </a>
+                </div>
+        
+    
+                <!-- Right section -->
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-profile ms-2 dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+                            <li class="dropdown-header">Welcome {{ user.name if user else '' }}</li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/user_profile">
+                                <i class="bi bi-person me-2"></i>Edit Account
+                            </a></li>
+                            <li><a class="dropdown-item" href="/company_register">
+                                <i class="bi bi-building-add me-2"></i>Register Company
+                            </a></li>
+                            <li><a class="dropdown-item" href="/company_access">
+                                <i class="bi bi-building me-2"></i>Access Company
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                    <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="profile-card card shadow-sm">
+                <div class="card-header bg-transparent text-center py-4">
+                    <h2 class="welcome-text mb-0">Welcome John Doe</h2>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="field-label">Full Name</span>
+                                <p class="mb-0">John Doe</p>
+                            </div>
+                            <button class="btn btn-edit" data-bs-toggle="tooltip" title="Edit Profile">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="field-label">Email Address</span>
+                                <p class="mb-0">john.doe@example.com</p>
+                            </div>
+                            <button class="btn btn-edit" data-bs-toggle="tooltip" title="Edit Email">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="field-label">Phone Number</span>
+                                <p class="mb-0">+1 234 567 8900</p>
+                            </div>
+                            <button class="btn btn-edit" data-bs-toggle="tooltip" title="Edit Phone">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="field-label">Company</span>
+                                <p class="mb-0">
+                                    <a href="https://www.techcorp.com" target="_blank">Tech Corp Inc.</a>
+                                </p>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="field-label">Birthday</span>
+                                <p class="mb-0">January 15, 1990</p>
+                            </div>
+                            <button class="btn btn-edit" data-bs-toggle="tooltip" title="Edit Birthday">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-footer bg-transparent text-center py-4">
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="bi bi-trash me-2"></i>Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Account Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete your account? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger">Confirm Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-light py-4">
+    <div class="container">
+    <div class="row">
+    <div class="col-md-4">
+    <h5>Farm Fresh Market</h5>
+    <p>Connecting farmers and consumers directly</p>
+    </div>
+    <div class="col-md-4">
+    <h5>Quick Links</h5>
+    <ul class="list-unstyled">
+    <li><a href="#" class="text-light">About Us</a></li>
+    <li><a href="#" class="text-light">Products</a></li>
+    <li><a href="#" class="text-light">Contact</a></li>
+    </ul>
+    </div>
+    <div class="col-md-4">
+    <h5>Follow Us</h5>
+    <div class="social-icons">
+    <i class="bi bi-facebook me-2"></i>
+    <i class="bi bi-twitter-x me-2"></i>
+    <i class="bi bi-instagram"></i>
+    </div>
+    </div>
+    </div>
+    </div>
+    </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+</body>
+</html>
