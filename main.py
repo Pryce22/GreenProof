@@ -28,18 +28,30 @@ def login():
         email = request.form['email']
         password = request.form['password']
         
-        user = user_controller.verify_login(email, password)
-        if user:
+        result = user_controller.verify_login(email, password)
+        
+        # Check if result contains error message (timeout)
+        if isinstance(result, dict) and 'error' in result:
+            return jsonify({
+                'success': False, 
+                'error': result['error']
+            })
+            
+        if result:
             # Store login info in session for MFA verification
             session['pending_login'] = {
                 'email': email,
-                'user_id': user['id']
+                'user_id': result['id']
             }
             # Send verification email
             if user_controller.send_verification_email(email):
                 return jsonify({'success': True, 'redirect': url_for('MFA')})
             return jsonify({'success': False, 'error': 'Failed to send verification email'})
-        return jsonify({'success': False, 'error': 'Invalid email or password'})
+            
+        return jsonify({
+            'success': False, 
+            'error': 'Invalid email or password'
+        })
     
     return render_template('login.html')
 

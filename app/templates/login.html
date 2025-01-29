@@ -110,6 +110,25 @@
 
         // Handle form submission
         const form = document.getElementById('loginForm');
+        let lockTimer = null;
+
+        function startLockdownTimer(seconds) {
+            const submitButton = document.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+            
+            const updateTimer = (remainingSeconds) => {
+                if (remainingSeconds <= 0) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Login';
+                    return;
+                }
+                submitButton.innerHTML = `Locked (${remainingSeconds}s)`;
+                setTimeout(() => updateTimer(remainingSeconds - 1), 1000);
+            };
+
+            updateTimer(seconds);
+        }
+
         form.addEventListener('submit', function(event) {
             event.preventDefault();
             
@@ -120,7 +139,7 @@
             }
 
             const formData = new FormData(form);
-
+            
             fetch('/login', {
                 method: 'POST',
                 body: formData
@@ -133,16 +152,32 @@
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
                     alertDiv.role = 'alert';
-                    alertDiv.innerHTML = `
-                        ${data.error}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    `;
+                    
+                    if (data.error && data.error.includes('Too many failed attempts')) {
+                        const remainingSeconds = parseInt(data.error.match(/\d+/)[0]);
+                        alertDiv.innerHTML = `
+                            <strong>Account temporarily locked!</strong><br>
+                            ${data.error}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        startLockdownTimer(remainingSeconds);
+                    } else {
+                        alertDiv.innerHTML = `
+                            ${data.error}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                    }
+                    
+                    // Rimuovi eventuali alert precedenti
+                    const existingAlert = form.previousElementSibling;
+                    if (existingAlert && existingAlert.classList.contains('alert')) {
+                        existingAlert.remove();
+                    }
                     form.insertAdjacentElement('beforebegin', alertDiv);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Show generic error message
                 const alertDiv = document.createElement('div');
                 alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
                 alertDiv.role = 'alert';

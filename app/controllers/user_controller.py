@@ -9,7 +9,8 @@ import os
 from app import supabase
 import random
 import time
-from flask import session
+from flask import session, request
+from time import time
 
 
 def create_user(id, email, name, surname, password, phone_number, birthday):
@@ -142,18 +143,89 @@ def get_user_by_id(user_id):
         print(f"Error getting user by id: {e}")
         return None
 
+def _get_ip_blocklist():
+    """Get the IP blocklist from session"""
+    return session.get('ip_blocklist', {})
+
+def _update_ip_attempts(ip):
+    """Update the IP attempts counter"""
+    current_time = time()
+    ip_blocklist = _get_ip_blocklist()
+    
+    # Clean up expired blocks
+    ip_blocklist = {k: v for k, v in ip_blocklist.items() 
+                   if current_time - v['timestamp'] < 30}
+    
+    if ip in ip_blocklist:
+        ip_blocklist[ip]['attempts'] += 1
+        ip_blocklist[ip]['timestamp'] = current_time
+    else:
+        ip_blocklist[ip] = {
+            'attempts': 1,
+            'timestamp': current_time
+        }
+    
+    session['ip_blocklist'] = ip_blocklist
+    return ip_blocklist[ip]['attempts']
+
 def verify_login(email, password):
     try:
+        # Check for IP-based blocking
+        client_ip = request.remote_addr
+        ip_blocklist = _get_ip_blocklist()
+        current_time = time()
+        
+        if client_ip in ip_blocklist:
+            block_info = ip_blocklist[client_ip]
+            if block_info['attempts'] >= 3:
+                # Check if 30 seconds have passed
+                if current_time - block_info['timestamp'] < 60:
+                    remaining_time = int(60 - (current_time - block_info['timestamp']))
+                    return {'error': f'Too many failed attempts. Please wait {remaining_time} seconds.'}
+                else:
+                    # Reset attempts after timeout
+                    del ip_blocklist[client_ip]
+                    session['ip_blocklist'] = ip_blocklist
+
+        # Verify credentials
         response = supabase.table('user').select('*').eq('email', email).execute()
         if len(response.data) == 0:
+            attempts = _update_ip_attempts(client_ip)
             return None
+            
         user = response.data[0]
         if check_password_hash(user['password'], password):
+            # Reset IP attempts on successful login
+            if client_ip in ip_blocklist:
+                del ip_blocklist[client_ip]
+                session['ip_blocklist'] = ip_blocklist
             return user
+            
+        # Update IP attempts
+        attempts = _update_ip_attempts(client_ip)
         return None
+        
     except Exception as e:
         print(f"Error verifying login: {e}")
         return None
+
+def _update_failed_attempts(email):
+    """Update the failed login attempts counter"""
+    last_attempt = session.get('last_failed_login', {})
+    current_time = time()
+    
+    if last_attempt.get('email') == email:
+        session['last_failed_login'] = {
+            'email': email,
+            'attempts': last_attempt.get('attempts', 0) + 1,
+            'timestamp': current_time
+        }
+    else:
+        session['last_failed_login'] = {
+            'email': email,
+            'attempts': 1,
+            'timestamp': current_time
+        }
 
 '''
 def login_user(email, password):
