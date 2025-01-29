@@ -5,6 +5,8 @@ from app.config import Config
 from app.controllers import user_controller
 from app.controllers import company_controller
 import uuid
+from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__,
             static_folder='app/static',
@@ -160,13 +162,13 @@ def password_recover():
 
 @app.route('/company_register', methods=['GET', 'POST'])
 def company_register():
+    user_id = session.get('id')
+    if not user_id:
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
-        user_id = session.get('id')
-        if not user_id:
-            return jsonify({'success': False, 'error': 'User not authenticated'})
-
         try:
-            # Get form data
+            # Extract form data
             company_data = {
                 'company_name': request.form['companyName'],
                 'company_phone_number': request.form['phone'],
@@ -176,30 +178,56 @@ def company_register():
                 'company_city': request.form['city'],
                 'company_address': request.form['address'],
                 'company_description': request.form['description'],
-                'company_website': request.form.get('website'),  # Optional
-                'company_image': request.files.get('logo')  # Optional
+                'company_website': request.form.get('website'),
+                'company_image': request.files.get('logo') if 'logo' in request.files else None
             }
 
-            # Check if company name already exists
+            # Validate company name
             if company_controller.check_company_exists(company_data['company_name']):
-                return jsonify({'success': False, 'error': 'Company name already exists'})
+                return jsonify({
+                    'success': False,
+                    'error': 'A company with this name already exists'
+                })
 
             # Create company
-            result = company_controller.create_company(
-                user_id=user_id,
-                **company_data
-            )
+            result = company_controller.create_company(**company_data)
 
             if result['success']:
-                return jsonify({'success': True, 'redirect': url_for('company_profile', company_id=result['company_id'])})
-            return jsonify({'success': False, 'error': result['error']})
+                # Get user info for notification
+                user = user_controller.get_user_by_id(user_id)
+                if user:
+                    company_controller.send_admin_notification(user, company_data)
+                return jsonify({
+                    'success': True,
+                    'redirect': url_for('home')
+                })
+                
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to create company')
+            })
 
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e)})
+            print(f"Error in company registration: {e}")
+            return jsonify({
+                'success': False,
+                'error': 'An unexpected error occurred'
+            })
 
-    user_id = session.get('id')
     user = user_controller.get_user_by_id(user_id) if user_id else None
     return render_template('company_register.html', user_id=user_id, user=user)
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def validate_file_size(file):
+    MAX_FILE_SIZE = 3 * 1024 * 1024  # 3MB in bytes
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    file.seek(0)
+    return size <= MAX_FILE_SIZE
 
 # Inizializza geonamescache
 gc = geonamescache.GeonamesCache()

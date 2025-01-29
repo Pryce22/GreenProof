@@ -284,7 +284,27 @@
                     return;
                 }
 
-                const formData = new FormData(form);
+                // Show loading spinner
+                const submitBtn = document.getElementById('submitBtn');
+                const spinner = submitBtn.querySelector('.spinner-border');
+                submitBtn.disabled = true;
+                spinner.classList.remove('d-none');
+
+                const formData = new FormData();
+                formData.append('companyName', document.getElementById('companyName').value);
+                formData.append('phone', document.getElementById('phone').value);
+                formData.append('email', document.getElementById('email').value);
+                formData.append('industry', document.getElementById('industry').value);
+                formData.append('country', document.getElementById('country').value);
+                formData.append('city', document.getElementById('city').value);
+                formData.append('address', document.getElementById('address').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('website', document.getElementById('website').value);
+
+                const logoFile = document.getElementById('logo').files[0];
+                if (logoFile) {
+                    formData.append('logo', logoFile);
+                }
 
                 fetch('/company_register', {
                     method: 'POST',
@@ -292,8 +312,27 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    // Hide loading spinner
+                    submitBtn.disabled = false;
+                    spinner.classList.add('d-none');
+
                     if (data.success) {
-                        window.location.href = data.redirect;
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                        alertDiv.role = 'alert';
+                        alertDiv.innerHTML = `
+                            Your company registration request has been submitted successfully. 
+                            Please wait for admin approval.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        form.insertAdjacentElement('beforebegin', alertDiv);
+                        
+                        // Reset form
+                        form.reset();
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 3000);
                     } else {
                         // Show error message
                         const alertDiv = document.createElement('div');
@@ -307,8 +346,11 @@
                     }
                 })
                 .catch(error => {
+                    // Hide loading spinner
+                    submitBtn.disabled = false;
+                    spinner.classList.add('d-none');
+                    
                     console.error('Error:', error);
-                    // Show generic error message
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
                     alertDiv.role = 'alert';
