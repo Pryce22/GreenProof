@@ -1,0 +1,124 @@
+:root {
+    --primary: #0070f3;
+    --primary-foreground: #ffffff;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #111111;
+    --accent: #007bff;
+    --accent-foreground: #ffffff;
+    --background: #ffffff;
+    --foreground: #111111;
+    --card: #ffffff;
+    --card-foreground: #111111;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #0070f3;
+    --radius: 0.5rem;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+.profile-card {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.profile-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+}
+
+.welcome-text {
+    color: var(--primary);
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.field-label {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.btn-edit {
+    color: var(--accent);
+    padding: 0.25rem 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+    color: var(--primary);
+    background-color: var(--secondary);
+    border-radius: var(--radius);
+}
+
+.list-group-item {
+    border-color: var(--border);
+    padding: 1rem;
+}
+
+.modal-content {
+    border-radius: var(--radius);
+    border: none;
+}
+
+.modal-header {
+    border-bottom-color: var(--border);
+}
+
+.modal-footer {
+    border-top-color: var(--border);
+}
+
+@media (max-width: 768px) {
+    .profile-img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .welcome-text {
+        font-size: 1.5rem;
+    }
+}
+
+
+#about img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+    transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    
+    .social-icons i {
+    font-size: 1.5rem;
+    cursor: pointer;
+    }
+    
+    .social-icons i:hover {
+    color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+    .carousel-caption h1 {
+    font-size: 2rem;
+    }
+    
+    .hero-section {
+    height: 400px;
+    }
+    
+    .hero-section .carousel-item {
+    height: 400px;
+    }
+    }

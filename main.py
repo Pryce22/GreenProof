@@ -43,6 +43,12 @@ def login():
     
     return render_template('login.html')
 
+@app.route('/user_profile', methods=['GET', 'POST'])
+def user_profile():
+     user_id = session.get('id')
+     user = user_controller.get_user_by_id(user_id) if user_id else None
+     return render_template('user_profile.html', user_id=user_id, user=user)
+
 @app.route('/MFA', methods=['GET', 'POST'])
 def MFA():
     if request.method == 'POST':
@@ -277,6 +283,8 @@ def profile():
         return redirect(url_for('login'))
     user = user_controller.get_user_by_id(user_id)
     return render_template('profile.html', user=user)
+
+
 
 @app.route('/logout')
 def logout():
