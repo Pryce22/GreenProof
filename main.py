@@ -14,13 +14,19 @@ app = Flask(__name__,
 app.config.from_object(Config)
 app.secret_key = app.config['SECRET_KEY']
 
-@app.route('/')
-def home():
+def get_user_info():
     user_id = session.get('id')
     user = None
+    is_admin = False
     if user_id:
         user = user_controller.get_user_by_id(user_id)
-    return render_template('index.html', user_id=user_id, user=user)
+        is_admin = user_controller.is_admin(user_id)
+    return user_id, user, is_admin
+
+@app.route('/')
+def home():
+    user_id, user, is_admin = get_user_info()
+    return render_template('index.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -53,13 +59,15 @@ def login():
             'error': 'Invalid email or password'
         })
     
-    return render_template('login.html')
+    user_id, user, is_admin = get_user_info()
+    return render_template('login.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/user_profile', methods=['GET', 'POST'])
 def user_profile():
-     user_id = session.get('id')
-     user = user_controller.get_user_by_id(user_id) if user_id else None
-     return render_template('user_profile.html', user_id=user_id, user=user)
+    user_id, user, is_admin = get_user_info()
+    if not user_id:
+        return redirect(url_for('login'))
+    return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/MFA', methods=['GET', 'POST'])
 def MFA():
@@ -100,7 +108,8 @@ def MFA():
         
         return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
         
-    return render_template('MFA.html')
+    user_id, user, is_admin = get_user_info()
+    return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -138,7 +147,8 @@ def register():
             return jsonify({'success': True, 'redirect': url_for('MFA')})
         return jsonify({'success': False, 'error': 'Failed to send verification email'})
     
-    return render_template('register.html')
+    user_id, user, is_admin = get_user_info()
+    return render_template('register.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/resend-verification', methods=['POST'])
 def resend_verification():
@@ -162,25 +172,24 @@ def add_token(user_id):
     return redirect(url_for('dashboard', user_id=user_id))
 
 @app.route('/search_companies', methods=['GET', 'POST'])
-def seach_companies():
-    user_id = session.get('id')
-    user = user_controller.get_user_by_id(user_id) if user_id else None
-    return render_template('search_companies.html', user_id=user_id, user=user)
+def search_companies():
+    user_id, user, is_admin = get_user_info()
+    return render_template('search_companies.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/information_company', methods=['GET', 'POST'])
 def information_company():
-    user_id = session.get('id')
-    user = user_controller.get_user_by_id(user_id) if user_id else None
-    return render_template('information_company.html', user_id=user_id, user=user) 
+    user_id, user, is_admin = get_user_info()
+    return render_template('information_company.html', user_id=user_id, user=user, is_admin=is_admin) 
 
 
 @app.route('/password_recover', methods=['GET', 'POST'])
 def password_recover():
-    return render_template('password_recover.html')
+    user_id, user, is_admin = get_user_info()
+    return render_template('password_recover.html', user_id=user_id, user=user, is_admin=is_admin)
 
 @app.route('/company_register', methods=['GET', 'POST'])
 def company_register():
-    user_id = session.get('id')
+    user_id, user, is_admin = get_user_info()
     if not user_id:
         return redirect(url_for('login'))
     
@@ -232,8 +241,7 @@ def company_register():
                 'error': 'An unexpected error occurred'
             })
 
-    user = user_controller.get_user_by_id(user_id) if user_id else None
-    return render_template('company_register.html', user_id=user_id, user=user)
+    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin)
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

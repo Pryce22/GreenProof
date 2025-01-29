@@ -1,16 +1,12 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import user as user_model
-import uuid
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import json
-import os
 from app import supabase
 import random
 import time
 from flask import session, request
-from time import time
 
 
 def create_user(id, email, name, surname, password, phone_number, birthday):
@@ -18,6 +14,7 @@ def create_user(id, email, name, surname, password, phone_number, birthday):
         return False
     
     try:
+        # Inizia una transazione
         password_hash = generate_password_hash(password)
         user_data = {
             'id': id,
@@ -29,12 +26,38 @@ def create_user(id, email, name, surname, password, phone_number, birthday):
             'birthday': birthday,
         }
         
-        response = supabase.table('user').insert(user_data).execute()
-        return bool(response.data)
+        # Inserisci l'utente
+        user_response = supabase.table('user').insert(user_data).execute()
+        
+        if not user_response.data:
+            return False
+            
+        # Crea il ruolo per l'utente
+        role_data = {
+            'user_id': id,
+            'admin': False
+        }
+        
+        # Inserisci il ruolo
+        role_response = supabase.table('roles').insert(role_data).execute()
+        
+        if not role_response.data:
+            # Se l'inserimento del ruolo fallisce, dovresti gestire il rollback
+            # Elimina l'utente creato
+            supabase.table('user').delete().eq('id', id).execute()
+            return False
+            
+        return True
+        
     except Exception as e:
         print(f"Error creating user: {e}")
+        # In caso di errore, prova a fare rollback eliminando l'utente se esiste
+        try:
+            supabase.table('user').delete().eq('id', id).execute()
+        except:
+            pass
         return False
-        
+
 def login_user(email, password):
     try:
         response = supabase.table('user').select('email', 'password').eq('email', email).execute()
@@ -143,13 +166,36 @@ def get_user_by_id(user_id):
         print(f"Error getting user by id: {e}")
         return None
 
+def get_user_role(user_id):
+    """Get the role of a user"""
+    try:
+        response = supabase.table('roles').select('admin').eq('user_id', user_id).execute()
+        if response.data:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting user role: {e}")
+        return None
+
+def is_admin(user_id):
+    """Check if user is admin"""
+    try:
+        response = supabase.table('roles').select('admin').eq('user_id', user_id).execute()
+        if response.data:
+            return response.data[0]['admin']
+        return False
+    except Exception as e:
+        print(f"Error checking admin status: {e}")
+        return False
+
 def _get_ip_blocklist():
     """Get the IP blocklist from session"""
     return session.get('ip_blocklist', {})
 
 def _update_ip_attempts(ip):
+    
     """Update the IP attempts counter"""
-    current_time = time()
+    current_time = time.time()
     ip_blocklist = _get_ip_blocklist()
     
     # Clean up expired blocks
@@ -173,7 +219,7 @@ def verify_login(email, password):
         # Check for IP-based blocking
         client_ip = request.remote_addr
         ip_blocklist = _get_ip_blocklist()
-        current_time = time()
+        current_time = time.time()
         
         if client_ip in ip_blocklist:
             block_info = ip_blocklist[client_ip]
@@ -212,7 +258,7 @@ def verify_login(email, password):
 def _update_failed_attempts(email):
     """Update the failed login attempts counter"""
     last_attempt = session.get('last_failed_login', {})
-    current_time = time()
+    current_time = time.time()
     
     if last_attempt.get('email') == email:
         session['last_failed_login'] = {

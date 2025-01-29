@@ -27,31 +27,10 @@
                 <!-- Right section -->
                 <div class="d-flex align-items-center">
                     {% if user_id %}
-                    <div class="dropdown">
-                        <button class="btn btn-primary btn-profile ms-2 dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                            <li class="dropdown-header">Welcome {{ user.name if user else '' }}</li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="/user_profile">
-                                <i class="bi bi-person me-2"></i>Edit Account
-                            </a></li>
-                            <li><a class="dropdown-item" href="/company_register">
-                                <i class="bi bi-building-add me-2"></i>Register Company
-                            </a></li>
-                            <li><a class="dropdown-item" href="/company_access">
-                                <i class="bi bi-building me-2"></i>Access Company
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="/logout">
-                                <i class="bi bi-box-arrow-right me-2"></i>Logout
-                            </a></li>
-                        </ul>
-                    </div>
+                        {% include 'includes/user_menu.html' %}
                     {% else %}
-                    <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
-                    <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                        <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                        <a class="btn btn-primary ms-2" href="/register">Sign in</a>
                     {% endif %}
                 </div>
             </div>
@@ -110,6 +89,7 @@
                                 <i class="bi bi-pencil"></i>
                             </button>
                         </li>
+                        
                     </ul>
                 </div>
                 <div class="card-footer bg-transparent text-center py-4">

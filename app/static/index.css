@@ -78,10 +78,14 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombra */
         transition: transform 0.3s; /* Aggiunge una transizione */
         margin-right: 0 !important; /* Rimuove il margine destro */
+        background-color: #212529 !important;
+        border-color: #212529 !important;
     }
     
     .btn-profile:hover {
         transform: scale(1.05); /* Ingrandisce leggermente il bottone al passaggio del mouse */
+        background-color: #343a40 !important;
+        border-color: #343a40 !important;
     }
     
     #about img {
@@ -112,7 +116,7 @@
 
     .dropdown-header {
         font-weight: bold;
-        color: var(--primary);
+        color: #212529 !important;
         padding: 0.5rem 1rem;
     }
 
@@ -120,10 +124,24 @@
         padding: 0.5rem 1rem;
         display: flex;
         align-items: center;
+        color: #212529 !important;  /* Colore default per tutti gli elementi */
+    }
+
+    /* Solo il logout mantiene il colore rosso */
+    .dropdown-item.text-danger[href="/logout"] {
+        color: #dc3545 !important;
+    }
+
+    /* Sovrascrivi i colori per gli elementi admin, forzandoli al nero */
+    .dropdown-item.text-info,
+    .dropdown-item.text-warning,
+    .dropdown-item.text-danger:not([href="/logout"]),
+    a.dropdown-item:not([href="/logout"]) {
+        color: #212529 !important;
     }
 
     .dropdown-item:hover {
-        background-color: var(--secondary);
+        background-color: #f8f9fa;
     }
 
     .dropdown-item i {

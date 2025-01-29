@@ -87,7 +87,6 @@ body {
     }
 }
 
-
 #about img {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
@@ -122,3 +121,35 @@ body {
     height: 400px;
     }
     }
+
+/* Aggiungi queste regole per assicurare consistenza nel profilo utente */
+.dropdown-menu {
+    min-width: 200px;
+    padding: 0.5rem 0;
+}
+
+.dropdown-header {
+    font-weight: bold;
+    color: #212529 !important;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    color: #212529 !important;
+}
+
+/* Stile specifico per il logout */
+.dropdown-item[href="/logout"] {
+    color: #dc3545 !important;
+}
+
+/* Forza il colore nero per tutti gli altri elementi, inclusi quelli admin */
+.dropdown-item.text-info,
+.dropdown-item.text-warning,
+.dropdown-item.text-danger:not([href="/logout"]),
+a.dropdown-item:not([href="/logout"]) {
+    color: #212529 !important;
+}

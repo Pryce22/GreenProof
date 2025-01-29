@@ -1,0 +1,35 @@
+<div class="dropdown">
+    <button class="btn btn-dark btn-profile ms-2 dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-person-circle"></i>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+        <li class="dropdown-header text-dark">Welcome {{ user.name if user else '' }}</li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-dark" href="/user_profile">
+            <i class="bi bi-person me-2"></i>Edit Account
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/company_register">
+            <i class="bi bi-building-add me-2"></i>Register Company
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/company_access">
+            <i class="bi bi-building me-2"></i>Access Company
+        </a></li>
+        {% if is_admin %}
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-dark" href="/admin/notifications">
+            <i class="bi bi-bell me-2"></i>Companies Notifications
+            <span class="badge bg-danger">3</span>
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/admin/users">
+            <i class="bi bi-person-x me-2"></i>Manage Users
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/admin/companies">
+            <i class="bi bi-building-x me-2"></i>Manage Companies
+        </a></li>
+        {% endif %}
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="/logout">
+            <i class="bi bi-box-arrow-right me-2"></i>Logout
+        </a></li>
+    </ul>
+</div>
