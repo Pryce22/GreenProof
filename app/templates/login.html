@@ -41,24 +41,24 @@
                 <div class="card shadow-lg">
                     <div class="card-body p-5">
                         <h2 class="text-center mb-4">Login Account</h2>
-                        <form id="registrationForm" class="needs-validation" novalidate>
+                        <form id="loginForm" class="needs-validation" novalidate>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email address</label>
-                                <input type="email" class="form-control" id="email" placeholder="Enter your email address" required>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" required>
                                 <div class="invalid-feedback">Please enter a valid email address.</div>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
                                 <div class="input-group">
-                                    <input type="password" class="form-control" id="password" placeholder="Enter your password" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$" required>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                                     <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                         <i class="bi bi-eye" id="togglePasswordIcon"></i>
                                     </button>
                                 </div>
-                                <div class="invalid-feedback">Password must be at least 8 characters long and include uppercase, lowercase, number and special character.</div>
+                                <div class="invalid-feedback">Password is required.</div>
                             </div>
                             <div class="d-grid gap-2">
-                                <a type="submit" class="btn btn-primary" href = "/MFA" >Login</a>
+                                <button type="submit" class="btn btn-primary">Login</button>
                                 <div class="text-center mt-3"><a href="/password_recover" class="text-decoration-none">Forgot your password?</a></div>
                             </div>
                         </form>
@@ -106,6 +106,52 @@
             // toggle the eye icon
             togglePasswordIcon.classList.toggle('bi-eye');
             togglePasswordIcon.classList.toggle('bi-eye-slash');
+        });
+
+        // Handle form submission
+        const form = document.getElementById('loginForm');
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            if (!form.checkValidity()) {
+                event.stopPropagation();
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const formData = new FormData(form);
+
+            fetch('/login', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        ${data.error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    form.insertAdjacentElement('beforebegin', alertDiv);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Show generic error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                alertDiv.role = 'alert';
+                alertDiv.innerHTML = `
+                    An error occurred. Please try again later.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+                form.insertAdjacentElement('beforebegin', alertDiv);
+            });
         });
     </script>
 </body>

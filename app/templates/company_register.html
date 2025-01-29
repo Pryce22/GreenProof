@@ -32,7 +32,28 @@
             <!-- Right section -->
             <div class="d-flex align-items-center">
                 {% if user_id %}
-                <a class="btn btn-primary btn-profile ms-2" href="/profile"><i class="bi bi-person-circle"></i></a>
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-profile ms-2 dropdown-toggle" type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
+                        <li class="dropdown-header">Welcome {{ user.name if user else '' }}</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/profile">
+                            <i class="bi bi-person me-2"></i>Edit Account
+                        </a></li>
+                        <li><a class="dropdown-item" href="/company_register">
+                            <i class="bi bi-building-add me-2"></i>Register Company
+                        </a></li>
+                        <li><a class="dropdown-item" href="/company_access">
+                            <i class="bi bi-building me-2"></i>Access Company
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="/logout">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a></li>
+                    </ul>
+                </div>
                 {% else %}
                 <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
                 <a class="btn btn-primary ms-2" href="/register">Sign in</a>
@@ -47,7 +68,7 @@
                 <div class="card shadow-lg">
                     <div class="card-body p-4 p-md-5">
                         <h1 class="text-center mb-4">Company Registration</h1>
-                        <form id="registrationForm" class="needs-validation" novalidate>
+                        <form id="registrationForm" class="needs-validation" novalidate method="POST" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="companyName" class="form-label">Company Name*</label>
                                 <input type="text" class="form-control" id="companyName" placeholder="Enter full company name" required minlength="2">
@@ -250,6 +271,53 @@
                 } else {
                     $('.char-count').removeClass('text-danger');
                 }
+            });
+
+            // Handle form submission
+            const form = document.getElementById('registrationForm');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                if (!form.checkValidity()) {
+                    event.stopPropagation();
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                const formData = new FormData(form);
+
+                fetch('/company_register', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        // Show error message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                        alertDiv.role = 'alert';
+                        alertDiv.innerHTML = `
+                            ${data.error}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        form.insertAdjacentElement('beforebegin', alertDiv);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show generic error message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                    alertDiv.role = 'alert';
+                    alertDiv.innerHTML = `
+                        An error occurred. Please try again later.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    form.insertAdjacentElement('beforebegin', alertDiv);
+                });
             });
         });
     </script>

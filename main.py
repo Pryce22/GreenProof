@@ -3,6 +3,7 @@ import geonamescache
 import re
 from app.config import Config
 from app.controllers import user_controller
+from app.controllers import company_controller
 import uuid
 
 app = Flask(__name__,
@@ -14,17 +15,30 @@ app.secret_key = app.config['SECRET_KEY']
 @app.route('/')
 def home():
     user_id = session.get('id')
-    return render_template('index.html', user_id=user_id)
+    user = None
+    if user_id:
+        user = user_controller.get_user_by_id(user_id)
+    return render_template('index.html', user_id=user_id, user=user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
-        user = user_controller.login_user(email, password)
+        
+        user = user_controller.verify_login(email, password)
         if user:
-            session['id'] = user['id']
-            return redirect(url_for('home'))
+            # Store login info in session for MFA verification
+            session['pending_login'] = {
+                'email': email,
+                'user_id': user['id']
+            }
+            # Send verification email
+            if user_controller.send_verification_email(email):
+                return jsonify({'success': True, 'redirect': url_for('MFA')})
+            return jsonify({'success': False, 'error': 'Failed to send verification email'})
+        return jsonify({'success': False, 'error': 'Invalid email or password'})
+    
     return render_template('login.html')
 
 @app.route('/MFA', methods=['GET', 'POST'])
@@ -34,28 +48,37 @@ def MFA():
         if not token:
             return jsonify({'success': False, 'error': 'Verification code is required'})
             
+        pending_login = session.get('pending_login')
         pending_registration = session.get('pending_registration')
-        if not pending_registration:
-            return jsonify({'success': False, 'error': 'Session expired. Please register again.'})
         
-        if user_controller.verify_token(token, pending_registration['email']):
-            if user_controller.create_user(
-                id=pending_registration['id'],
-                email=pending_registration['email'],
-                name=pending_registration['name'],
-                surname=pending_registration['surname'],
-                password=pending_registration['password'],
-                phone_number=pending_registration['phone_number'],
-                birthday=pending_registration['birth_date']
-            ):
-                session.pop('pending_registration', None)
-                user = user_controller.get_user_by_email(pending_registration['email'])
-                if user:
-                    session['id'] = user['id']
-                    return jsonify({'success': True, 'redirect': url_for('home')})
-            return jsonify({'success': False, 'error': 'Failed to create account'})
+        if pending_login:
+            # Handle login MFA
+            if user_controller.verify_token(token, pending_login['email']):
+                session.pop('pending_login', None)
+                session['id'] = pending_login['user_id']
+                return jsonify({'success': True, 'redirect': url_for('home')})
+            return jsonify({'success': False, 'error': 'Invalid verification code'})
+            
+        elif pending_registration:
+            # Handle registration MFA
+            if user_controller.verify_token(token, pending_registration['email']):
+                if user_controller.create_user(
+                    id=pending_registration['id'],
+                    email=pending_registration['email'],
+                    name=pending_registration['name'],
+                    surname=pending_registration['surname'],
+                    password=pending_registration['password'],
+                    phone_number=pending_registration['phone_number'],
+                    birthday=pending_registration['birth_date']
+                ):
+                    session.pop('pending_registration', None)
+                    user = user_controller.get_user_by_email(pending_registration['email'])
+                    if user:
+                        session['id'] = user['id']
+                        return jsonify({'success': True, 'redirect': url_for('home')})
+                return jsonify({'success': False, 'error': 'Failed to create account'})
         
-        return jsonify({'success': False, 'error': 'Invalid verification code'})
+        return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
         
     return render_template('MFA.html')
 
@@ -121,12 +144,14 @@ def add_token(user_id):
 @app.route('/search_companies', methods=['GET', 'POST'])
 def seach_companies():
     user_id = session.get('id')
-    return render_template('search_companies.html', user_id=user_id)
+    user = user_controller.get_user_by_id(user_id) if user_id else None
+    return render_template('search_companies.html', user_id=user_id, user=user)
 
 @app.route('/information_company', methods=['GET', 'POST'])
 def information_company():
     user_id = session.get('id')
-    return render_template('information_company.html', user_id=user_id)
+    user = user_controller.get_user_by_id(user_id) if user_id else None
+    return render_template('information_company.html', user_id=user_id, user=user) 
 
 
 @app.route('/password_recover', methods=['GET', 'POST'])
@@ -135,8 +160,46 @@ def password_recover():
 
 @app.route('/company_register', methods=['GET', 'POST'])
 def company_register():
+    if request.method == 'POST':
+        user_id = session.get('id')
+        if not user_id:
+            return jsonify({'success': False, 'error': 'User not authenticated'})
+
+        try:
+            # Get form data
+            company_data = {
+                'company_name': request.form['companyName'],
+                'company_phone_number': request.form['phone'],
+                'company_email': request.form['email'],
+                'company_industry': request.form['industry'],
+                'company_country': request.form['country'],
+                'company_city': request.form['city'],
+                'company_address': request.form['address'],
+                'company_description': request.form['description'],
+                'company_website': request.form.get('website'),  # Optional
+                'company_image': request.files.get('logo')  # Optional
+            }
+
+            # Check if company name already exists
+            if company_controller.check_company_exists(company_data['company_name']):
+                return jsonify({'success': False, 'error': 'Company name already exists'})
+
+            # Create company
+            result = company_controller.create_company(
+                user_id=user_id,
+                **company_data
+            )
+
+            if result['success']:
+                return jsonify({'success': True, 'redirect': url_for('company_profile', company_id=result['company_id'])})
+            return jsonify({'success': False, 'error': result['error']})
+
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)})
+
     user_id = session.get('id')
-    return render_template('company_register.html', user_id=user_id)
+    user = user_controller.get_user_by_id(user_id) if user_id else None
+    return render_template('company_register.html', user_id=user_id, user=user)
 
 # Inizializza geonamescache
 gc = geonamescache.GeonamesCache()

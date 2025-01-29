@@ -143,6 +143,11 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
                     form.insertAdjacentElement('beforebegin', alertDiv);
+                    
+                    if (data.maxAttempts) {
+                        document.getElementById('verificationCode').value = '';
+                        startTimer(); // Riavvia il timer per il nuovo codice
+                    }
                 }
             })
             .catch(error => {

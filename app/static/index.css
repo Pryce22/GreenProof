@@ -104,6 +104,35 @@
     .social-icons i:hover {
     color: var(--primary);
     }
+
+    .dropdown-menu {
+        min-width: 200px;
+        padding: 0.5rem 0;
+    }
+
+    .dropdown-header {
+        font-weight: bold;
+        color: var(--primary);
+        padding: 0.5rem 1rem;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .dropdown-item:hover {
+        background-color: var(--secondary);
+    }
+
+    .dropdown-item i {
+        width: 1.5rem;
+    }
+
+    .dropdown-divider {
+        margin: 0.5rem 0;
+    }
     
     @media (max-width: 768px) {
     .carousel-caption h1 {
@@ -118,4 +147,3 @@
     height: 400px;
     }
     }
-    

@@ -97,14 +97,28 @@ def send_verification_email(to_email):
 
 def verify_token(token, email):
     stored_data = session.get('verification_token')
+    attempts = session.get('verification_attempts', 0)
+    
     if not stored_data:
         return False
+    
+    if attempts >= 2:
+        # Reset token and attempts after 3 failed tries
+        session.pop('verification_token', None)
+        session.pop('verification_attempts', None)
+        # Generate and send new token
+        send_verification_email(email)
+        return 'max_attempts'
+        
+    # Increment attempts
+    session['verification_attempts'] = attempts + 1
         
     # Check if token is valid and not expired (2 minutes)
     if (stored_data['token'] == str(token) and 
         stored_data['email'] == email and 
         (time.time() - stored_data['timestamp']) < 120):
         session.pop('verification_token', None)
+        session.pop('verification_attempts', None)
         return True
     return False
 
@@ -117,6 +131,30 @@ def get_user_by_email(email):
     except Exception as e:
         print(f"Error getting user by email: {e}")
         return None
+
+def get_user_by_id(user_id):
+    try:
+        response = supabase.table('user').select('*').eq('id', user_id).execute()
+        if len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting user by id: {e}")
+        return None
+
+def verify_login(email, password):
+    try:
+        response = supabase.table('user').select('*').eq('email', email).execute()
+        if len(response.data) == 0:
+            return None
+        user = response.data[0]
+        if check_password_hash(user['password'], password):
+            return user
+        return None
+    except Exception as e:
+        print(f"Error verifying login: {e}")
+        return None
+
 '''
 def login_user(email, password):
     users = load_users_from_file()
@@ -137,7 +175,7 @@ def get_user_tokens(user_id):
 def add_token_to_user(user_id, token):
     users = load_users_from_file()
     for user in users:
-        if user['id'] == user_id:
+        if user['id'] == user_id):
             if 'tokens' not in user:
                 user['tokens'] = []
             user['tokens'].append(token)
