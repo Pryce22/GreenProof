@@ -8,12 +8,16 @@
         <li><a class="dropdown-item text-dark" href="/user_profile">
             <i class="bi bi-person me-2"></i>Edit Account
         </a></li>
+
+        {% if not is_admin %}
         <li><a class="dropdown-item text-dark" href="/company_register">
             <i class="bi bi-building-add me-2"></i>Register Company
         </a></li>
         <li><a class="dropdown-item text-dark" href="/company_access">
             <i class="bi bi-building me-2"></i>Access Company
         </a></li>
+        {% endif %}
+
         {% if is_admin %}
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item text-dark" href="/admin/notifications">
@@ -27,6 +31,24 @@
             <i class="bi bi-building-x me-2"></i>Manage Companies
         </a></li>
         {% endif %}
+
+        {% if is_company_admin %}
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-dark" href="/company_admin/notifications">
+            <i class="bi bi-building-x me-2"></i>Notifications
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/company_admin/company">
+            <i class="bi bi-bell me-2"></i>Manage Company
+            <span class="badge bg-danger">3</span>
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/company_admin/employee">
+            <i class="bi bi-person-x me-2"></i>Manage Employee
+        </a></li>
+        <li><a class="dropdown-item text-dark" href="/company_admin/token">
+            <i class="bi bi-building-x me-2"></i>Manage Token
+        </a></li>
+        {% endif %}
+
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item text-danger" href="/logout">
             <i class="bi bi-box-arrow-right me-2"></i>Logout

@@ -18,15 +18,17 @@ def get_user_info():
     user_id = session.get('id')
     user = None
     is_admin = False
+    is_company_admin= False
     if user_id:
         user = user_controller.get_user_by_id(user_id)
         is_admin = user_controller.is_admin(user_id)
-    return user_id, user, is_admin
+        is_company_admin = user_controller.is_company_admin(user_id)
+    return user_id, user, is_admin, is_company_admin
 
 @app.route('/')
 def home():
-    user_id, user, is_admin = get_user_info()
-    return render_template('index.html', user_id=user_id, user=user, is_admin=is_admin)
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('index.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -59,15 +61,23 @@ def login():
             'error': 'Invalid email or password'
         })
     
-    user_id, user, is_admin = get_user_info()
-    return render_template('login.html', user_id=user_id, user=user, is_admin=is_admin)
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('login.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 @app.route('/user_profile', methods=['GET', 'POST'])
 def user_profile():
-    user_id, user, is_admin = get_user_info()
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    companies= user_controller.get_companies_by_user_id(user_id)
+
     if not user_id:
         return redirect(url_for('login'))
-    return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin)
+    if is_company_admin:
+        unique_company_admin=user_controller.is_unique_company_admin(user_id)
+        unique_admin=user_controller.get_company_ids_where_user_is_unique_admin(user_id)
+        
+        return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, unique_company_admin=unique_company_admin, companies=companies, unique_admin=unique_admin)
+    
+    return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, companies=companies)
 
 @app.route('/MFA', methods=['GET', 'POST'])
 def MFA():
@@ -108,8 +118,8 @@ def MFA():
         
         return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
         
-    user_id, user, is_admin = get_user_info()
-    return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin)
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -147,8 +157,8 @@ def register():
             return jsonify({'success': True, 'redirect': url_for('MFA')})
         return jsonify({'success': False, 'error': 'Failed to send verification email'})
     
-    user_id, user, is_admin = get_user_info()
-    return render_template('register.html', user_id=user_id, user=user, is_admin=is_admin)
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 @app.route('/resend-verification', methods=['POST'])
 def resend_verification():
@@ -173,23 +183,23 @@ def add_token(user_id):
 
 @app.route('/search_companies', methods=['GET', 'POST'])
 def search_companies():
-    user_id, user, is_admin = get_user_info()
-    return render_template('search_companies.html', user_id=user_id, user=user, is_admin=is_admin)
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('search_companies.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 @app.route('/information_company', methods=['GET', 'POST'])
 def information_company():
-    user_id, user, is_admin = get_user_info()
-    return render_template('information_company.html', user_id=user_id, user=user, is_admin=is_admin) 
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('information_company.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin) 
 
 
 @app.route('/password_recover', methods=['GET', 'POST'])
 def password_recover():
-    user_id, user, is_admin = get_user_info()
-    return render_template('password_recover.html', user_id=user_id, user=user, is_admin=is_admin)
+    user_id, user, is_admin, is_company_admin = get_user_info()
+    return render_template('password_recover.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 @app.route('/company_register', methods=['GET', 'POST'])
 def company_register():
-    user_id, user, is_admin = get_user_info()
+    user_id, user, is_admin, is_company_admin = get_user_info()
     if not user_id:
         return redirect(url_for('login'))
     
@@ -241,7 +251,7 @@ def company_register():
                 'error': 'An unexpected error occurred'
             })
 
-    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin)
+    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
 
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}

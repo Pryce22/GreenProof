@@ -166,6 +166,29 @@ def get_user_by_id(user_id):
         print(f"Error getting user by id: {e}")
         return None
 
+def get_companies_by_user_id(user_id):
+    try:
+        # Primo passo: ottenere i 'company_id' dalla tabella 'company_employe' per il dato 'user_id'
+        response = supabase.table('company_employe').select('company_id').eq('user_id', user_id).execute()
+        
+        if len(response.data) > 0:
+            company_ids = [item['company_id'] for item in response.data]  # Lista di 'company_id' associati all'utente
+            
+            # Secondo passo: usare i 'company_id' per ottenere i dettagli di tutte le compagnie dalla tabella 'companies'
+            company_response = supabase.table('companies').select('*').in_('company_id', company_ids).execute()
+            
+            if len(company_response.data) > 0:
+                return company_response.data  # Restituisce una lista di compagnie
+            
+        # Se non trovi nulla, restituisci None
+        return None
+    except Exception as e:
+        print(f"Error getting companies by user id: {e}")
+        return None
+
+
+
+
 def get_user_role(user_id):
     """Get the role of a user"""
     try:
@@ -187,6 +210,71 @@ def is_admin(user_id):
     except Exception as e:
         print(f"Error checking admin status: {e}")
         return False
+
+def is_company_admin(user_id):
+    """Check if user is admin"""
+    try:
+        response = supabase.table('company_employe').select('company_admin').eq('user_id', user_id).execute()
+        if response.data:
+            return response.data[0]['company_admin']
+        return False
+    except Exception as e:
+        print(f"Error checking admin status: {e}")
+        return False
+
+def is_unique_company_admin(user_id):
+    """Check if the user is the only company admin in their company"""
+    try:
+        # Ottieni l'azienda dell'utente
+        response = supabase.table('company_employe').select('company_id', 'company_admin').eq('user_id', user_id).execute()
+        
+        if not response.data or not response.data[0]['company_admin']:
+            return False  # L'utente non è un admin o non esiste
+
+        company_id = response.data[0]['company_id']
+
+        # Conta il numero di admin in questa azienda
+        admin_count = supabase.table('company_employe').select('count', count='exact')\
+            .eq('company_id', company_id).eq('company_admin', True).execute()
+
+        if admin_count.count == 1:
+            return True  # È l'unico admin dell'azienda
+        return False  # Ci sono altri admin nella stessa azienda
+
+    except Exception as e:
+        print(f"Error checking unique admin status: {e}")
+        return False
+    
+def get_company_ids_where_user_is_unique_admin(user_id):
+    """Return the company_ids where the user is the only admin of the company"""
+    try:
+        # Ottieni tutte le compagnie in cui l'utente è un admin
+        response = supabase.table('company_employe').select('company_id').eq('user_id', user_id).eq('company_admin', True).execute()
+        
+        if not response.data:
+            return []  # Se l'utente non è amministratore in nessuna azienda, restituisci una lista vuota
+
+        # Lista per raccogliere i company_id in cui l'utente è l'unico admin
+        unique_admin_company_ids = []
+
+        # Verifica per ogni compagnia
+        for company in response.data:
+            company_id = company['company_id']
+
+            # Conta il numero di admin per questa compagnia
+            admin_count = supabase.table('company_employe').select('count', count='exact')\
+                .eq('company_id', company_id).eq('company_admin', True).execute()
+
+            if admin_count.count == 1:  # Se l'utente è l'unico admin
+                unique_admin_company_ids.append(company_id)
+
+        return unique_admin_company_ids
+
+    except Exception as e:
+        print(f"Error getting unique admin company IDs: {e}")
+        return []
+
+
 
 def _get_ip_blocklist():
     """Get the IP blocklist from session"""
