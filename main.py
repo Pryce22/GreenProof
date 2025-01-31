@@ -181,21 +181,159 @@ def add_token(user_id):
     user_controller.add_token_to_user(user_id, token)
     return redirect(url_for('dashboard', user_id=user_id))
 
-@app.route('/search_companies', methods=['GET', 'POST'])
+@app.route('/search_companies', methods=['GET'])
 def search_companies():
     user_id, user, is_admin, is_company_admin = get_user_info()
-    return render_template('search_companies.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
+    search_query = request.args.get('query', '').strip()
+    
+    try:
+        if search_query != "":
+            companies = company_controller.search_companies(search_query)
+            print(companies[0])
+        else:
+            companies = company_controller.get_all_companies_sorted()
+            print(companies[1])
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'companies': companies})
+        
+        return render_template('search_companies.html', 
+                             companies=companies, 
+                             user_id=user_id, 
+                             user=user, 
+                             is_admin=is_admin, 
+                             is_company_admin=is_company_admin,
+                             search_query=search_query)
+    except Exception as e:
+        print(f"Error in search: {e}")
+        return render_template('search_companies.html', 
+                             companies=[], 
+                             user_id=user_id, 
+                             user=user, 
+                             is_admin=is_admin, 
+                             is_company_admin=is_company_admin)
 
-@app.route('/information_company', methods=['GET', 'POST'])
-def information_company():
+@app.route('/information_company/<int:company_id>')
+def information_company(company_id):
     user_id, user, is_admin, is_company_admin = get_user_info()
-    return render_template('information_company.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin) 
+    try:
+        company = company_controller.get_company_by_id(company_id)
+        if company:
+            return render_template('information_company.html',user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, company=company)
+        return "Company not found", 404
+    except Exception as e:
+        print(f"Error fetching company details: {e}")
+        return "Error loading company details", 500
+
 
 
 @app.route('/password_recover', methods=['GET', 'POST'])
 def password_recover():
-    user_id, user, is_admin, is_company_admin = get_user_info()
-    return render_template('password_recover.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin)
+    if request.method == 'POST':
+        email = request.form.get('email')
+        
+        if not email:
+            return jsonify({
+                'success': False,
+                'error': 'Email is required.'
+            })
+            
+        client_ip = request.remote_addr
+        
+        # Check attempt limits
+        attempts = user_controller.get_password_reset_attempts(client_ip)
+        if attempts >= 3:
+            return jsonify({
+                'success': False,
+                'error': 'Too many attempts. Please try again in 10 minutes.'
+            })
+        
+        # Verify email exists
+        user = user_controller.get_user_by_email(email)
+        if not user:
+            user_controller.update_password_reset_attempts(client_ip)
+            return jsonify({
+                'success': False,
+                'error': 'No account found with this email address.'
+            })
+        
+        try:
+            # Generate reset token
+            reset_token = user_controller.generate_password_reset_token()
+            
+            # Store token in session
+            user_controller.store_reset_token(email, reset_token)
+            
+            # Verifica che il token sia stato salvato correttamente
+            stored_tokens = session.get('reset_tokens', {})
+            print(f"Tokens after storing: {stored_tokens}")  # Debug print
+            
+            # Send reset email
+            if user_controller.send_password_reset_email(email, reset_token):
+                return jsonify({
+                    'success': True,
+                    'message': 'Password reset instructions have been sent to your email.'
+                })
+            
+            return jsonify({
+                'success': False,
+                'error': 'Failed to send reset email.'
+            })
+            
+        except Exception as e:
+            print(f"Error in password reset: {e}")  # Debug print
+            return jsonify({
+                'success': False,
+                'error': 'An error occurred during password reset.'
+            })
+    
+    return render_template('password_recover.html')
+
+@app.route('/password_recover_2/<token>', methods=['GET', 'POST'])
+def password_recover_2(token):
+    print(f"Accessing password_recover_2 with token: {token}")  # Debug print
+    email = user_controller.validate_reset_token(token)
+    
+    if not email:
+        return render_template('error.html', 
+                             error="Invalid or expired reset link. Please request a new password reset."), 400
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        password = data.get('password')
+        confirm_password = data.get('confirmPassword')
+        
+        if not password or not confirm_password:
+            return jsonify({
+                'success': False,
+                'error': 'Password is required'
+            })
+            
+        if password != confirm_password:
+            return jsonify({
+                'success': False,
+                'error': 'Passwords do not match'
+            })
+        
+        # Aggiorna la password
+        if user_controller.update_user_password(email, password):
+            # Rimuovi il token usato
+            reset_tokens = session.get('reset_tokens', {})
+            if token in reset_tokens:
+                del reset_tokens[token]
+                session['reset_tokens'] = reset_tokens
+                
+            return jsonify({
+                'success': True,
+                'redirect': url_for('login')
+            })
+            
+        return jsonify({
+            'success': False,
+            'error': 'Failed to update password'
+        })
+    
+    return render_template('password_recover_2.html', token=token, email=email)
 
 @app.route('/company_register', methods=['GET', 'POST'])
 def company_register():
@@ -314,12 +452,26 @@ def profile():
     user = user_controller.get_user_by_id(user_id)
     return render_template('profile.html', user=user)
 
-
-
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('home'))
+
+@app.route('/update_user', methods=['POST'])
+def update_user():
+    if not session.get('id'):
+        return jsonify({'success': False, 'error': 'Not authenticated'})
+        
+    data = request.get_json()
+    field = data.get('field')
+    value = data.get('value')
+    
+    if not field or not value:
+        return jsonify({'success': False, 'error': 'Missing data'})
+        
+    if user_controller.update_user_info(session['id'], field, value):
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'error': 'Update failed'})
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -36,112 +36,146 @@
             </div>
         </nav>
     </header>
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
-            <div class="profile-card card shadow-sm">
-                <div class="card-header bg-transparent text-center py-4">
-                    <h2 class="welcome-text mb-0">Welcome {{ user.name + " " + user.surname}}</h2>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="field-label">Full Name</span>
-                                <p class="mb-0 field-value">{{ user.name + " " + user.surname }}</p>
-                                <input type="text" class="form-control edit-input d-none" value="{{user.name  + user.surname }}">
-                            </div>
-                            <button class="btn btn-edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </li>
+<main class="flex-grow-1">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+                <div class="profile-card card shadow-sm">
+                    <div class="card-header bg-transparent text-center py-4">
+                        <h2 class="welcome-text mb-0">Welcome {{ user.name + " " + user.surname}}</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="w-100">
+                                    <span class="field-label">Name</span>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <p class="mb-0 field-value" data-field="name">{{ user.name }}</p>
+                                        <input type="text" class="form-control edit-input d-none" value="{{ user.name }}">
+                                        <div class="edit-buttons">
+                                            <button class="btn btn-edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <div class="btn-group save-cancel-buttons d-none">
+                                                <button class="btn btn-success btn-save">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-cancel">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="w-100">
+                                    <span class="field-label">Surname</span>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <p class="mb-0 field-value" data-field="surname">{{ user.surname }}</p>
+                                        <input type="text" class="form-control edit-input d-none" value="{{ user.surname }}">
+                                        <div class="edit-buttons">
+                                            <button class="btn btn-edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <div class="btn-group save-cancel-buttons d-none">
+                                                <button class="btn btn-success btn-save">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-cancel">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="field-label">Email Address</span>
+                                    <p class="mb-0 field-value">{{ user.email }}</p>
+                                    <input type="email" class="form-control edit-input d-none" value="{{ user.email }}">
+                                </div>
+                                <button class="btn btn-edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </li>
+                            
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="field-label">Phone Number</span>
+                                    <p class="mb-0 field-value">{{ user.phone_number }}</p>
+                                    <input type="text" class="form-control edit-input d-none" value="{{ user.phone_number }}">
+                                </div>
+                                <button class="btn btn-edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </li>
+                            
+                            {% if not is_admin %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="field-label">Company</span>
+                                    {% if companies %}
+                                        <ul>
+                                            {% for company in companies %}
+                                                <li>{{ company['company_name'] }}</li> <!-- Qui mostra il nome della compagnia -->
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="mb-0">No companies associated with this user.</p>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endif %}
                         
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="field-label">Email Address</span>
-                                <p class="mb-0 field-value">{{ user.email }}</p>
-                                <input type="email" class="form-control edit-input d-none" value="{{ user.email }}">
-                            </div>
-                            <button class="btn btn-edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </li>
-                        
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="field-label">Phone Number</span>
-                                <p class="mb-0 field-value">{{ user.phone_number }}</p>
-                                <input type="text" class="form-control edit-input d-none" value="{{ user.phone_number }}">
-                            </div>
-                            <button class="btn btn-edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </li>
-                        
-                        {% if not is_admin %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="field-label">Company</span>
-                                {% if companies %}
-                                    <ul>
-                                        {% for company in companies %}
-                                            <li>{{ company['company_name'] }}</li> <!-- Qui mostra il nome della compagnia -->
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <p class="mb-0">No companies associated with this user.</p>
-                                {% endif %}
-                            </div>
-                        </li>
-                    {% endif %}
+                            
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="field-label">Birthday</span>
+                                    <p class="mb-0">{{ user.birthday }}</p>
+                                </div>
+                                <button class="btn btn-edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </li>                        
+                        </ul>
+                    </div>
+                    {% if is_admin %}
                     
-                        
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <span class="field-label">Birthday</span>
-                                <p class="mb-0">{{ user.birthday }}</p>
+                    {% elif is_company_admin%}
+                    <div class="card-footer bg-transparent text-center py-4">
+                        {% if unique_admin %}
+                            <!-- Warning Popup -->
+                            <div class="alert alert-warning text-center" role="alert">
+                                You are the only administrator of the following company/ies:<br>
+                                {% for company in companies %}
+                                    {% if company['company_id'] in unique_admin %}
+                                          <strong>{{ company['company_name'] }}</strong><br>
+                                     {% endif %}
+                                {% endfor %}
+                                If you want delete your account, you must assign a new administrator for that company/ies.
                             </div>
-                            <button class="btn btn-edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </li>                        
-                    </ul>
-                </div>
-                {% if is_admin %}
-                
-                {% elif is_company_admin%}
-                <div class="card-footer bg-transparent text-center py-4">
-                    {% if unique_admin %}
-                        <!-- Warning Popup -->
-                        <div class="alert alert-warning text-center" role="alert">
-                            You are the only administrator of the following company/ies:<br>
-                            {% for company in companies %}
-                                {% if company['company_id'] in unique_admin %}
-                                      <strong>{{ company['company_name'] }}</strong><br>
-                                 {% endif %}
-                            {% endfor %}
-                            If you want delete your account, you must assign a new administrator for that company/ies.
-                        </div>
-                        </div>
+                            </div>
+                        {% else %}
+                                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="bi bi-trash me-2"></i>Delete Account
+                                </button>
+                             </div>
+
+                        {% endif %}
                     {% else %}
-                            <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                <i class="bi bi-trash me-2"></i>Delete Account
-                            </button>
-                         </div>
-
+                    <div class="card-footer bg-transparent text-center py-4">
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash me-2"></i>Delete Account
+                        </button>
+                    </div>
                     {% endif %}
-                {% else %}
-                <div class="card-footer bg-transparent text-center py-4">
-                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                        <i class="bi bi-trash me-2"></i>Delete Account
-                    </button>
                 </div>
-
-                {% endif %}
             </div>
         </div>
     </div>
-</div>
+</main>
 
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -190,10 +224,60 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
+document.addEventListener('DOMContentLoaded', function() {
+    const editButtons = document.querySelectorAll('.btn-edit');
+    
+    editButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const listItem = this.closest('.list-group-item');
+            const fieldValue = listItem.querySelector('.field-value');
+            const editInput = listItem.querySelector('.edit-input');
+            const editButtons = this.closest('.edit-buttons');
+            const saveButtons = listItem.querySelector('.save-cancel-buttons');
+            
+            // Show edit mode
+            fieldValue.classList.add('d-none');
+            editInput.classList.remove('d-none');
+            editButtons.querySelector('.btn-edit').classList.add('d-none');
+            saveButtons.classList.remove('d-none');
+            
+            // Handle save
+            saveButtons.querySelector('.btn-save').addEventListener('click', function() {
+                const field = fieldValue.dataset.field;
+                const value = editInput.value;
+                
+                // Send update to server
+                fetch('/update_user', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        field: field,
+                        value: value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        fieldValue.textContent = value;
+                        exitEditMode();
+                    }
+                });
+            });
+            
+            // Handle cancel
+            saveButtons.querySelector('.btn-cancel').addEventListener('click', exitEditMode);
+            
+            function exitEditMode() {
+                fieldValue.classList.remove('d-none');
+                editInput.classList.add('d-none');
+                editButtons.querySelector('.btn-edit').classList.remove('d-none');
+                saveButtons.classList.add('d-none');
+            }
+        });
+    });
+});
 </script>
 </body>
 </html>

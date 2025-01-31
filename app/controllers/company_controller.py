@@ -201,3 +201,35 @@ def check_company_exists(company_name):
     except Exception as e:
         print(f"Error checking company: {e}")
         return False
+'''
+def get_all_companies():
+    try:
+        response = supabase.table('companies').select('*').execute()
+        return response.data
+    except Exception as e:
+        print(f"Error getting companies: {e}")
+        return []
+'''
+def search_companies(search_term):
+    try:
+        response = supabase.table('companies') \
+            .select('*') \
+            .ilike('company_name', f'%{search_term}%') \
+            .eq('status', True) \
+            .execute()
+        return response.data
+    except Exception as e:
+        print(f"Error searching companies: {e}")
+        return []
+
+def get_all_companies_sorted():
+    try:
+        response = supabase.table('companies') \
+            .select('*') \
+            .eq('status', True) \
+            .order('company_name') \
+            .execute()
+        return response.data
+    except Exception as e:
+        print(f"Error getting sorted companies: {e}")
+        return []

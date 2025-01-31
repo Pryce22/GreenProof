@@ -37,36 +37,24 @@
     </header>
 
     <header class="py-5 text-center bg-gradient">
-        <h1 class="display-3 fw-bold text-black">EcoTech Solutions</h1>
+        <h1 class="display-3 fw-bold text-black">{{ company.company_name }}</h1>
     </header>
 
     <main class="container py-5">
         <section class="row align-items-center mb-5">
-            <!--
-            <div class="col-lg-4 mb-4 mb-lg-0">
-                <img src="{{ url_for('static', filename='images/torre.jpg') }}" alt="Company Logo" class="img-fluid rounded shadow-lg">
-            </div>-->
-            <div class="card-img-container col-lg-4 ">
-                <img src="https://images.unsplash.com/photo-1554469384-e58fac16e23a" class="card-img-top company-logo rounded shadow-lg" alt="Company 1"  height="400">
+            <div class="card-img-container col-lg-4">
+                <img src="{{ company.company_image or 'https://images.unsplash.com/photo-1554469384-e58fac16e23a' }}" 
+                     class="card-img-top company-logo rounded shadow-lg" 
+                     alt="{{ company.company_name }}"
+                     height="400">
             </div>
             <div class="col-lg-8">
                 <div class="card-body">
-                    <span class="badge bg-success mb-3">Clean Technology</span>
+                    <span class="badge bg-success mb-3">{{ company.company_industry }}</span>
                     <h2 class="card-title h3 mb-4">About Us</h2>
-                    <p class="card-text">EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies. EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.
-                       </p>
+                    <p class="card-text">{{ company.company_description }}</p>
                 </div>
             </div>
-           <!--
-            <div class="col-lg-8">
-                <div class="card border-0 shadow">
-                    <div class="card-body">
-                        <span class="badge bg-success mb-3">Clean Technology</span>
-                        <h2 class="card-title h3 mb-4">About Us</h2>
-                        <p class="card-text">EcoTech Solutions is a pioneer in sustainable technology solutions, dedicated to reducing carbon footprints through innovative approaches and green technologies.</p>
-                    </div>
-                </div>
-            </div>--> 
         </section>
 
         <section class="mb-5">
@@ -117,22 +105,24 @@
                         <ul class="list-unstyled">
                             <li class="mb-3">
                                 <i class="bi bi-telephone-fill me-2"></i>
-                                +1 (555) 123-4567
+                                {{ company.company_phone_number }}
                             </li>
                             <li class="mb-3">
                                 <i class="bi bi-envelope-fill me-2"></i>
-                                contact@ecotech.com
+                                {{ company.company_email }}
                             </li>
                             <li class="mb-3">
                                 <i class="bi bi-geo-alt-fill me-2"></i>
-                                123 Green Street, San Francisco, CA 94105, USA
+                                {{ company.company_address }}, {{ company.company_city }}, {{ company.company_country }}
                             </li>
+                            {% if company.company_website %}
                             <li class="mb-3">
                                 <i class="bi bi-globe me-2"></i>
-                                <a href="https://www.ecotech.com" target="_blank" class="text-decoration-none">
-                                    www.ecotech.com
+                                <a href="{{ company.company_website }}" target="_blank" class="text-decoration-none">
+                                    {{ company.company_website }}
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>

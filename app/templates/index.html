@@ -23,9 +23,9 @@
                 </div>
         
                 <!-- Center section -->
-                <form class="d-flex justify-content-center flex-grow-1 mx-4" style="max-width: 500px;">
-                    <input class="form-control me-2" type="search" placeholder="Search products...">
-                    <a class="btn btn-outline-success" href="/search_companies" type="submit">Search</a>
+                <form class="d-flex justify-content-center flex-grow-1 mx-4" style="max-width: 500px;" action="/search_companies" method="GET">
+                    <input class="form-control me-2" type="search" placeholder="Search companies..." name="query">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
 
                 <!-- Right section -->

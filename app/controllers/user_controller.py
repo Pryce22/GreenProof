@@ -7,6 +7,7 @@ from app import supabase
 import random
 import time
 from flask import session, request
+import uuid
 
 
 def create_user(id, email, name, surname, password, phone_number, birthday):
@@ -360,6 +361,144 @@ def _update_failed_attempts(email):
             'attempts': 1,
             'timestamp': current_time
         }
+
+def update_user_info(user_id, field, value):
+    try:
+        response = supabase.table('user') \
+            .update({field: value}) \
+            .eq('id', user_id) \
+            .execute()
+        return response.data is not None
+    except Exception as e:
+        print(f"Error updating user info: {e}")
+        return False
+
+def generate_password_reset_token():
+    """Generate a secure token for password reset"""
+    return str(uuid.uuid4())  # Rimuovi il parametro email poiché non è necessario per generare il token
+
+def send_password_reset_email(email, reset_token):
+    from_email = "ssb2024.2025@gmail.com"
+    from_password = "vpon ryms zupv owmt"
+    subject = "Password Reset Request"
+    
+    # Create reset link with token
+    reset_link = f"http://localhost:5000/password_recover_2/{reset_token}"
+    
+    html_content = f"""
+    <html>
+    <body>
+        <h2>Password Reset Request</h2>
+        <p>We received a request to reset your password. If you didn't make this request, please ignore this email.</p>
+        <p>To reset your password, click the link below (valid for 10 minutes):</p>
+        <p><a href="{reset_link}">Reset Password</a></p>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart('alternative')
+    msg['From'] = from_email
+    msg['To'] = email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(html_content, 'html'))
+
+    try:
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(from_email, from_password)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Error sending reset email: {e}")
+        return False
+
+def get_password_reset_attempts(ip):
+    """Get the number of password reset attempts for an IP"""
+    reset_attempts = session.get('password_reset_attempts', {})
+    if ip in reset_attempts:
+        if time.time() - reset_attempts[ip]['timestamp'] > 600:  # 10 minutes
+            del reset_attempts[ip]
+            session['password_reset_attempts'] = reset_attempts
+            return 0
+        return reset_attempts[ip]['attempts']
+    return 0
+
+def update_password_reset_attempts(ip):
+    """Update password reset attempts for an IP"""
+    reset_attempts = session.get('password_reset_attempts', {})
+    current_time = time.time()
+    
+    if ip in reset_attempts:
+        if current_time - reset_attempts[ip]['timestamp'] > 600:  # 10 minutes
+            reset_attempts[ip] = {'attempts': 1, 'timestamp': current_time}
+        else:
+            reset_attempts[ip]['attempts'] += 1
+    else:
+        reset_attempts[ip] = {'attempts': 1, 'timestamp': current_time}
+    
+    session['password_reset_attempts'] = reset_attempts
+    return reset_attempts[ip]['attempts']
+
+def store_reset_token(email, token):
+    """Store the reset token with timestamp and email"""
+    # Recupera i token esistenti o inizializza un nuovo dizionario
+    reset_tokens = session.get('reset_tokens', {})
+    
+    # Pulisci i token scaduti prima di aggiungerne uno nuovo
+    current_time = time.time()
+    reset_tokens = {
+        k: v for k, v in reset_tokens.items() 
+        if current_time - v['timestamp'] <= 600  # mantieni solo i token non scaduti (10 minuti)
+    }
+    
+    # Aggiungi il nuovo token
+    reset_tokens[token] = {
+        'email': email,
+        'timestamp': current_time
+    }
+    
+    # Salva nella sessione
+    session['reset_tokens'] = reset_tokens
+    session.modified = True  # Forza il salvataggio della sessione
+    
+    print(f"Token stored: {token} for email: {email}")  # Debug print
+    print(f"Current tokens after storing: {reset_tokens}")  # Debug print
+    return token
+
+def validate_reset_token(token):
+    """Validate the reset token and return associated email if valid"""
+    reset_tokens = session.get('reset_tokens', {})
+    print(f"Current reset tokens during validation: {reset_tokens}")  # Debug print
+    print(f"Validating token: {token}")  # Debug print
+    
+    if token in reset_tokens:
+        token_data = reset_tokens[token]
+        current_time = time.time()
+        
+        # Verifica che il token non sia scaduto (10 minuti) #600
+        if current_time - token_data['timestamp'] <= 600:
+            return token_data['email']
+        else:
+            # Rimuovi il token scaduto
+            del reset_tokens[token]
+            session['reset_tokens'] = reset_tokens
+            session.modified = True  # Forza il salvataggio della sessione
+            print(f"Token expired: {token}")  # Debug print
+    return None
+
+def update_user_password(email, new_password):
+    """Update user's password"""
+    try:
+        password_hash = generate_password_hash(new_password)
+        response = supabase.table('user') \
+            .update({'password': password_hash}) \
+            .eq('email', email) \
+            .execute()
+        return response.data is not None
+    except Exception as e:
+        print(f"Error updating password: {e}")
+        return False
 
 '''
 def login_user(email, password):

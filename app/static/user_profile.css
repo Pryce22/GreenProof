@@ -19,6 +19,36 @@
 body {
     background-color: var(--background);
     color: var(--foreground);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    flex: 1 0 auto;
+    padding-bottom: 2rem; /* Add some space before footer */
+}
+
+footer {
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: auto;
+    background-color: var(--dark);
+}
+
+.container {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+/* Remove any margin/padding from footer container */
+footer .container {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .profile-card {
@@ -152,4 +182,22 @@ body {
 .dropdown-item.text-danger:not([href="/logout"]),
 a.dropdown-item:not([href="/logout"]) {
     color: #212529 !important;
+}
+
+.edit-input {
+    width: 70%;
+}
+
+.edit-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.save-cancel-buttons {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.btn-save, .btn-cancel {
+    padding: 0.25rem 0.5rem;
 }

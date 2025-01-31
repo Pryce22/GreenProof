@@ -16,9 +16,29 @@
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
+/* Aggiungi queste regole per il layout della pagina e il footer */
 body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background-color: var(--background);
     color: var(--foreground);
+}
+
+main {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+    width: 100%;
+    margin-top: auto;
 }
 
 .company-card {
@@ -35,6 +55,28 @@ body {
     width: 40%; /* Takes up 40% of the card width */
     height: 100%;
     overflow: hidden;
+    position: relative; /* Add this */
+}
+
+/* Remove or comment out the previous divider style */
+/*.card-body::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 1px;
+    background-color: var(--border);
+}*/
+
+.bottom-divider {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid #000;
 }
 
 .company-card:hover {
@@ -59,6 +101,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    position: relative; /* Add this */
+    border-top: 1px solid var(--border);
 }
 
 .card-title {
