@@ -229,6 +229,11 @@ def information_company(company_id):
 
 @app.route('/password_recover', methods=['GET', 'POST'])
 def password_recover():
+    if request.method == 'GET':
+        # Clean expired attempts on page load
+        client_ip = request.remote_addr
+        user_controller.get_password_reset_attempts(client_ip)
+    
     if request.method == 'POST':
         email = request.form.get('email')
         
@@ -240,12 +245,13 @@ def password_recover():
             
         client_ip = request.remote_addr
         
-        # Check attempt limits
+        # Check attempt limits (this will also clean expired attempts)
         attempts = user_controller.get_password_reset_attempts(client_ip)
         if attempts >= 3:
+            remaining_time = 600  # 10 minutes in seconds
             return jsonify({
                 'success': False,
-                'error': 'Too many attempts. Please try again in 10 minutes.'
+                'error': f'Too many attempts. Please try again in {remaining_time//60} minutes.'
             })
         
         # Verify email exists
@@ -293,6 +299,7 @@ def password_recover():
 def password_recover_2(token):
     print(f"Accessing password_recover_2 with token: {token}")  # Debug print
     email = user_controller.validate_reset_token(token)
+    print(email)
     
     if not email:
         return render_template('error.html', 

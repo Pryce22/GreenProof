@@ -8,7 +8,7 @@ import random
 import time
 from flask import session, request
 import uuid
-
+from datetime import datetime, timezone, timedelta
 
 def create_user(id, email, name, surname, password, phone_number, birthday):
     if check_email_exists(email):
@@ -414,12 +414,28 @@ def send_password_reset_email(email, reset_token):
         return False
 
 def get_password_reset_attempts(ip):
-    """Get the number of password reset attempts for an IP"""
+    """Get the number of password reset attempts for an IP and clean expired attempts"""
     reset_attempts = session.get('password_reset_attempts', {})
+    current_time = time.time()
+    
+    # Clean all expired attempts (older than 10 minutes)
+    expired_ips = [ip_addr for ip_addr, data in reset_attempts.items() 
+                  if current_time - data['timestamp'] > 600]
+    
+    # Remove expired attempts
+    for expired_ip in expired_ips:
+        del reset_attempts[expired_ip]
+    
+    if expired_ips:
+        session['password_reset_attempts'] = reset_attempts
+        session.modified = True
+    
+    # Return current attempts for the IP, or 0 if expired or not found
     if ip in reset_attempts:
-        if time.time() - reset_attempts[ip]['timestamp'] > 600:  # 10 minutes
+        if current_time - reset_attempts[ip]['timestamp'] > 600:
             del reset_attempts[ip]
             session['password_reset_attempts'] = reset_attempts
+            session.modified = True
             return 0
         return reset_attempts[ip]['attempts']
     return 0
@@ -429,73 +445,124 @@ def update_password_reset_attempts(ip):
     reset_attempts = session.get('password_reset_attempts', {})
     current_time = time.time()
     
-    if ip in reset_attempts:
-        if current_time - reset_attempts[ip]['timestamp'] > 600:  # 10 minutes
-            reset_attempts[ip] = {'attempts': 1, 'timestamp': current_time}
-        else:
-            reset_attempts[ip]['attempts'] += 1
+    # Clean expired attempts first
+    expired_ips = [ip_addr for ip_addr, data in reset_attempts.items() 
+                  if current_time - data['timestamp'] > 600]
+    
+    for expired_ip in expired_ips:
+        del reset_attempts[expired_ip]
+    
+    # Update attempts for current IP
+    if ip in reset_attempts and current_time - reset_attempts[ip]['timestamp'] <= 600:
+        reset_attempts[ip]['attempts'] += 1
     else:
-        reset_attempts[ip] = {'attempts': 1, 'timestamp': current_time}
+        reset_attempts[ip] = {
+            'attempts': 1,
+            'timestamp': current_time
+        }
     
     session['password_reset_attempts'] = reset_attempts
+    session.modified = True
+    
     return reset_attempts[ip]['attempts']
 
 def store_reset_token(email, token):
-    """Store the reset token with timestamp and email"""
-    # Recupera i token esistenti o inizializza un nuovo dizionario
-    reset_tokens = session.get('reset_tokens', {})
-    
-    # Pulisci i token scaduti prima di aggiungerne uno nuovo
-    current_time = time.time()
-    reset_tokens = {
-        k: v for k, v in reset_tokens.items() 
-        if current_time - v['timestamp'] <= 600  # mantieni solo i token non scaduti (10 minuti)
-    }
-    
-    # Aggiungi il nuovo token
-    reset_tokens[token] = {
-        'email': email,
-        'timestamp': current_time
-    }
-    
-    # Salva nella sessione
-    session['reset_tokens'] = reset_tokens
-    session.modified = True  # Forza il salvataggio della sessione
-    
-    print(f"Token stored: {token} for email: {email}")  # Debug print
-    print(f"Current tokens after storing: {reset_tokens}")  # Debug print
-    return token
+    """Store the reset token in the database"""
+    try:
+        # Prima elimina eventuali token esistenti per questa email
+        supabase.table('recover_password_token') \
+            .delete() \
+            .eq('email', email) \
+            .execute()
+            
+        # Inserisci il nuovo token
+        response = supabase.table('recover_password_token') \
+            .insert({
+                'email': email,
+                'token': token, 
+                'is_used': False
+            }) \
+            .execute()
+            
+        print(f"Token stored in DB: {token} for email: {email}")
+        return True
+    except Exception as e:
+        print(f"Error storing reset token: {e}")
+        return False
 
 def validate_reset_token(token):
     """Validate the reset token and return associated email if valid"""
-    reset_tokens = session.get('reset_tokens', {})
-    print(f"Current reset tokens during validation: {reset_tokens}")  # Debug print
-    print(f"Validating token: {token}")  # Debug print
-    
-    if token in reset_tokens:
-        token_data = reset_tokens[token]
-        current_time = time.time()
+    try:
+        print(f"Validating token: {token}")
+        ten_minutes_ago = time.time() - (10 * 60) 
+        ten_minutes_ago = datetime.fromtimestamp(ten_minutes_ago, tz=timezone.utc)
+        # Recupera il token dal database e verifica che non sia scaduto e non sia già stato usato
+        '''
+        response = supabase.table('recover_password_token') \
+            .select('*') \
+            .eq('token', token) \
+            .eq('is_used', False) \
+            .lt('created_at', ten_minutes_ago) \
+            .execute()
+        '''
+        response = supabase.table('recover_password_token') \
+            .select('*') \
+            .eq('token', token) \
+            .eq('is_used', False) \
+            .execute()
         
-        # Verifica che il token non sia scaduto (10 minuti) #600
-        if current_time - token_data['timestamp'] <= 600:
-            return token_data['email']
-        else:
-            # Rimuovi il token scaduto
-            del reset_tokens[token]
-            session['reset_tokens'] = reset_tokens
-            session.modified = True  # Forza il salvataggio della sessione
-            print(f"Token expired: {token}")  # Debug print
-    return None
+        print(f"Token validation response: {response.data}")
+        if response.data and len(response.data) > 0:
+            token_data = response.data[0]  # Supponiamo che ci sia solo un token valido
+            created_at = datetime.fromisoformat(token_data['created_at'])  # Converti la stringa in datetime
+            #created_at = created_at.replace(tzinfo=None)
+            expiration_time = created_at + timedelta(minutes=1)
+            print(expiration_time)
+
+        # Controlla se il token è ancora valido
+            if datetime.now(timezone.utc) < expiration_time:
+                token_data = response.data[0]
+                print("sono QUi")
+                return token_data['email']
+            else:
+                # Elimina i token scaduti
+                response = supabase.table('recover_password_token') \
+                .delete() \
+                .eq('token', token) \
+                .eq('is_used', False) \
+                .execute()
+                print(f"Token not found or expired: {token}")
+                return None
+    except Exception as e:
+        print(f"Error validating reset token: {e}")
+        return None
 
 def update_user_password(email, new_password):
-    """Update user's password"""
+    """Update user's password and handle used token"""
     try:
+        # Aggiorna la password
         password_hash = generate_password_hash(new_password)
-        response = supabase.table('user') \
+        user_response = supabase.table('user') \
             .update({'password': password_hash}) \
             .eq('email', email) \
             .execute()
-        return response.data is not None
+        
+        if user_response.data:
+            # Prima marca il token come usato
+            supabase.table('recover_password_token') \
+                .update({'is_used': True}) \
+                .eq('email', email) \
+                .execute()
+            
+            # Poi elimina tutti i token usati
+            supabase.table('recover_password_token') \
+                .delete() \
+                .eq('is_used', True) \
+                .execute()
+                
+            return True
+            
+        return False
     except Exception as e:
         print(f"Error updating password: {e}")
         return False
@@ -512,7 +579,7 @@ def login_user(email, password):
 
 def get_user_tokens(user_id):
     users = load_users_from_file()
-    user = next((user for user in users if user['id'] == user_id), None)
+    user = next((user in users if user['id'] == user_id), None)
     if user:
         return user.get('tokens', [])
     return []
