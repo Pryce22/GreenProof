@@ -23,6 +23,7 @@ body {
     background-color: var(--card);
     border-radius: var(--radius);
     border-color: var(--border);
+    transition: none;
 }
 
 .form-control {
@@ -71,11 +72,11 @@ body {
     }
     
     .card {
-    transition: transform 0.3s ease;
+    transition: none;
     }
     
     .card:hover {
-    transform: translateY(-5px);
+    transform: none;
     }
     
     .social-icons i {

@@ -9,6 +9,9 @@ import time
 from flask import session, request
 import uuid
 from datetime import datetime, timezone, timedelta
+from app.utils.email_service import EmailService
+
+email_service = EmailService()
 
 def create_user(id, email, name, surname, password, phone_number, birthday):
     if check_email_exists(email):
@@ -87,38 +90,15 @@ def generate_verification_token():
     return random.randint(10000, 99999)
 
 def send_verification_email(to_email):
-    from_email = "ssb2024.2025@gmail.com"
-    from_password = "vpon ryms zupv owmt"
-    subject = "Email Verification"
-    
-    # Generate a new token
     token = generate_verification_token()
-    body = f"Your new verification code is: {token}"
-
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(from_email, from_password)
-        text = msg.as_string()
-        server.sendmail(from_email, to_email, text)
-        server.quit()
-        
-        # Update stored token
+    if email_service.send_verification_code(to_email, token):
         session['verification_token'] = {
             'token': str(token),
             'email': to_email,
             'timestamp': time.time()
         }
         return True
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-        return False
+    return False
 
 def verify_token(token, email):
     stored_data = session.get('verification_token')
@@ -378,40 +358,8 @@ def generate_password_reset_token():
     return str(uuid.uuid4())  # Rimuovi il parametro email poiché non è necessario per generare il token
 
 def send_password_reset_email(email, reset_token):
-    from_email = "ssb2024.2025@gmail.com"
-    from_password = "vpon ryms zupv owmt"
-    subject = "Password Reset Request"
-    
-    # Create reset link with token
     reset_link = f"http://localhost:5000/password_recover_2/{reset_token}"
-    
-    html_content = f"""
-    <html>
-    <body>
-        <h2>Password Reset Request</h2>
-        <p>We received a request to reset your password. If you didn't make this request, please ignore this email.</p>
-        <p>To reset your password, click the link below (valid for 10 minutes):</p>
-        <p><a href="{reset_link}">Reset Password</a></p>
-    </body>
-    </html>
-    """
-
-    msg = MIMEMultipart('alternative')
-    msg['From'] = from_email
-    msg['To'] = email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(html_content, 'html'))
-
-    try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(from_email, from_password)
-        server.send_message(msg)
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"Error sending reset email: {e}")
-        return False
+    return email_service.send_password_reset(email, reset_link)
 
 def get_password_reset_attempts(ip):
     """Get the number of password reset attempts for an IP and clean expired attempts"""

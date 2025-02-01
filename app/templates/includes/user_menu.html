@@ -20,9 +20,11 @@
 
         {% if is_admin %}
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-dark" href="/admin/notifications">
+        <li><a class="dropdown-item text-dark" href="/notifications">
             <i class="bi bi-bell me-2"></i>Companies Notifications
-            <span class="badge bg-danger">3</span>
+            {% if pending_companies_count > 0 %}
+                <span class="badge bg-danger">{{ pending_companies_count }}</span>
+            {% endif %}
         </a></li>
         <li><a class="dropdown-item text-dark" href="/admin/users">
             <i class="bi bi-person-x me-2"></i>Manage Users
@@ -50,7 +52,7 @@
         {% endif %}
 
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="/logout">
+        <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
             <i class="bi bi-box-arrow-right me-2"></i>Logout
         </a></li>
     </ul>

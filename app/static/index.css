@@ -34,12 +34,12 @@
     
     .hero-section {
     position: relative;
-    height: 600px;
+    height: 740px;
     overflow: hidden;
     }
     
     .hero-section .carousel-item {
-    height: 600px;
+    height: 740px;
     }
     
     .hero-section img {
@@ -72,18 +72,16 @@
     }
 
     .btn-profile {
-        font-size: 1.25rem; /* Aumenta la dimensione del testo */
-        padding: 0rem 0rem; /* Aumenta il padding */
-        border-radius: 0.25rem; /* Arrotonda gli angoli */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombra */
-        transition: transform 0.3s; /* Aggiunge una transizione */
-        margin-right: 0 !important; /* Rimuove il margine destro */
+        font-size: 1rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.15s ease-in-out;
+        margin-right: 0 !important;
         background-color: #212529 !important;
         border-color: #212529 !important;
     }
     
     .btn-profile:hover {
-        transform: scale(1.05); /* Ingrandisce leggermente il bottone al passaggio del mouse */
         background-color: #343a40 !important;
         border-color: #343a40 !important;
     }

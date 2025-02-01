@@ -201,15 +201,35 @@ def check_company_exists(company_name):
     except Exception as e:
         print(f"Error checking company: {e}")
         return False
-'''
-def get_all_companies():
+
+def get_pending_companies():
     try:
-        response = supabase.table('companies').select('*').execute()
-        return response.data
+        # Assicuriamoci di selezionare tutti i campi necessari
+        result = supabase.from_('companies').select('*').eq('status', False).execute()
+        #print("Pending companies:", result.data)  # Debug print
+        return result.data
     except Exception as e:
-        print(f"Error getting companies: {e}")
+        print(f"Error fetching pending companies: {e}")
         return []
-'''
+
+def approve_company(company_id):
+    try:
+        result = supabase.from_('companies').update({'status': True}).eq('company_id', company_id).execute()
+        print(result.data)
+        print("ciao")
+        return True if result.data else False
+    except Exception as e:
+        print(f"Error approving company: {e}")
+        return False
+
+def reject_company(company_id):
+    try:
+        result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
+        return True if result.data else False
+    except Exception as e:
+        print(f"Error rejecting company: {e}")
+        return False
+
 def search_companies(search_term):
     try:
         response = supabase.table('companies') \

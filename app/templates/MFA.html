@@ -6,7 +6,7 @@
 <title>Two Factor Authentication</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-<link rel="stylesheet" href="MFA.css">
+<link rel="stylesheet" href="static/MFA.css">
 </head>
 <body class="bg-light">
         <header class="sticky-top">
@@ -42,7 +42,7 @@
                 <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">Verify Code</button>
                 <div class="text-center">
                     <button type="button" class="btn btn-link" id="resendCode">Resend Code</button>
-                    <button type="button" class="btn btn-link text-muted">Back to Login</button>
+                    <a href="/" class="btn btn-link text-muted">Back to Home</a>
                 </div>
             </form>
             <div class="alert alert-success d-none mt-3" role="alert">
@@ -58,11 +58,31 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         let timer;
-        let timeLeft = 120; // 2 minutes in seconds
-
+        let timeLeft;
+        
+        function initializeTimer() {
+            const startTime = new Date().getTime();
+            const storedStartTime = sessionStorage.getItem('mfaStartTime');
+            
+            if (!storedStartTime) {
+                sessionStorage.setItem('mfaStartTime', startTime);
+                timeLeft = 120; // 2 minuti
+            } else {
+                const elapsed = Math.floor((startTime - parseInt(storedStartTime)) / 1000);
+                timeLeft = Math.max(120 - elapsed, 0);
+            }
+            
+            updateTimerDisplay();
+            if (timeLeft > 0) {
+                startTimer();
+            } else {
+                document.getElementById('timeoutAlert').classList.remove('d-none');
+                document.querySelector('button[type="submit"]').disabled = true;
+            }
+        }
+        
         function startTimer() {
             clearInterval(timer);
-            timeLeft = 120;
             updateTimerDisplay();
             timer = setInterval(function () {
                 timeLeft--;
@@ -82,33 +102,34 @@
         }
 
         document.getElementById('resendCode').addEventListener('click', function () {
-            fetch('/resend-verification', {
+            fetch('/resend-verification', {  // Aggiornato percorso
                 method: 'POST',
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    startTimer();
+                    // Reset timer
+                    sessionStorage.removeItem('mfaStartTime');
+                    timeLeft = 120;
                     document.getElementById('timeoutAlert').classList.add('d-none');
                     document.querySelector('button[type="submit"]').disabled = false;
+                    startTimer();
                     
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
-                    alertDiv.role = 'alert';
                     alertDiv.innerHTML = `
                         New verification code has been sent to your email.
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
-                    form.insertAdjacentElement('beforebegin', alertDiv);
+                    document.querySelector('form').insertAdjacentElement('beforebegin', alertDiv);
                 } else {
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
-                    alertDiv.role = 'alert';
                     alertDiv.innerHTML = `
                         ${data.error}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
-                    form.insertAdjacentElement('beforebegin', alertDiv);
+                    document.querySelector('form').insertAdjacentElement('beforebegin', alertDiv);
                 }
             })
             .catch(error => {
@@ -116,7 +137,7 @@
             });
         });
 
-        startTimer();
+        initializeTimer();
 
         // Handle form submission
         const form = document.getElementById('twoFactorForm');
@@ -126,7 +147,7 @@
             const formData = new FormData();
             formData.append('verificationCode', document.getElementById('verificationCode').value);
             
-            fetch('/MFA', {
+            fetch('/mfa', {  // Aggiornato percorso
                 method: 'POST',
                 body: formData
             })

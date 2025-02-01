@@ -1,3 +1,4 @@
+'''
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import geonamescache
 import re
@@ -479,6 +480,9 @@ def update_user():
     if user_controller.update_user_info(session['id'], field, value):
         return jsonify({'success': True})
     return jsonify({'success': False, 'error': 'Update failed'})
+'''
+
+from app import app
 
 if __name__ == '__main__':
     app.run(debug=True)
