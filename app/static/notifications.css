@@ -19,34 +19,50 @@
 body {
     background-color: var(--background);
     color: var(--foreground);
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .notification-wrapper {
-    max-width: 800px;
+    max-width: 1200px; /* Increased from 800px */
     margin: 0 auto;
+    padding: 1rem 2rem; /* Added horizontal padding */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .notification-container {
-    max-height: 600px;
+    max-height: calc(100vh - 200px); /* Dynamic height based on viewport */
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 1rem; /* Add space for scrollbar */
 }
 
 .notification-card {
-    transition: transform 0.2s;
+    transition: all 0.2s ease-in-out;
+    margin-bottom: 1rem;
+    width: 100%;
 }
 
 .notification-card:hover {
     transform: translateX(5px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.notification-card .card {
+    margin: 0;
+    width: 100%;
 }
 
 .notification-icon {
     font-size: 1.5rem;
+    min-width: 40px; /* Added min-width */
     width: 40px;
     height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+    margin-right: 1rem;
 }
 
 .notification-icon.success {
@@ -84,22 +100,62 @@ body {
     box-shadow: var(--shadow, 0 1px 3px rgba(0,0,0,0.1));
 }
 
+/* Make content area more flexible */
+.notification-content {
+    flex: 1;
+    min-width: 0; /* Prevent content from forcing container to grow */
+    padding-right: 1rem;
+}
+
+.notification-content p {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .notification-wrapper {
-        padding: 1rem !important;
+        padding: 0.5rem 1rem;
+    }
+    
+    .notification-container {
+        max-height: calc(100vh - 150px);
     }
     
     .notification-icon {
         font-size: 1.25rem;
         width: 35px;
         height: 35px;
+        min-width: 35px;
     }
     
-    .notification-title {
-        font-size: 1rem;
+    .notification-content {
+        padding-right: 0.5rem;
     }
     
-    .notification-text {
-        font-size: 0.85rem;
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
     }
+}
+
+/* Custom scrollbar styling */
+.notification-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notification-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.notification-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.notification-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

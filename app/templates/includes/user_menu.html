@@ -8,6 +8,14 @@
         <li><a class="dropdown-item text-dark" href="/user_profile">
             <i class="bi bi-person me-2"></i>Edit Account
         </a></li>
+        <li>
+            <a class="dropdown-item text-dark" href="/notifications">
+                <i class="bi bi-bell me-2"></i>Notifications
+                {% if notifications > 0 %}
+                    <span class="badge bg-danger ms-2">{{ notifications }}</span>
+                {% endif %}
+            </a>
+        </li>
 
         {% if not is_admin %}
         <li><a class="dropdown-item text-dark" href="/company_register">
@@ -20,12 +28,6 @@
 
         {% if is_admin %}
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-dark" href="/notifications">
-            <i class="bi bi-bell me-2"></i>Companies Notifications
-            {% if pending_companies_count > 0 %}
-                <span class="badge bg-danger">{{ pending_companies_count }}</span>
-            {% endif %}
-        </a></li>
         <li><a class="dropdown-item text-dark" href="/admin/users">
             <i class="bi bi-person-x me-2"></i>Manage Users
         </a></li>
@@ -36,9 +38,6 @@
 
         {% if is_company_admin %}
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-dark" href="/company_admin/notifications">
-            <i class="bi bi-building-x me-2"></i>Notifications
-        </a></li>
         <li><a class="dropdown-item text-dark" href="/company_admin/company">
             <i class="bi bi-bell me-2"></i>Manage Company
             <span class="badge bg-danger">3</span>

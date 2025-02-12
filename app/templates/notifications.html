@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="static/notifications.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <!-- Left section -->
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                    </a>
+                    <a class="navbar-brand mb-0" href="/">
+                        Sustainable Food Supply Chain
+                    </a>
+                </div>
+        
+                <!-- Center section -->
+                <form class="d-flex justify-content-center flex-grow-1 mx-4" style="max-width: 500px;" action="/search_companies" method="GET">
+                    <input class="form-control me-2" type="search" placeholder="Search companies..." name="query">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                </form>
+
+                <!-- Right section -->
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                        {% include 'includes/user_menu.html' %}
+                    {% else %}
+                        <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                        <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+    {% if is_admin %}
+    <div class="notification-wrapper p-3">
+        <div class="notification-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="m-0">Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
+        </div>
+        <div class="notification-container">
+            {% if notifications_info %}
+                {% for notification in notifications_info %}
+                <div class="notification-card mb-3" role="alert" data-notification-id="{{ notification.id_notification }}" data-company-id="{{ notification.company_id }}">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                {% if notification.type == 'company_registration' %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="notification-icon info me-3">
+                                            <i class="bi bi-building"></i>
+                                        </div>
+                                        <div class="notification-content flex-grow-1" style="cursor: pointer;" onclick="window.location.href='/information_company/{{ notification.company_id }}'">
+                                            <h6 class="notification-title mb-1">New Company Registration Request</h6>
+                                            <p class="notification-text mb-1">New company registration for {{ notification.company_name }} has been requested from: {{ notification.sender_email }}</p>
+                                            <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                        </div>
+                                        <div class="d-flex">
+                                            <button class="btn btn-success btn-sm me-2 approve-btn" data-company-id="{{ notification.company_id }}">
+                                                <i class="bi bi-check-lg"></i> Approve
+                                            </button>
+                                            <button class="btn btn-danger btn-sm reject-btn" data-company-id="{{ notification.company_id }}">
+                                                <i class="bi bi-x-lg"></i> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                {% if notification.type == 'company_elimination' %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="notification-icon danger me-3">
+                                            <i class="bi bi-trash"></i>
+                                        </div>
+                                        <div class="notification-content flex-grow-1">
+                                            <h6 class="notification-title mb-1">New Company Elimination Requested</h6>
+                                            <p class="notification-text mb-1">The company {{ notification.company_name }} wants to be removed from the platform, request by {{ notification.sender_email }}</p>
+                                            <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                        </div>
+                                        <div class="d-flex">
+                                            <button class="btn btn-success btn-sm me-2 approve-elimination-btn" data-company-id="{{ notification.company_id }}">
+                                                <i class="bi bi-check-lg"></i> Approve
+                                            </button>
+                                            <button class="btn btn-danger btn-sm reject-elimination-btn" data-company-id="{{ notification.company_id }}">
+                                                <i class="bi bi-x-lg"></i> Reject
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    You have no notifications at this time.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Event handlers for company registration notifications
+    document.querySelectorAll('.approve-btn').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const companyId = this.getAttribute('data-company-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            
+            try {
+                const response = await fetch(`/admin/notification/${notificationId}/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: 'approve' })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    removeNotification(notificationCard);
+                } else {
+                    alert(data.error || 'Failed to approve company');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to approve company');
+            }
+        });
+    });
+
+    // Event handlers for company elimination notifications
+    document.querySelectorAll('.approve-elimination-btn').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const companyId = this.getAttribute('data-company-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            
+            if (confirm('Are you sure you want to eliminate this company? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/admin/notification/${notificationId}/process`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ action: 'eliminate' })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        removeNotification(notificationCard);
+                    } else {
+                        alert(data.error || 'Failed to eliminate company');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to eliminate company');
+                }
+            }
+        });
+    });
+});
+
+function updateNotificationCount() {
+    // Aggiorna il contatore principale
+    const badge = document.querySelector('.badge');
+    const currentCount = parseInt(badge.textContent);
+    const newCount = Math.max(0, currentCount - 1); // Previene numeri negativi
+    badge.textContent = newCount;
+    
+    // Aggiorna il contatore nel menu utente
+    const userMenuBadge = document.querySelector('.user-menu-notifications');
+    if (userMenuBadge) {
+        userMenuBadge.textContent = newCount;
+        if (newCount === 0) {
+            userMenuBadge.style.display = 'none';
+        }
+    }
+
+    // Aggiorna il contenuto della pagina
+    if (newCount === 0) {
+        const container = document.querySelector('.notification-container');
+        // Animazione di dissolvenza
+        container.style.transition = 'opacity 0.3s ease';
+        container.style.opacity = '0';
+        
+        setTimeout(() => {
+            container.innerHTML = `
+                <div class="alert alert-info" role="alert">
+                    You have no notifications at this time.
+                </div>
+            `;
+            container.style.opacity = '1';
+        }, 300);
+    }
+
+    // Aggiorna il titolo della sezione
+    const notificationHeader = document.querySelector('.notification-header h4');
+    if (notificationHeader) {
+        notificationHeader.innerHTML = `Notifications <span class="badge bg-primary">${newCount}</span>`;
+    }
+}
+
+// Funzione per rimuovere una notifica con animazione
+function removeNotification(notificationCard) {
+    notificationCard.style.transition = 'all 0.3s ease';
+    notificationCard.style.opacity = '0';
+    notificationCard.style.transform = 'translateX(20px)';
+    
+    setTimeout(() => {
+        notificationCard.style.maxHeight = '0';
+        notificationCard.style.margin = '0';
+        notificationCard.style.padding = '0';
+        
+        setTimeout(() => {
+            notificationCard.remove();
+            updateNotificationCount();
+        }, 300);
+    }, 300);
+}
+
+
+    </script>
+
+    {% elif is_company_admin %}
+    <div class="notification-wrapper p-3">
+        <div class="notification-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="m-0">Notifications <span class="badge bg-primary">{{ notification }}</span></h4>
+        </div>
+        <div class="notification-container">
+        {% if notifications_info %}
+            {% for notification in notifications_info %}
+            <div class="notification-card info mb-3" role="alert" data-company-id="{{ company.company_id }}">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                    {% if notification.type == 'company_invitation' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon warning me-3">
+                                    <i class="bi bi-envelope"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1" style="cursor: pointer;" onclick="window.location.href='/information_company/{{ company.company_id }}'">
+                                    <h6 class="notification-title mb-1">Company Invitation</h6>
+                                    <p class="notification-text mb-1">You have been invited to join {{ company.company_name }}</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="btn btn-success btn-sm me-2 accept-invite" data-notification-id="{{ notification.id_notifications }}">
+                                        Accept
+                                    </button>
+                                    <button class="btn btn-danger btn-sm reject-invite" data-notification-id="{{ notification.id_notifications }}">
+                                        Reject
+                                    </button>
+                                </div>
+                            </div>
+                        {% elif notification.type == 'acception registration company' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1">
+                                <h6 class="notification-title mb-1">Request Accepted</h6>
+                                <p class="notification-text mb-1">Your company registration has been approved</p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+                        {% elif notification.type == 'rejection registration company' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1">
+                                <h6 class="notification-title mb-1">Request Accepted</h6>
+                                <p class="notification-text mb-1">Your company registration has been rejected</p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+                        {% elif notification.type == 'acception elimination company' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1">
+                                <h6 class="notification-title mb-1">Request Accepted</h6>
+                                <p class="notification-text mb-1">Your company elimination has been approved</p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+                        {% elif notification.type == 'rejection elimination company' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1">
+                                <h6 class="notification-title mb-1">Request Accepted</h6>
+                                <p class="notification-text mb-1">Your company elimination has been rejected</p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+
+                        {% elif notification.type == 'acception' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon success me-3">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1">
+                                    <h6 class="notification-title mb-1">Request Accepted</h6>
+                                    <p class="notification-text mb-1">Your invite has been accepted from {{ notification.sender_email }}</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                            </div>
+
+                        {% elif notification.type == 'rejection' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon danger me-3">
+                                    <i class="bi bi-x-circle"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1">
+                                    <h6 class="notification-title mb-1">Request Rejected</h6>
+                                    <p class="notification-text mb-1">Your invite has been rejected from {{ notification.sender_email}}</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                            </div>
+
+                        {% elif notification.type == 'system_notification' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon primary me-3">
+                                    <i class="bi bi-bell"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1">
+                                    <h6 class="notification-title mb-1">System Notification</h6>
+                                    <p class="notification-text mb-1"> System Message</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                            </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                You have no notifications at this time.
+            </div>
+        {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formatta tutte le date
+            document.querySelectorAll('.created-date').forEach(dateElement => {
+                const date = new Date(dateElement.textContent);
+                const options = { 
+                    month: 'long', 
+                    day: 'numeric', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                dateElement.textContent = date.toLocaleDateString('en-US', options);
+            });
+
+            // Gestione approvazione
+            document.querySelectorAll('.approve-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const companyId = this.getAttribute('data-company-id');
+                    approveCompany(companyId);
+                });
+            });
+        
+            // Gestione rifiuto
+            document.querySelectorAll('.reject-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const companyId = this.getAttribute('data-company-id');
+                    if (confirm('Are you sure you want to reject this company?')) {
+                        rejectCompany(companyId);
+                    }
+                });
+            });
+        });
+        
+        function approveCompany(companyId) {
+            fetch(`/approve_company/${companyId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const element = document.querySelector(`[data-company-id="${companyId}"]`);
+                    if (element) {
+                        element.remove();
+                        updateNotificationCount();
+                    }
+                } else {
+                    alert(data.error || 'Failed to approve company');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to approve company');
+            });
+        }
+        
+        function rejectCompany(companyId) {
+            fetch(`/reject_company/${companyId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const element = document.querySelector(`[data-company-id="${companyId}"]`);
+                    if (element) {
+                        element.remove();
+                        updateNotificationCount();
+                    }
+                } else {
+                    alert(data.error || 'Failed to reject company');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to reject company');
+            });
+        }
+        
+        function updateNotificationCount() {
+            const badge = document.querySelector('.badge');
+            let count = parseInt(badge.textContent) - 1;
+            badge.textContent = count;
+        }
+    </script>
+    
+    {% else %}
+    <div class="notification-wrapper p-3">
+        <div class="notification-header d-flex justify-content-between align-items-center mb-4">
+            <h4 class="m-0">Your Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
+        </div>
+        <div class="notification-container">
+            {% if notifications_info %}
+                {% for notification in notifications_info %}
+                    <div class="notification-card mb-3" role="alert">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                {% if notification.type == 'company_invitation' %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="notification-icon warning me-3">
+                                            <i class="bi bi-envelope"></i>
+                                        </div>
+                                        <div class="notification-content flex-grow-1">
+                                            <h6 class="notification-title mb-1">Company Invitation</h6>
+                                            <p class="notification-text mb-1">You have been invited to join a company</p>
+                                            <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                        </div>
+                                        <div class="d-flex">
+                                            <button class="btn btn-success btn-sm me-2 accept-invite" data-notification-id="{{ notification.id_notifications }}">
+                                                Accept
+                                            </button>
+                                            <button class="btn btn-danger btn-sm reject-invite" data-notification-id="{{ notification.id_notifications }}">
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                {% elif notification.type == 'system_notification' %}
+                                    <div class="d-flex align-items-center">
+                                        <div class="notification-icon primary me-3">
+                                            <i class="bi bi-bell"></i>
+                                        </div>
+                                        <div class="notification-content flex-grow-1">
+                                            <h6 class="notification-title mb-1">System Notification</h6>
+                                            <p class="notification-text mb-1">{{ notification.message }}</p>
+                                            <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    You have no notifications at this time.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Event handlers for company registration notifications
+    document.querySelectorAll('.accept-invite').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const companyId = this.getAttribute('data-company-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            
+            try {
+                const response = await fetch(`/admin/notification/${notificationId}/process`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: 'approve' })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    removeNotification(notificationCard);
+                } else {
+                    alert(data.error || 'Failed to approve company');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to approve company');
+            }
+        });
+    });
+
+    // Event handlers for company elimination notifications
+    document.querySelectorAll('.approve-elimination-btn').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const companyId = this.getAttribute('data-company-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            
+            if (confirm('Are you sure you want to eliminate this company? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/admin/notification/${notificationId}/process`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ action: 'eliminate' })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        removeNotification(notificationCard);
+                    } else {
+                        alert(data.error || 'Failed to eliminate company');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to eliminate company');
+                }
+            }
+        });
+    });
+});
+
+function updateNotificationCount() {
+    // Aggiorna il contatore principale
+    const badge = document.querySelector('.badge');
+    const currentCount = parseInt(badge.textContent);
+    const newCount = Math.max(0, currentCount - 1); // Previene numeri negativi
+    badge.textContent = newCount;
+    
+    // Aggiorna il contatore nel menu utente
+    const userMenuBadge = document.querySelector('.user-menu-notifications');
+    if (userMenuBadge) {
+        userMenuBadge.textContent = newCount;
+        if (newCount === 0) {
+            userMenuBadge.style.display = 'none';
+        }
+    }
+
+    // Aggiorna il contenuto della pagina
+    if (newCount === 0) {
+        const container = document.querySelector('.notification-container');
+        // Animazione di dissolvenza
+        container.style.transition = 'opacity 0.3s ease';
+        container.style.opacity = '0';
+        
+        setTimeout(() => {
+            container.innerHTML = `
+                <div class="alert alert-info" role="alert">
+                    You have no notifications at this time.
+                </div>
+            `;
+            container.style.opacity = '1';
+        }, 300);
+    }
+
+    // Aggiorna il titolo della sezione
+    const notificationHeader = document.querySelector('.notification-header h4');
+    if (notificationHeader) {
+        notificationHeader.innerHTML = `Notifications <span class="badge bg-primary">${newCount}</span>`;
+    }
+}
+
+// Funzione per rimuovere una notifica con animazione
+function removeNotification(notificationCard) {
+    notificationCard.style.transition = 'all 0.3s ease';
+    notificationCard.style.opacity = '0';
+    notificationCard.style.transform = 'translateX(20px)';
+    
+    setTimeout(() => {
+        notificationCard.style.maxHeight = '0';
+        notificationCard.style.margin = '0';
+        notificationCard.style.padding = '0';
+        
+        setTimeout(() => {
+            notificationCard.remove();
+            updateNotificationCount();
+        }, 300);
+    }, 300);
+}
+</script>
+
+</body>
+</html>

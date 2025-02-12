@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, session
 from app.controllers import company_controller, user_controller
 from app.routes.auth_routes import get_user_info
 from werkzeug.utils import secure_filename
@@ -22,12 +22,20 @@ def validate_file_size(file):
 
 @bp.route('/company_register', methods=['GET', 'POST'])
 def company_register():
-    user_id, user, is_admin, is_company_admin, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
     if not user_id:
         return redirect(url_for('auth.login'))
     
     if request.method == 'POST':
         try:
+            if 'id' not in session:
+                return jsonify({'success': False, 'error': 'User not authenticated'})
+
+            # Get user email for notification
+            user = user_controller.get_user_by_id(session['id'])
+            if not user:
+                return jsonify({'success': False, 'error': 'User not found'})
+
             # Extract form data
             company_data = {
                 'company_name': request.form['companyName'],
@@ -39,7 +47,8 @@ def company_register():
                 'company_address': request.form['address'],
                 'company_description': request.form['description'],
                 'company_website': request.form.get('website'),
-                'company_image': request.files.get('logo') if 'logo' in request.files else None
+                'company_image': request.files.get('logo') if 'logo' in request.files else None,
+                'sender_email': user['email']  # Add sender email
             }
 
             # Validate company name
@@ -74,11 +83,11 @@ def company_register():
                 'error': 'An unexpected error occurred'
             })
 
-    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, pending_companies_count=pending_companies_count)
+    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications = notifications, pending_companies_count=pending_companies_count)
 
 @bp.route('/search_companies', methods=['GET'])
 def search_companies():
-    user_id, user, is_admin, is_company_admin, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
     search_query = request.args.get('query', '').strip()
     
     try:
@@ -97,7 +106,7 @@ def search_companies():
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
                              search_query=search_query,
-                             pending_companies_count=pending_companies_count)
+                             notifications = notifications,)
     except Exception as e:
         print(f"Error in search: {e}")
         return render_template('search_companies.html', 
@@ -105,11 +114,12 @@ def search_companies():
                              user_id=user_id, 
                              user=user, 
                              is_admin=is_admin, 
-                             is_company_admin=is_company_admin)
+                             is_company_admin=is_company_admin,
+                             notifications = notifications)
 
 @bp.route('/information_company/<int:company_id>')
 def information_company(company_id):
-    user_id, user, is_admin, is_company_admin, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
     
     company = company_controller.get_company_by_id(company_id)
     if company is None:
@@ -125,7 +135,7 @@ def information_company(company_id):
                          user=user,
                          is_admin=is_admin,
                          is_company_admin=is_company_admin,
-                         pending_companies_count=pending_companies_count)
+                         notifications = notifications)
 
 @bp.route('/get_countries', methods=['GET'])
 def get_countries():
