@@ -590,12 +590,61 @@ def get_employees_by_companies(excluded_user_id):
             return []
 
         # Ottieni tutti gli user_id delle persone associate alle compagnie (escludendo te stesso)
-        response = supabase.table('company_employe').select('user_id').in_('company_id', company_ids).neq('user_id', excluded_user_id).execute()
+        response = supabase.table('company_employe').select('user_id', 'company_id').in_('company_id', company_ids).neq('user_id', excluded_user_id).execute()
 
         if len(response.data) > 0:
-            # Restituisci la lista degli user_id delle persone nelle compagnie
-            return [user['user_id'] for user in response.data]
+            employees = []
+            for record in response.data:
+                user_id = record['user_id']
+                company_id = record['company_id']
+
+                # Recupera i dettagli dell'utente dalla tabella 'user'
+                user_response = supabase.table('user').select('name', 'surname', 'phone_number', 'email').eq('id', user_id).execute()
+                if user_response.data:
+                    user_details = user_response.data[0]  # Dettagli utente
+                    user_details['id'] = user_id  # Aggiungi user_id ai dettagli
+
+                    # Recupera il nome della compagnia dalla tabella 'companies'
+                    company_response = supabase.table('companies').select('company_name').eq('company_id', company_id).execute()
+                    if company_response.data:
+                        company_name = company_response.data[0]['company_name']
+                        user_details['company_name'] = company_name  # Aggiungi il nome della compagnia
+
+                        employees.append(user_details)
+
+            return employees
+
         return []
     except Exception as e:
         print(f"Error getting employees by companies: {e}")
+        return []
+
+def get_companies_information_by_user_id(user_id):
+    try:
+        # Ottieni tutti gli ID delle aziende a cui l'utente è associato
+        company_ids = get_companies_by_user_id(user_id)
+        
+        if not company_ids:
+            return []
+
+        # Recupera le informazioni complete delle aziende usando gli ID
+        response = supabase.table('companies').select('*').in_('company_id', company_ids).execute()
+        
+        if response.data:
+            return response.data  # Restituisce una lista di dizionari con le informazioni delle aziende
+        
+        return []
+    
+    except Exception as e:
+        print(f"Error getting company information by user_id: {e}")
+        return []
+
+def get_all_user_emails():
+    try:
+        response = supabase.table('user').select('email').execute()
+        if response.data:
+            return [user['email'] for user in response.data]  # Restituisce una lista di email
+        return []
+    except Exception as e:
+        print(f"Error getting all user emails: {e}")
         return []

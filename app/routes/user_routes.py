@@ -88,19 +88,54 @@ def accept_invitation(notification_id, action):
         print(f"Error handling invitation: {e}")
         return jsonify({'success': False, 'error': 'An error occurred'})
 
-
 @bp.route('/manage_employee', methods=['GET', 'POST'])
 def manage_employee():
+    # Ottieni informazioni sull'utente
     user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
-    companies= user_controller.get_companies_by_user_id(user_id)
 
+    # Verifica se l'utente è autenticato
     if not user_id:
         return redirect(url_for('login'))
-    if is_company_admin:
-        unique_company_admin=user_controller.is_unique_company_admin(user_id)
-        unique_admin=user_controller.get_company_ids_where_user_is_unique_admin(user_id)
-        
-        return render_template('manage_employee.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, unique_company_admin=unique_company_admin, companies=companies, unique_admin=unique_admin, pending_companies_count=pending_companies_count)
-    
-    return render_template('manage_employee.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, companies=companies, pending_companies_count=pending_companies_count)
 
+    # Ottieni le company_id per l'utente
+    companies = user_controller.get_companies_by_user_id(user_id)
+    info_company=user_controller.get_companies_information_by_user_id(user_id)
+
+    print(companies)
+    print(info_company)
+
+    # Se l'utente è un amministratore di una compagnia
+    if is_company_admin:
+        unique_company_admin = user_controller.is_unique_company_admin(user_id)
+        unique_admin = user_controller.get_company_ids_where_user_is_unique_admin(user_id)
+
+        # Ottieni i dettagli degli employee per le compagnie dell'utente
+        employees = user_controller.get_employees_by_companies(user_id)
+        email=user_controller.get_all_user_emails()
+
+        # Passa tutte le informazioni alla template
+        return render_template('manage_employee.html', 
+                               user_id=user_id, 
+                               user=user, 
+                               is_admin=is_admin, 
+                               is_company_admin=is_company_admin, 
+                               unique_company_admin=unique_company_admin, 
+                               companies=companies, 
+                               unique_admin=unique_admin, 
+                               pending_companies_count=pending_companies_count,
+                               employees=employees,
+                               info_company=info_company,
+                               email=email,
+                               notifications=notifications)  # Aggiungi la lista degli employee
+
+    # Se non è amministratore di una compagnia, solo le informazioni di base
+    return render_template('manage_employee.html', 
+                           user_id=user_id, 
+                           user=user, 
+                           is_admin=is_admin, 
+                           is_company_admin=is_company_admin, 
+                           companies=companies, 
+                           pending_companies_count=pending_companies_count,
+                           info_company=info_company,
+                           email=email,
+                           notifications=notifications)

@@ -22,7 +22,6 @@
                         Sustainable Food Supply Chain
                     </a>
                 </div>
-        
 
                 <!-- Right section -->
                 <div class="d-flex align-items-center">
@@ -66,28 +65,24 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>John Doe</td>
-                                        <td>john@example.com</td>
-                                        <td>Engineering</td>
-                                        <td>2023-01-15</td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Jane Smith</td>
-                                        <td>jane@example.com</td>
-                                        <td>Marketing</td>
-                                        <td>2023-02-20</td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                                    {% for employee in employees %}
+                                        <tr>
+                                            <td>{{ employee.name }}</td>
+                                            <td>{{ employee.surname }}</td>
+                                            <td>{{ employee.company_name }}</td>
+                                            <td>{{ employee.email }}</td>
+                                            <td>{{ employee.phone_number }}</td>
+                                            <td>
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">No employees found for your companies.</td>
+                                        </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
@@ -95,7 +90,7 @@
                 </div>
             </div>
         </div>
-    
+        
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card">
@@ -104,6 +99,23 @@
                     </div>
                     <div class="card-body">
                         <form id="inviteForm" class="needs-validation" novalidate>
+                            <!-- Selezione dell'azienda -->
+                            <!-- Selezione dell'azienda -->
+                            <div class="mb-3">
+                                <label for="company" class="form-label">Select Company</label>
+                                <select class="form-select" id="company" required>
+                                    <option value="" disabled selected>Choose a company</option>
+                                    {% for company in info_company %}
+                                        <option value="{{ company.company_id }}">{{ company.company_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a company.
+                                </div>
+                            </div>
+
+        
+                            <!-- Email dell'employee -->
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="email" required>
@@ -111,6 +123,7 @@
                                     Please provide a valid email.
                                 </div>
                             </div>
+        
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="bi bi-envelope-plus"></i> Send Invitation
                             </button>
@@ -119,68 +132,53 @@
                 </div>
             </div>
         </div>
-         <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Confirm Deletion</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete this employee?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
+        
 
-    <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">Confirm Deletion</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete this employee?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger">Delete</button>
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Confirm Deletion</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this employee?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger">Delete</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
     
     <footer class="bg-dark text-light py-4">
         <div class="container">
-        <div class="row">
-        <div class="col-md-4">
-        <h5>Farm Fresh Market</h5>
-        <p>Connecting farmers and consumers directly</p>
-        </div>
-        <div class="col-md-4">
-        <h5>Quick Links</h5>
-        <ul class="list-unstyled">
-        <li><a href="#" class="text-light">About Us</a></li>
-        <li><a href="#" class="text-light">Products</a></li>
-        <li><a href="#" class="text-light">Contact</a></li>
-        </ul>
-        </div>
-        <div class="col-md-4">
-        <h5>Follow Us</h5>
-        <div class="social-icons">
-        <i class="bi bi-facebook me-2"></i>
-        <i class="bi bi-twitter-x me-2"></i>
-        <i class="bi bi-instagram"></i>
-        </div>
-        </div>
-        </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Farm Fresh Market</h5>
+                    <p>Connecting farmers and consumers directly</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">About Us</a></li>
+                        <li><a href="#" class="text-light">Products</a></li>
+                        <li><a href="#" class="text-light">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <div class="social-icons">
+                        <i class="bi bi-facebook me-2"></i>
+                        <i class="bi bi-twitter-x me-2"></i>
+                        <i class="bi bi-instagram"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
