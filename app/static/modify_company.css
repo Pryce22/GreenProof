@@ -1,0 +1,125 @@
+:root {
+    --primary: #0d6efd;
+    --primary-foreground: #ffffff;
+    --secondary: #6c757d;
+    --secondary-foreground: #ffffff;
+    --background: #f8f9fa;
+    --foreground: #212529;
+    --card: #ffffff;
+    --card-foreground: #212529;
+    --border: #dee2e6;
+    --input: #ced4da;
+    --ring: #0d6efd;
+    }
+    
+
+    body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    
+    .card {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-color: var(--border);
+    }
+
+    .card-header {
+    background-color: #000000;  /* Nero */
+    color: #ffffff;             /* Bianco */
+}
+    
+    .company-logo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    }
+    
+    .form-control:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    
+    .input-group .btn-outline-secondary {
+    border-color: var(--input);
+    }
+    
+    .input-group .btn-outline-secondary:hover {
+    background-color: var(--secondary);
+    color: var(--secondary-foreground);
+    }
+    
+    .modal-content {
+    background-color: var(--card);
+    }
+    
+    .btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+    }
+    
+    .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    }
+    
+    .card-header {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    }
+
+    #companyDescriptionInput {
+        max-height: 200px; /* Limita l'altezza del campo di testo */
+        overflow-y: auto;  /* Aggiunge la barra di scorrimento verticale se il testo supera l'altezza */
+        resize: vertical;  /* Permette di ridimensionare il campo solo in verticale */
+    }
+
+    
+    
+    
+    @media (max-width: 768px) {
+    .company-logo {
+    width: 120px;
+    height: 120px;
+    }
+    }
+    
+
+#about img {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .card {
+    transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+    transform: translateY(-5px);
+    }
+    
+    .social-icons i {
+    font-size: 1.5rem;
+    cursor: pointer;
+    }
+    
+    .social-icons i:hover {
+    color: var(--primary);
+    }
+    
+    @media (max-width: 768px) {
+    .carousel-caption h1 {
+    font-size: 2rem;
+    }
+    
+    .hero-section {
+    height: 400px;
+    }
+    
+    .hero-section .carousel-item {
+    height: 400px;
+    }
+    }
+

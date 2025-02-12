@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Details Edit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link href="/static/modify_company.css" rel="stylesheet">
+</head>
+
+<header class="sticky-top">
+    <nav class="navbar navbar-expand-lg bg-light navbar-light">
+        <div class="container-fluid px-4">
+            <div class="d-flex align-items-center">
+                <a href="/" class="nav-link p-0 me-2">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                </a>
+                <a class="navbar-brand mb-0" href="/">Sustainable Food Supply Chain</a>
+            </div>
+            <div class="d-flex align-items-center">
+                {% if user_id %}
+                    {% include 'includes/user_menu.html' %}
+                {% else %}
+                    <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                    <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+</header>
+
+<body>
+    <div class="container py-5">
+        <div class="card shadow-sm">
+            <div class="card-header" style="background-color: #ffffff; color: #0d6efd;">
+                <h4 class="mb-0">Edit Company Details</h4>
+            </div>
+            
+            <div class="card-body">
+                <form id="companyEditForm">
+                    <div class="row mb-4">
+                        <!-- Colonna con il Logo -->
+                        <div class="col-md-3">
+                            <div class="text-center mb-3">
+                                <img id="companyLogo" src="{{ company.company_image }}" class="rounded-circle company-logo img-fluid" alt="Company Logo">
+                                <div class="mt-2">
+                                    <label class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-camera"></i> Change Logo
+                                        <input type="file" class="d-none" accept=".jpg,.png,.gif" required id="logoInput">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Colonna con i dettagli -->
+                        <div class="col-md-9">
+                            <div class="mb-3">
+                                <label class="form-label">Company Name</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" value="{{ company.company_name }}" required id="companyNameInput" disabled>
+                                    <button class="btn btn-outline-secondary" type="button" id="editCompanyNameBtn">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                            </div>
+    
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <div class="input-group">
+                                        <input type="tel" class="form-control" value="{{ company.company_phone_number }}" required id="companyPhoneInput" disabled>
+                                        <button class="btn btn-outline-secondary" type="button" id="editPhoneBtn">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" value="{{ company.company_email }}" required id="companyEmailInput" disabled>
+                                        <button class="btn btn-outline-secondary" type="button" id="editEmailBtn">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <!-- Nuova riga con Industry e Website sotto Email e Phone -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Industry</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="companyIndustrySelect" disabled>
+                                            <option selected>{{ company.company_industry }}</option>
+                                            <!-- Opzioni dinamiche -->
+                                        </select>
+                                        <button class="btn btn-outline-secondary" type="button" id="editIndustryBtn">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Website</label>
+                                    <div class="input-group">
+                                        <input type="url" class="form-control" value="{{ company.company_website }}" id="companyWebsiteInput" disabled>
+                                        <button class="btn btn-outline-secondary" type="button" id="editWebsiteBtn">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>  
+                        
+<!--
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Country</label>
+                        <div class="input-group">
+                            <select class="form-select" id="companyCountrySelect" name="company_country" required>
+                                <option value="{{ company.company_country }}" selected>{{ company.company_country }}</option>
+                            </select>
+                            <button class="btn btn-outline-secondary" type="button" id="editCountryBtn">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">City</label>
+                        <div class="input-group">
+                            <select class="form-select" id="companyCityInput" name="company_city" required>
+                                <option value="{{ company.company_city }}" selected>{{ company.company_city }}</option>
+                            </select>
+                            <button class="btn btn-outline-secondary" type="button" id="editCityBtn">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Address</label>
+                    <div class="input-group">
+                        <textarea class="form-control" rows="2" id="companyAddressInput" disabled>{{ company.company_address }}</textarea>
+                        <button class="btn btn-outline-secondary" type="button" id="editAddressBtn">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                </div>
+                -->
+
+                <div class="mb-3">
+                    <label class="form-label">Company Description</label>
+                    <div class="input-group">
+                        <textarea class="form-control" rows="4" id="companyDescriptionInput" maxlength="1500" disabled>{{ company.company_description }}</textarea>
+                        <button class="btn btn-outline-secondary" type="button" id="editDescriptionBtn">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                    <div class="char-count text-end">
+                        <small><span id="currentCount">{{ company.company_description|length }}</span>/1500</small>
+                    </div>
+                </div>
+                
+                
+                
+                
+                <div class="text-end mt-4">
+                    <a type="button" class="btn btn-outline-secondary me-2" href="/companies_of_administrator">Cancel</a>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmModal">Save Changes</button>
+                </div>
+            </div>
+        </div> 
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Confirm Changes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to save these changes?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modalConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pop-up success message -->
+<div id="successPopup" class="modal fade" tabindex="-1" aria-labelledby="successPopupLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successPopupLabel">Modifica completata</h5>
+            </div>
+            <div class="modal-body">
+                <p>Le modifiche sono state salvate! Saranno visibili a breve.</p>
+            </div>
+            <div class="modal-footer">
+                <!-- Pulsante OK per chiudere il pop-up -->
+                <button type="button" class="btn btn-primary" id="okButton">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<footer class="bg-dark text-light py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Farm Fresh Market</h5>
+                <p>Connecting farmers and consumers directly</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-light">About Us</a></li>
+                    <li><a href="#" class="text-light">Products</a></li>
+                    <li><a href="#" class="text-light">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Follow Us</h5>
+                <div class="social-icons">
+                    <i class="bi bi-facebook me-2"></i>
+                    <i class="bi bi-twitter-x me-2"></i>
+                    <i class="bi bi-instagram"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function toggleEdit(id) {
+        var inputField = document.getElementById(id);
+        var isDisabled = inputField.disabled;
+        inputField.disabled = !isDisabled;
+        if (!isDisabled) inputField.focus();
+    }
+
+    document.getElementById('editCompanyNameBtn').addEventListener('click', function() {
+        toggleEdit('companyNameInput');
+    });
+    document.getElementById('editPhoneBtn').addEventListener('click', function() {
+        toggleEdit('companyPhoneInput');
+    });
+    document.getElementById('editEmailBtn').addEventListener('click', function() {
+        toggleEdit('companyEmailInput');
+    });
+    document.getElementById('editWebsiteBtn').addEventListener('click', function() {
+        toggleEdit('companyWebsiteInput');
+    });
+
+    document.getElementById('editDescriptionBtn').addEventListener('click', function() {
+        toggleEdit('companyDescriptionInput');
+    });
+</script>
+
+<script>
+    // JavaScript per rimuovere la selezione corrente dalle opzioni
+    function populateIndustryOptions() {
+    const selectedIndustry = "{{ company.company_industry }}".toLowerCase(); // Normalizza il valore del database
+    const industryOptions = ["Transporter", "Manufacturer", "Processor", "Retailer"];
+    const industrySelect = document.getElementById('companyIndustrySelect');
+
+    // Pulisce il select rimuovendo tutte le opzioni esistenti
+    industrySelect.innerHTML = "";
+
+    // Aggiungi l'opzione selezionata come primo valore visibile
+    const selectedOptionElement = document.createElement("option");
+    selectedOptionElement.textContent = selectedIndustry.charAt(0).toUpperCase() + selectedIndustry.slice(1);
+    selectedOptionElement.value = selectedIndustry.charAt(0).toUpperCase() + selectedIndustry.slice(1);
+    selectedOptionElement.selected = true;
+    industrySelect.appendChild(selectedOptionElement);
+
+    // Filtra e aggiungi le altre opzioni, evitando duplicati
+    industryOptions.filter(option => option.toLowerCase() !== selectedIndustry).forEach(option => {
+        const optionElement = document.createElement("option");
+        optionElement.textContent = option;
+        optionElement.value = option;
+        industrySelect.appendChild(optionElement);
+    });
+}
+
+
+
+    // Popola le opzioni all'inizio
+    populateIndustryOptions();
+
+    // Gestire la modifica dei campi
+    function toggleEdit(fieldId) {
+        const field = document.getElementById(fieldId);
+        field.disabled = !field.disabled;
+    }
+
+    document.getElementById('editIndustryBtn').addEventListener('click', function() {
+        toggleEdit('companyIndustrySelect');
+    });
+</script>
+
+
+<script>
+    const company_id = "{{ company['company_id'] }}";
+    document.addEventListener("DOMContentLoaded", function () {
+    const confirmBtn = document.getElementById("modalConfirmBtn");
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener("click", function () {
+            console.log("Confirm button clicked!");
+            submitForm();  // Funzione per inviare il form
+        });
+    } else {
+        console.log("modalConfirmBtn non trovato nel DOM");
+    }
+});
+
+
+function submitForm() {
+    const existingLogoUrl = "{{ company['company_image'] }}";
+    const formData = new FormData();
+    formData.append('company_name', document.getElementById('companyNameInput').value);
+    formData.append('company_phone_number', document.getElementById('companyPhoneInput').value);
+    formData.append('company_email', document.getElementById('companyEmailInput').value);
+    formData.append('company_industry', document.getElementById('companyIndustrySelect').value);
+    formData.append('company_website', document.getElementById('companyWebsiteInput').value);
+    formData.append('company_description', document.getElementById('companyDescriptionInput').value);
+
+    
+
+    // Aggiungi il file immagine se è presente
+    const logoInput = document.getElementById('logoInput');
+    if (logoInput.files && logoInput.files.length > 0) {
+    console.log("File selezionato:", logoInput.files[0]);
+    formData.append('company_logo', logoInput.files[0]);  // Aggiungi il file immagine selezionato
+} else {
+    // Nessun file selezionato, usa il logo esistente
+    if (existingLogoUrl && existingLogoUrl !== "") {
+        console.log("Usando il logo esistente:", existingLogoUrl);
+        formData.append('company_logo', existingLogoUrl);  // Aggiungi il logo esistente
+    } else {
+        console.log("Nessun logo selezionato e nessun logo esistente.");
+        formData.append('company_logo', "");  // Se non c'è logo esistente, invia un valore vuoto
+    }
+}
+
+
+    // Invia la richiesta usando FormData
+    fetch(`/modify_company/${company_id}`, {
+        method: 'POST',
+        body: formData  // Non hai bisogno di 'Content-Type', FormData lo imposterà automaticamente
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            $('#confirmModal').modal('hide')
+            $('#successPopup').modal('show');
+
+
+            document.getElementById('okButton').addEventListener('click', function() {
+            // Chiude il pop-up
+            $('#successPopup').modal('hide');
+
+            // Redirige alla pagina delle aziende
+            window.location.href = '/companies_of_administrator';
+        })
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating company:', error);
+        alert('There was an error updating the company.');
+    });
+}
+
+
+ </script>
+
+ <script>
+  // Funzione per attivare o disattivare l'editing
+function toggleEditDescription() {
+    var descriptionInput = document.getElementById('companyDescriptionInput');
+    var isDisabled = descriptionInput.disabled;
+    descriptionInput.disabled = !isDisabled;
+
+    // Aggiungi la logica per il conteggio dei caratteri solo se il campo è abilitato
+    if (!isDisabled) {
+        descriptionInput.focus();
+    }
+}
+
+// Aggiungi il controllo dei caratteri mentre l'utente scrive nella textarea
+document.getElementById('companyDescriptionInput').addEventListener('input', function() {
+    var currentLength = this.value.length;
+    document.getElementById('currentCount').textContent = currentLength;
+});
+
+    </script>
+ 
+
+<script>
+    document.getElementById('logoInput').addEventListener('change', function(event) {
+        var file = event.target.files[0];
+        
+        if (file) {
+            var reader = new FileReader();
+
+            reader.onload = function(e) {
+                // Imposta la nuova immagine come fonte del logo
+                document.getElementById('companyLogo').src = e.target.result;
+            }
+
+            // Leggi il file come URL di base64
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>    
+
+</body>
+</html>
