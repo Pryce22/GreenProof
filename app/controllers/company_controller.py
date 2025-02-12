@@ -172,15 +172,24 @@ def send_admin_notification(user_info, company_data):
 
 def upload_company_image(company_id, image_file):
     try:
-        # Read file content
-        file_content = image_file.read()
-        
-        # Generate unique filename using company_id and original extension
+        # Ottieni il nome originale e l'estensione del file
         original_filename = secure_filename(image_file.filename)
         file_extension = os.path.splitext(original_filename)[1]
         new_filename = f"company_{company_id}{file_extension}"
 
-        # Upload to Supabase Storage bucket
+        # Controlla se esiste già un'immagine per questa azienda e cancellala prima di caricare la nuova
+        existing_images = get_all_company_images()
+        existing_image_url = next((img for img in existing_images if f"company_{company_id}" in img), None)
+
+        if existing_image_url:
+            existing_filename = existing_image_url.split("/")[-1].split("?")[0]  # Estrai il nome del file esistente
+            supabase.storage.from_('company_logos').remove(existing_filename)  # Rimuove il file esistente
+            print(f"Deleted existing image: {existing_filename}")
+
+        # Leggi il contenuto del file
+        file_content = image_file.read()
+
+        # Carica il nuovo file su Supabase
         response = supabase.storage \
             .from_('company_logos') \
             .upload(
@@ -190,7 +199,7 @@ def upload_company_image(company_id, image_file):
             )
 
         if response:
-            # Get the public URL from Supabase
+            # Ottieni l'URL pubblico della nuova immagine
             public_url = supabase.storage \
                 .from_('company_logos') \
                 .get_public_url(new_filename)
@@ -205,16 +214,6 @@ def upload_company_image(company_id, image_file):
         print(f"Error uploading image: {e}")
         return None
 
-def get_company_name_by_id(company_id):
-    try:
-        response = supabase.from_('companies').select('company_name').eq('company_id', company_id).execute()
-        if response.data:
-            return response.data[0]['company_name']
-        return None
-    except Exception as e:
-        print(f"Error getting company name: {e}")
-        return None
-    
 def get_company_by_id(company_id):
     try:
         response = supabase.table('companies').select('*').eq('company_id', company_id).execute()
@@ -225,13 +224,33 @@ def get_company_by_id(company_id):
         print(f"Error getting company: {e}")
         return None
 
+"""
 def get_companies_by_owner(user_id):
     try:
         response = supabase.table('companies').select('*').eq('owner_id', user_id).execute()
         return response.data
     except Exception as e:
         print(f"Error getting companies: {e}")
+        return []"""
+    
+def get_companyID_by_owner(user_id):
+    try:
+        # Query to get company IDs where the user is a company admin
+        response = supabase.table('company_employe') \
+            .select('company_id') \
+            .eq('user_id', user_id) \
+            .eq('company_admin', True) \
+            .execute()
+        
+        if response.data:
+            # Return the list of company IDs where the user is a company admin
+            return response.data
+        else:
+            return "No companies found where the user is an admin."
+    except Exception as e:
+        print(f"Error checking user ownership: {e}")
         return []
+
 
 def check_company_exists(company_name):
     try:
@@ -298,6 +317,56 @@ def get_all_companies_sorted():
     except Exception as e:
         print(f"Error getting sorted companies: {e}")
         return []
+
+def update_company(company_id, company_name, company_phone_number, company_email, company_industry, company_website, company_description, company_image):
+    try:
+        # Esegui l'update nella tabella 'companies' in Supabase
+        update_data = {
+            'company_name': company_name,
+            'company_phone_number': company_phone_number,
+            'company_email': company_email,
+            'company_industry': company_industry,
+            'company_website': company_website,
+            'company_description': company_description
+        }
+
+        # Aggiungi 'company_image' solo se esiste
+        if company_image:
+            update_data['company_image'] = company_image
+
+        # Esegui l'update nella tabella 'companies' in Supabase
+        update_response = supabase.table('companies') \
+            .update(update_data) \
+            .eq('company_id', company_id) \
+            .execute()
+
+        # Verifica se l'operazione è andata a buon fine
+        if update_response.data:
+            return {'success': True, 'message': 'Company updated successfully'}
+        else:
+            return {'success': False, 'message': 'No changes made to the company'}
+
+    except Exception as e:
+        print(f"Error updating company in Supabase: {e}")
+        return {'success': False, 'message': 'Error updating the company in the database'}
+
+
+def get_all_company_images():
+    try:
+        # Query per ottenere tutte le immagini dalle aziende
+        response = supabase.table('companies') \
+            .select('company_image') \
+            .eq('status', True) \
+            .execute()
+
+        # Estrai tutte le immagini dalla risposta
+        image_urls = [company['company_image'] for company in response.data if company.get('company_image')]
+
+        return image_urls
+    except Exception as e:
+        print(f"Error getting company images: {e}")
+        return []
+
 
 '''
 def add_employe_to_company(user_id, company_id):
