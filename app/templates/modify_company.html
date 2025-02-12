@@ -209,6 +209,29 @@
     </div>
 </div>
 
+<!-- Overlay di caricamento -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<style>
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1050;
+    }
+</style>
+
+
 
 
 
@@ -336,53 +359,46 @@ function submitForm() {
     formData.append('company_website', document.getElementById('companyWebsiteInput').value);
     formData.append('company_description', document.getElementById('companyDescriptionInput').value);
 
-    
-
-    // Aggiungi il file immagine se è presente
+    // Aggiungi il file immagine se è stato selezionato
     const logoInput = document.getElementById('logoInput');
     if (logoInput.files && logoInput.files.length > 0) {
-    console.log("File selezionato:", logoInput.files[0]);
-    formData.append('company_logo', logoInput.files[0]);  // Aggiungi il file immagine selezionato
-} else {
-    // Nessun file selezionato, usa il logo esistente
-    if (existingLogoUrl && existingLogoUrl !== "") {
-        console.log("Usando il logo esistente:", existingLogoUrl);
-        formData.append('company_logo', existingLogoUrl);  // Aggiungi il logo esistente
+        formData.append('company_logo', logoInput.files[0]);
     } else {
-        console.log("Nessun logo selezionato e nessun logo esistente.");
-        formData.append('company_logo', "");  // Se non c'è logo esistente, invia un valore vuoto
+        formData.append('company_logo', existingLogoUrl || "");
     }
-}
 
+    // Mostra il loader e disabilita il pulsante di conferma
+    document.getElementById("loadingOverlay").style.display = "flex";
+    document.getElementById("modalConfirmBtn").disabled = true;
 
-    // Invia la richiesta usando FormData
     fetch(`/modify_company/${company_id}`, {
-        method: 'POST',
-        body: formData  // Non hai bisogno di 'Content-Type', FormData lo imposterà automaticamente
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            $('#confirmModal').modal('hide')
-            $('#successPopup').modal('show');
+    method: 'POST',
+    body: formData
+})
 
+.then(response => response.json())
+.then(data => {
+    if (data.success) {
+        $('#confirmModal').modal('hide');
+        $('#successPopup').modal('show');
 
-            document.getElementById('okButton').addEventListener('click', function() {
-            // Chiude il pop-up
+        // Dopo 20 secondi, esegui il reindirizzamento alla pagina finale
+        document.getElementById('okButton').addEventListener('click', function() {
             $('#successPopup').modal('hide');
-
-            // Redirige alla pagina delle aziende
             window.location.href = '/companies_of_administrator';
-        })
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Error updating company:', error);
-        alert('There was an error updating the company.');
-    });
+        });
+    } else {
+        alert('Error: ' + data.error);
+    }
+})
+.catch(error => {
+    console.error('Error updating company:', error);
+    alert('There was an error updating the company.');
+});
+
 }
+
+
 
 
  </script>

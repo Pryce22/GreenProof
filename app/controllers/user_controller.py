@@ -543,3 +543,33 @@ def add_token_to_user(user_id, token):
             return True
     return False
 '''
+
+def get_companies_by_user_id(user_id):
+    try:
+        response = supabase.table('company_employe').select('company_id').eq('user_id', user_id).execute()
+        if len(response.data) > 0:
+            # Restituisce una lista di company_id
+            return [company['company_id'] for company in response.data]
+        return []
+    except Exception as e:
+        print(f"Error getting companies by user_id: {e}")
+        return []
+
+def get_employees_by_companies(excluded_user_id):
+    try:
+        # Ottieni tutte le company_id per il tuo user_id
+        company_ids = get_companies_by_user_id(excluded_user_id)
+        if not company_ids:
+            print('Nessuna compagnia trovata per l\'utente.')
+            return []
+
+        # Ottieni tutti gli user_id delle persone associate alle compagnie (escludendo te stesso)
+        response = supabase.table('company_employe').select('user_id').in_('company_id', company_ids).neq('user_id', excluded_user_id).execute()
+
+        if len(response.data) > 0:
+            # Restituisci la lista degli user_id delle persone nelle compagnie
+            return [user['user_id'] for user in response.data]
+        return []
+    except Exception as e:
+        print(f"Error getting employees by companies: {e}")
+        return []
