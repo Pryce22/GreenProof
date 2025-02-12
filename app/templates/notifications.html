@@ -376,10 +376,10 @@ function removeNotification(notificationCard) {
                                             <small class="text-muted">{{ notification.created_at|format_date }}</small>
                                         </div>
                                         <div class="d-flex">
-                                            <button class="btn btn-success btn-sm me-2 accept-invite" data-notification-id="{{ notification.id_notifications }}">
+                                            <button class="btn btn-success btn-sm me-2 accept-invite" data-notification-id="{{ notification.id_notification }}">
                                                 Accept
                                             </button>
-                                            <button class="btn btn-danger btn-sm reject-invite" data-notification-id="{{ notification.id_notifications }}">
+                                            <button class="btn btn-danger btn-sm reject-invite" data-notification-id="{{ notification.id_notification }}">
                                                 Reject
                                             </button>
                                         </div>
@@ -412,33 +412,67 @@ function removeNotification(notificationCard) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-    // Event handlers for company registration notifications
+       document.addEventListener('DOMContentLoaded', function() {
+    // Event handlers for accepting company invitations
     document.querySelectorAll('.accept-invite').forEach(button => {
         button.addEventListener('click', async function(e) {
             e.stopPropagation();
-            const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
+            const action = 'accept';
             
-            try {
-                const response = await fetch(`/admin/notification/${notificationId}/process`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ action: 'approve' })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    removeNotification(notificationCard);
-                } else {
-                    alert(data.error || 'Failed to approve company');
+            if (confirm('Are you sure you want to accept this invitation?')) {
+                try {
+                    const response = await fetch(`/handle_invitation/${notificationId}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        removeNotification(notificationCard);
+                        // Opzionale: aggiorna la pagina per mostrare l'appartenenza alla nuova compagnia
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Failed to accept invitation');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to accept invitation');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to approve company');
+            }
+        });
+    });
+
+    // Event handlers for rejecting company invitations
+    document.querySelectorAll('.reject-invite').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const notificationId = this.getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            const action = 'reject';
+            
+            if (confirm('Are you sure you want to reject this invitation?')) {
+                try {
+                    const response = await fetch(`/handle_invitation/${notificationId}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        removeNotification(notificationCard);
+                    } else {
+                        alert(data.error || 'Failed to reject invitation');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to reject invitation');
+                }
             }
         });
     });

@@ -80,7 +80,7 @@ def update_user():
     return jsonify({'success': False, 'error': 'Update failed'})
 
 @bp.route('/handle_invitation/<notification_id>/<action>', methods=['POST'])
-def accept_invitation(notification_id, action):
+def handle_invitation(notification_id, action):
     user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
     if not user_id:
         return jsonify({'success': False, 'error': 'Not authenticated'})
@@ -90,24 +90,24 @@ def accept_invitation(notification_id, action):
         notification = notifications_controller.get_notification_by_id(notification_id)
         if not notification:
             return jsonify({'success': False, 'error': 'Invitation not found'})
+
         
-        sender_email = notification['receiver_email']
-        receiver_email = notification['sender_email']
-        company_id = notification['company_id']
-        
-        # Handle different actions
         if action == 'accept':
-            success = user_controller.accept_invitation(sender_email, receiver_email, company_id)
+            # Create company-user relationship
+            success = user_controller.accept_invitation(notification['receiver_email'], notification['sender_email'], notification['company_id'])
+        
         elif action == 'reject':
-            success = user_controller.reject_invitation(sender_email, receiver_email, company_id)
+            # Create rejection notification for company admin
+            success = user_controller.accept_invitation(notification['receiver_email'], notification['sender_email'], notification['company_id'])
         else:
             return jsonify({'success': False, 'error': 'Invalid action'})
         
-        # If action was successful, delete the notification
+        # If action was successful, delete the invitation notification
         if success:
             notifications_controller.delete_notification(notification_id)
+            return jsonify({'success': True})
             
-        return jsonify({'success': success})
+        return jsonify({'success': False, 'error': 'Failed to process invitation'})
         
     except Exception as e:
         print(f"Error handling invitation: {e}")
@@ -125,9 +125,6 @@ def manage_employee():
     # Ottieni le company_id per l'utente
     companies = user_controller.get_companies_by_user_id(user_id)
     info_company=user_controller.get_companies_information_by_user_id(user_id)
-
-    print(companies)
-    print(info_company)
 
     # Se l'utente è un amministratore di una compagnia
     if is_company_admin:
@@ -164,3 +161,34 @@ def manage_employee():
                            info_company=info_company,
                            email=email,
                            notifications=notifications)
+
+
+@bp.route('/send_company_invitation', methods=['POST'])
+def send_company_invitation():
+    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    if not user_id or not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'})
+    
+    data = request.get_json()
+    company_id = data.get('company_id')
+    receiver_email = data.get('email')
+    
+    if not company_id or not receiver_email:
+        return jsonify({'success': False, 'error': 'Missing data'})
+    
+    # Verify if the email exists in the database
+    if not user_controller.check_email_exists(receiver_email):
+        return jsonify({'success': False, 'error': 'User email not found'})
+    
+    # Create a company invitation notification
+    success = notifications_controller.create_notification(
+        type='company_invitation',
+        sender=user['email'],
+        receiver=receiver_email,
+        company_id=company_id
+    )
+    
+    if success:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'success': False, 'error': 'Failed to create invitation'})

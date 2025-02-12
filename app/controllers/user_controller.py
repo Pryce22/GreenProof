@@ -522,7 +522,7 @@ def accept_invitation(sender_email, receiver_email, company_id):
         
         user_id = get_user_by_email(sender_email)['id']
         # Add user to company
-        supabase.table('company_users').insert({
+        supabase.table('company_employe').insert({
             'user_id': user_id,
             'company_id': company_id,
         }).execute()
@@ -570,7 +570,7 @@ def add_token_to_user(user_id, token):
     return False
 '''
 
-def get_companies_by_user_id(user_id):
+def get_companies_id_by_user_id(user_id):
     try:
         response = supabase.table('company_employe').select('company_id').eq('user_id', user_id).execute()
         if len(response.data) > 0:
@@ -584,7 +584,7 @@ def get_companies_by_user_id(user_id):
 def get_employees_by_companies(excluded_user_id):
     try:
         # Ottieni tutte le company_id per il tuo user_id
-        company_ids = get_companies_by_user_id(excluded_user_id)
+        company_ids = get_companies_id_by_user_id(excluded_user_id)
         if not company_ids:
             print('Nessuna compagnia trovata per l\'utente.')
             return []

@@ -100,7 +100,6 @@
                     <div class="card-body">
                         <form id="inviteForm" class="needs-validation" novalidate>
                             <!-- Selezione dell'azienda -->
-                            <!-- Selezione dell'azienda -->
                             <div class="mb-3">
                                 <label for="company" class="form-label">Select Company</label>
                                 <select class="form-select" id="company" required>
@@ -192,10 +191,37 @@
     </script>
     
     <script>
-        document.getElementById("inviteForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Evita il submit predefinito
-            alert("Invitation sent successfully!");
+    document.getElementById("inviteForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    
+    const companyId = document.getElementById("company").value;
+    const email = document.getElementById("email").value;
+    
+    try {
+        const response = await fetch('/send_company_invitation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                company_id: companyId,
+                email: email
+            })
         });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert("Invitation sent successfully!");
+            document.getElementById("inviteForm").reset();
+        } else {
+            alert(data.error || "Failed to send invitation");
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to send invitation');
+    }
+});
     </script>
 </body>
 </html>

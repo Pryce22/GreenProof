@@ -4,16 +4,21 @@ import uuid
 def create_notification(type, sender, receiver, company_id = None):
 
     try:
+        notification_id = uuid.uuid4().int & (1<<32)-1
+        
 
-        supabase.table('notifications').insert({
-        'id_notifications': str(uuid.uuid4()),
-        'type': type,
-        'sender_email': sender,
-        'receiver_email': receiver,
-        'status': 'unread',
-        'company_id': company_id
-        })
-        return True
+        notification_data = {
+            'id_notification': notification_id,
+            'type': type,
+            'sender_email': sender,
+            'receiver_email': receiver,
+            'status': 'unread',
+            'company_id': company_id
+        }
+
+        response = supabase.table('notifications').insert(notification_data).execute()
+        if response.data:
+            return True
     
     except Exception as e:
         print(f"Error creating notification: {e}")
