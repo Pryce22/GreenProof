@@ -27,7 +27,32 @@ def notifications():
         return redirect(url_for('auth.login'))
     
     notifications_info = notifications_controller.get_notifications_by_email(user['email'])
- 
+    if notifications_info:
+        processed_notifications = []
+        for notification in notifications_info:
+            # Convert to dictionary if it's a tuple
+            if isinstance(notification, tuple):
+                notification_dict = {
+                    'id_notification': notification[0],
+                    'created_at': notification[1],
+                    'type': notification[2],
+                    'sender_email': notification[3],
+                    'receiver_email': notification[4],
+                    'status': notification[5],
+                    'company_id': notification[6]
+                }
+            else:
+                notification_dict = notification
+
+            # Add company name
+            if notification_dict.get('company_id'):
+                company = company_controller.get_company_by_id(notification_dict['company_id'])
+                notification_dict['company_name'] = company['company_name'] if company else 'Unknown Company'
+                notification_dict['company'] = company  # Add the entire company object
+            
+            processed_notifications.append(notification_dict)
+    else:
+        processed_notifications = []
 
     return render_template('notifications.html',
                          user_id=user_id,
@@ -35,7 +60,7 @@ def notifications():
                          is_admin=is_admin,
                          is_company_admin=is_company_admin,
                          notifications=notifications,
-                         notifications_info=notifications_info)
+                         notifications_info=processed_notifications)
 
 
 @bp.route('/update_user', methods=['POST'])
