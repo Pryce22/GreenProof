@@ -37,9 +37,6 @@ def notifications():
                          notifications=notifications,
                          notifications_info=notifications_info)
 
-        
-    success = notifications_controller.handle_invitation_response(notification_id, action)
-    return jsonify({'success': success})
 
 @bp.route('/update_user', methods=['POST'])
 def update_user():
@@ -94,7 +91,7 @@ def accept_invitation(notification_id, action):
 
 @bp.route('/manage_employee', methods=['GET', 'POST'])
 def manage_employee():
-    user_id, user, is_admin, is_company_admin, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
     companies= user_controller.get_companies_by_user_id(user_id)
 
     if not user_id:

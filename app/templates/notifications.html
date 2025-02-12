@@ -249,7 +249,7 @@ function removeNotification(notificationCard) {
                                 </div>
                                 <div class="notification-content flex-grow-1" style="cursor: pointer;" onclick="window.location.href='/information_company/{{ company.company_id }}'">
                                     <h6 class="notification-title mb-1">Company Invitation</h6>
-                                    <p class="notification-text mb-1">You have been invited to join {{ company.company_name }}</p>
+                                    <p class="notification-text mb-1">You have been invited to join {{ notification.company_name }}</p>
                                     <small class="text-muted">{{ notification.created_at|format_date }}</small>
                                 </div>
                                 <div class="d-flex">

@@ -176,7 +176,7 @@ def get_cities():
 
 @bp.route('/companies_of_administrator', methods=['GET'])
 def companies_administrator():
-    user_id, user, is_admin, is_company_admin, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
     
     try:
         # Verifica se l'utente è un amministratore di alcune compagnie
@@ -209,7 +209,7 @@ def companies_administrator():
 
 @bp.route('/modify_company/<int:company_id>', methods=['GET', 'POST'])
 def modify_company(company_id):
-    user_id, user, is_admin, is_company_admin, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications,  pending_companies_count = get_user_info()
     
     company = company_controller.get_company_by_id(company_id)
     if company is None:
