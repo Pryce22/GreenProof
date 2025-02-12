@@ -6,6 +6,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.controllers import user_controller
+from app.controllers import notifications_controller
+
 
 def create_company(
     company_name,
@@ -16,6 +18,7 @@ def create_company(
     company_city,
     company_address,
     company_description,
+    sender_email,  # Add sender_email parameter
     company_website=None,
     company_image=None
 ):
@@ -50,7 +53,33 @@ def create_company(
         response = supabase.table('companies').insert(company_data).execute()
         
         if response.data:
-            return {'success': True, 'company_id': company_id}
+            try: 
+                admin_response = supabase.table('roles').select('user_id').eq('admin', True).execute()
+                if not admin_response.data:
+                    print("No admin users found")
+                    return False
+
+                # Get admin emails
+                admin_ids = [admin['user_id'] for admin in admin_response.data]
+                admin_users = supabase.table('user').select('email').in_('id', admin_ids).execute()
+                
+                if not admin_users.data:
+                    print("Could not fetch admin emails")
+                    return False
+
+                # Create notifications for each admin
+                for admin in admin_users.data:
+                    if notifications_controller.create_notification('company_registration', sender_email, admin['email'], company_id):
+                        return {'success': True, 'company_id': company_id}
+                    else:
+                        # Optional: handle notification creation failure
+                        print("Warning: Failed to create admin notifications")
+                        return {'success': True, 'company_id': company_id, 'warning': 'Failed to notify admins'}
+                    
+            except Exception as e:
+                print(f"Error creating registration notifications: {e}")
+                return {'success': True, 'company_id': company_id, 'warning': 'Failed to notify admins'}  
+              
         return {'success': False, 'error': 'Failed to create company'}
 
     except Exception as e:
@@ -185,7 +214,6 @@ def upload_company_image(company_id, image_file):
         print(f"Error uploading image: {e}")
         return None
 
-
 def get_company_by_id(company_id):
     try:
         response = supabase.table('companies').select('*').eq('company_id', company_id).execute()
@@ -231,7 +259,7 @@ def check_company_exists(company_name):
     except Exception as e:
         print(f"Error checking company: {e}")
         return False
-
+    
 def get_pending_companies():
     try:
         # Assicuriamoci di selezionare tutti i campi necessari
@@ -245,11 +273,17 @@ def get_pending_companies():
 def approve_company(company_id):
     try:
         result = supabase.from_('companies').update({'status': True}).eq('company_id', company_id).execute()
-        print(result.data)
-        print("ciao")
         return True if result.data else False
     except Exception as e:
         print(f"Error approving company: {e}")
+        return False
+    
+def eliminate_company(company_id):
+    try:
+        result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
+        return True if result.data else False
+    except Exception as e:
+        print(f"Error eliminating company: {e}")
         return False
 
 def reject_company(company_id):
@@ -332,3 +366,26 @@ def get_all_company_images():
     except Exception as e:
         print(f"Error getting company images: {e}")
         return []
+
+
+'''
+def add_employe_to_company(user_id, company_id):
+    try:
+        response = supabase.from_('company_employe').insert({
+            'user_id': user_id,
+            'company_id': company_id
+        }).execute()
+        return True if response.data else False
+    except Exception as e:
+        print(f"Error adding user to company: {e}")
+        return False
+    
+def accept_invitation(receiver_email, sender_email, company_id):
+    try:
+        add_employe_to_company(user_id, company_id)
+        notifications_controller.create_notification('invitation_accepted', user_controller.get_user_by_id(user_id)['email'], )
+
+    except Exception as e:
+        print(f"Error accepting invitation: {e}")
+        return False
+'''

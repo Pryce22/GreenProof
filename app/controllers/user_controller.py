@@ -10,6 +10,7 @@ from flask import session, request
 import uuid
 from datetime import datetime, timezone, timedelta
 from app.utils.email_service import EmailService
+from app.controllers import notifications_controller
 
 email_service = EmailService()
 
@@ -513,6 +514,31 @@ def update_user_password(email, new_password):
         return False
     except Exception as e:
         print(f"Error updating password: {e}")
+        return False
+    
+def accept_invitation(sender_email, receiver_email, company_id):
+    try:
+        notifications_controller.create_notification('invitation_accepted', sender_email, receiver_email , company_id)
+        
+        user_id = get_user_by_email(sender_email)['id']
+        # Add user to company
+        supabase.table('company_users').insert({
+            'user_id': user_id,
+            'company_id': company_id,
+        }).execute()
+        return True
+    except Exception as e:
+        print(f"Error accepting invitation: {e}")
+        return False
+
+def reject_invitation(sender_email, receiver_email, company_id):
+    try:
+
+        notifications_controller.create_notification('invitation_rejected', sender_email, receiver_email , company_id)
+
+        return True
+    except Exception as e:
+        print(f"Error rejecting invitation: {e}")
         return False
 
 '''
