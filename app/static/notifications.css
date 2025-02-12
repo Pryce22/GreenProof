@@ -159,3 +159,28 @@ body {
 .notification-container::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.notification-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+footer {
+    flex-shrink: 0;
+}
