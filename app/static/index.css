@@ -164,3 +164,21 @@
     height: 400px;
     }
     }
+
+    /* Fissa un'altezza standard per le immagini e usa object-fit per mantenere l'aspetto */
+#products .card-img-top {
+    height: 200px; /* Regola l'altezza in base alle tue esigenze */
+    width: 100%;
+    object-fit: cover;
+}
+
+/* Imposta il card body come flex container per allineare in basso il pulsante */
+#products .card-body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Spinge il tasto in fondo */
+#products .card-body a.btn-success {
+    margin-top: auto;
+}

@@ -41,120 +41,151 @@
         </nav>
     </header>
 
-<section class="hero-section">
-<div class="carousel slide" data-bs-ride="carousel">
-<div class="carousel-inner">
-<div class="carousel-item active">
-<img src="https://images.unsplash.com/photo-1498579397066-22750a3cb424" class="d-block w-100" alt="Fresh Produce">
-<div class="carousel-caption">
-<h1>From Farm to Table</h1>
-<p>Connect directly with local food producers</p>
-<a class="btn btn-success btn-lg" href="/company_register">Explore Products</a>
-</div>
-</div>
-</div>
-</div>
-</section>
+    <section class="hero-section">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+          <div class="carousel-inner">
+            <div class="carousel-item active" data-bs-interval="4000">
+              <img src="static/images/home1.jpg" class="d-block w-100" alt="Fresh Produce">
+              <div class="carousel-caption">
+                <h1>Sustainable Food Supply Chain</h1>
+                <p></p>
+                <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+              </div>
+            </div>
+            <div class="carousel-item" data-bs-interval="4000">
+              <img src="static/images/home3.jpg" class="d-block w-100" alt="Fresh Produce">
+              <div class="carousel-caption">
+                <h1>Sustainable Food Supply Chain</h1>
+                <p></p>
+                <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+              </div>
+            </div>
+            <div class="carousel-item" data-bs-interval="4000">
+              <img src="static/images/home4.jpg" class="d-block w-100" alt="Fresh Produce">
+              <div class="carousel-caption">
+                <h1>Sustainable Food Supply Chain</h1>
+                <p></p>
+                <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+              </div>
+            </div>
+            <div class="carousel-item" data-bs-interval="4000">
+                <img src="static/images/home5.jpg" class="d-block w-100" alt="Fresh Produce">
+                <div class="carousel-caption">
+                  <h1>Sustainable Food Supply Chain</h1>
+                  <p></p>
+                  <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                </div>
+              </div>
+          </div>
+      
+          <!-- Opzionali controlli per navigazione manuale -->
+          <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </section>
 
 <section id="about" class="py-5">
 <div class="container">
 <div class="row align-items-center">
 <div class="col-md-6">
-<h2>About Us</h2>
-<p class="lead">We connect passionate local food producers with conscious consumers, bringing fresh, quality products directly to your table.</p>
-<p>Our marketplace ensures fair prices for producers while providing customers with transparent sourcing and exceptional quality.</p>
-</div>
+    <h2>About Us</h2>
+    <p class="lead">
+      Our Sustainable Food Supply Chain platform is a blockchain-based system that tracks CO₂ emissions of companies within the food supply chain. We classify their environmental behavior and promote transparency for a sustainable future.
+    </p>
+    <p>
+      By providing verified data on each company's CO₂ footprint, GreenChain empowers consumers and stakeholders to make informed decisions and foster a healthier environment.
+    </p>
+  </div>
 <div class="col-md-6">
-<img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc" class="img-fluid rounded" alt="Farmers Working">
+<img src="static/images/home2.jpg" class="img-fluid rounded" alt="Farmers Working">
 </div>
 </div>
 </div>
 </section>
 
 <section id="how-it-works" class="py-5 bg-light">
-<div class="container">
-<h2 class="text-center mb-5">How It Works</h2>
-<div class="row g-4">
-<div class="col-md-4 text-center">
-<div class="card h-100 border-0 bg-transparent">
-<i class="bi bi-search display-4 text-success"></i>
-<div class="card-body">
-<h5>Browse Producers</h5>
-<p>Discover local farmers and artisans in your area</p>
-</div>
-</div>
-</div>
-<div class="col-md-4 text-center">
-<div class="card h-100 border-0 bg-transparent">
-<i class="bi bi-cart-check display-4 text-success"></i>
-<div class="card-body">
-<h5>Select Products</h5>
-<p>Choose from fresh, locally sourced products</p>
-</div>
-</div>
-</div>
-<div class="col-md-4 text-center">
-<div class="card h-100 border-0 bg-transparent">
-<i class="bi bi-truck display-4 text-success"></i>
-<div class="card-body">
-<h5>Get Delivery</h5>
-<p>Receive your order fresh at your doorstep</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
+    <div class="container">
+      <h2 class="text-center mb-5">How It Works</h2>
+      <div class="row g-4">
+        <div class="col-md-4 text-center">
+          <div class="card h-100 border-0 bg-transparent">
+            <i class="bi bi-arrow-repeat display-4 text-success"></i>
+            <div class="card-body">
+              <h5>Exchange CO₂ Tokens</h5>
+              <p>Companies trade CO₂ tokens as a way to offset emissions and invest in green initiatives.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="card h-100 border-0 bg-transparent">
+            <i class="bi bi-bar-chart display-4 text-success"></i>
+            <div class="card-body">
+              <h5>Benchmark Impact</h5>
+              <p>Users can browse and compare companies based on their CO₂ token balance to gauge environmental performance.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="card h-100 border-0 bg-transparent">
+            <i class="bi bi-globe display-4 text-success"></i>
+            <div class="card-body">
+              <h5>Foster Sustainability</h5>
+              <p>Our platform promotes transparency and accountability, encouraging greener practices in the food supply chain.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section id="products" class="py-5">
-<div class="container">
-<h2 class="text-center mb-5">Featured Products</h2>
-<div class="row g-4">
-<div class="col-md-3">
-<div class="card h-100">
-<img src="https://images.unsplash.com/photo-1518843875459-f738682238a6" class="card-img-top" alt="Organic Vegetables">
-<div class="card-body">
-<h5 class="card-title">Organic Vegetables</h5>
-<p class="card-text">Fresh, locally grown organic vegetables</p>
-<p class="text-success fw-bold">$4.99/lb</p>
-<button class="btn btn-success w-100">Add to Cart</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
+  <section id="products" class="py-5">
+    <div class="container">
+      <h2 class="text-center mb-5">Featured Companies</h2>
+      <div class="row g-4">
+        {% for company in top_companies %}
+        <div class="col-md-4">
+          <div class="card h-100">
+            <img src="{{ company.company_image or 'https://images.unsplash.com/photo-1554469384-e58fac16e23a' }}" class="card-img-top" alt="{{ company.company_name }}">
+            <div class="card-body">
+              <h5 class="card-title">{{ company.company_name }}</h5>
+              <p class="card-text">{{ company.company_description }}</p>
+              <p class="text-success fw-bold">{{ company.token }} CO₂ Tokens</p>
+              <a href="/information_company/{{ company.company_id }}" class="btn btn-success w-100">View Details</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
 
-<section id="contact" class="py-5 bg-light">
-<div class="container">
-<div class="row">
-<div class="col-md-6">
-<h2>Contact Us</h2>
-<form>
-<div class="mb-3">
-<input type="text" class="form-control" placeholder="Your Name">
-</div>
-<div class="mb-3">
-<input type="email" class="form-control" placeholder="Your Email">
-</div>
-<div class="mb-3">
-<textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
-</div>
-<button type="submit" class="btn btn-success">Send Message</button>
-</form>
-</div>
-<div class="col-md-6">
-<h2>Our Location</h2>
-<img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc" class="img-fluid rounded" alt="Location">
-<p class="mt-3">
-123 Farm Fresh Street<br>
-Local Market District<br>
-Country, 12345
-</p>
-</div>
-</div>
-</div>
-</section>
+  <section id="contact" class="py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+          <h2>Contact Us</h2>
+          <form>
+            <div class="mb-3">
+              <input type="text" class="form-control" placeholder="Your Name">
+            </div>
+            <div class="mb-3">
+              <input type="email" class="form-control" placeholder="Your Email">
+            </div>
+            <div class="mb-3">
+              <textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
 
 <footer class="bg-dark text-light py-4">
 <div class="container">

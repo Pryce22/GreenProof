@@ -402,25 +402,15 @@ def get_all_company_images():
         print(f"Error getting company images: {e}")
         return []
 
-
-'''
-def add_employe_to_company(user_id, company_id):
+def get_top_companies():
     try:
-        response = supabase.from_('company_employe').insert({
-            'user_id': user_id,
-            'company_id': company_id
-        }).execute()
-        return True if response.data else False
+        response = supabase.table('companies') \
+            .select('*') \
+            .eq('status', True) \
+            .order('token', desc=True) \
+            .limit(3) \
+            .execute()
+        return response.data
     except Exception as e:
-        print(f"Error adding user to company: {e}")
-        return False
-    
-def accept_invitation(receiver_email, sender_email, company_id):
-    try:
-        add_employe_to_company(user_id, company_id)
-        notifications_controller.create_notification('invitation_accepted', user_controller.get_user_by_id(user_id)['email'], )
-
-    except Exception as e:
-        print(f"Error accepting invitation: {e}")
-        return False
-'''
+        print(f"Error getting top companies: {e}")
+        return []

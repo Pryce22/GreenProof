@@ -225,6 +225,63 @@ footer {
     vertical-align: middle;
 }
 
+.approve-btn {
+    background-color: #198754 !important; /* verde base */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius, 0.25rem);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.approve-btn:hover {
+    background-color: #157347 !important; /* verde leggermente scuro al passaggio del mouse */
+}
+
+.reject-btn {
+    background-color: #dc3545; /* rosso base */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius, 0.25rem);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.reject-btn:hover {
+    background-color: #bb2d3b; /* rosso leggermente scuro al passaggio del mouse */
+}
+
+.reject-elimination-btn {
+    background-color: #dc3545; /* rosso base */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius, 0.25rem);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.reject-elimination-btn:hover {
+    background-color: #bb2d3b; /* rosso leggermente scuro al passaggio del mouse */
+}
+
+.approve-elimination-btn {
+    background-color: #198754 !important; /* verde base */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius, 0.25rem);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.approve-elimination-btn:hover {
+    background-color: #157347 !important; /* verde leggermente scuro al passaggio del mouse */
+}
+
+
 /* Bottoni di accettazione */
 .accept-invite {
     background-color: #198754 !important; /* verde base */
