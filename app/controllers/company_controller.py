@@ -10,6 +10,7 @@ from app.controllers import notifications_controller
 
 
 def create_company(
+    company_id,
     company_name,
     company_phone_number,
     company_email,
@@ -24,7 +25,6 @@ def create_company(
 ):
     try:
         # Generate unique company ID
-        company_id = uuid.uuid4().int & (1<<32)-1
         
         # Prepare company data
         company_data = {
@@ -270,28 +270,46 @@ def get_pending_companies():
         print(f"Error fetching pending companies: {e}")
         return []
 
-def approve_company(company_id):
+def approve_company(sender_email, receiver_email, company_id):
     try:
         result = supabase.from_('companies').update({'status': True}).eq('company_id', company_id).execute()
-        return True if result.data else False
+        if result.data:
+            # Send notification to the sender
+            notifications_controller.create_notification('acception registration company', sender_email, receiver_email, company_id)
+            return True
+        else: False
     except Exception as e:
         print(f"Error approving company: {e}")
         return False
     
-def eliminate_company(company_id):
+def eliminate_company(sender_email, receiver_email, company_id):
     try:
-        result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
-        return True if result.data else False
+        success = delete_company(company_id)
+        if success:
+            notifications_controller.create_notification('acception elimination company', sender_email, receiver_email, company_id)
+            return True
+        else: False
     except Exception as e:
         print(f"Error eliminating company: {e}")
         return False
 
-def reject_company(company_id):
+def reject_company(sender_email, receiver_email, company_id):
+    try:
+        success = delete_company(company_id)
+        if success:
+            notifications_controller.create_notification('rejection registration company', sender_email, receiver_email, company_id)
+            return True
+        else: False
+    except Exception as e:
+        print(f"Error rejecting company: {e}")
+        return False
+    
+def delete_company(company_id):
     try:
         result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
         return True if result.data else False
     except Exception as e:
-        print(f"Error rejecting company: {e}")
+        print(f"Error deleting company: {e}")
         return False
 
 def search_companies(search_term):

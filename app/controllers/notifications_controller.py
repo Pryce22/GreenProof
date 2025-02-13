@@ -27,7 +27,7 @@ def create_notification(type, sender, receiver, company_id = None):
 
 def get_notifications_by_email(email):
     try:
-        response = supabase.table('notifications').select('*').eq('receiver_email', email).execute()
+        response = supabase.table('notifications').select('*').eq('receiver_email', email).order('created_at', desc=False).execute()
         # Access the data attribute of the response
         notifications = response.data
         return notifications
@@ -81,3 +81,14 @@ def get_notification_by_id(notification_id):
         return None
     notification = notification.data[0] if notification.data else None
     return notification
+
+def mark_as_read(notification_id):
+    try:
+        response = supabase.table('notifications') \
+            .update({'status': 'read'}) \
+            .eq('id_notification', notification_id) \
+            .execute()
+        return bool(response.data)
+    except Exception as e:
+        print(f"Error marking notification as read: {e}")
+        return False
