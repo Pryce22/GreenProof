@@ -19,7 +19,11 @@
 body {
     background-color: var(--background);
     color: var(--foreground);
-    overflow-x: hidden; /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0; /* Reset body margin */
 }
 
 .notification-wrapper {
@@ -31,27 +35,35 @@ body {
 }
 
 .notification-container {
-    max-height: calc(100vh - 200px); /* Dynamic height based on viewport */
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 1rem; /* Add space for scrollbar */
+    padding-right: 1rem;
+
+    display: flex;        /* Enable flexbox */
+    flex-direction: column; /* Stack items vertically */
+    gap: 1rem;             /* Add spacing between items */
 }
 
-.notification-card {
-    transition: all 0.2s ease-in-out;
-    margin-bottom: 1rem;
-    width: 100%;
+/* REMOVE THIS: */
+/* .notification-container > .notification-card {
+    clear: both;
+} */
+
+.notification-card:hover,
+.notification-card:active { /* Added active state */
+    z-index: 1; /* Bring to front on hover/active */
 }
 
-.notification-card:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
 
 .notification-card .card {
-    margin: 0;
-    width: 100%;
+    padding: 1rem;
+    background: none;
+    border: none;
+    box-shadow: none;
+    display: flex;
 }
+
 
 .notification-icon {
     font-size: 1.5rem;
@@ -119,22 +131,22 @@ body {
     .notification-wrapper {
         padding: 0.5rem 1rem;
     }
-    
+
     .notification-container {
         max-height: calc(100vh - 150px);
     }
-    
+
     .notification-icon {
         font-size: 1.25rem;
         width: 35px;
         height: 35px;
         min-width: 35px;
     }
-    
+
     .notification-content {
         padding-right: 0.5rem;
     }
-    
+
     .btn-sm {
         padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
@@ -160,27 +172,80 @@ body {
     background: #555;
 }
 
-body {
-    background-color: var(--background);
-    color: var(--foreground);
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
 main {
     flex: 1 0 auto;
 }
 
-.notification-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1rem 2rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
 footer {
     flex-shrink: 0;
+}
+/* In notifications.css */
+/* Modifica tutti i selettori da data-status a data-initial-status */
+.notification-card[data-initial-status="unread"] {
+    border-left: 4px solid var(--primary);
+    background-color: rgba(0, 112, 243, 0.1);
+}
+
+.notification-card[data-initial-status="unread"]::before {
+    content: "";
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.notification-card[data-initial-status="unread"] .card {
+    box-shadow: 0 2px 8px rgba(0, 112, 243, 0.2);
+}
+
+.notification-card[data-initial-status="unread"] .notification-title {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.notification-card[data-initial-status="unread"] .notification-content::after {
+    content: "New";
+    display: inline-block;
+    background-color: var(--primary);
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 12px;
+    margin-left: 8px;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+/* Bottoni di accettazione */
+.accept-invite {
+    background-color: #198754 !important; /* verde base */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius, 0.25rem);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.accept-invite:hover {
+    background-color: #157347 !important; /* verde leggermente scuro al passaggio del mouse */
+}
+
+/* Bottoni di rifiuto */
+.reject-invite {
+    background-color: #dc3545; /* rosso base */
+    border: none;
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius, 0.25rem);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.reject-invite:hover {
+    background-color: #bb2d3b; /* rosso leggermente scuro al passaggio del mouse */
 }

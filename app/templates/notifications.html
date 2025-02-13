@@ -6,6 +6,7 @@
     <title>Notification Interface</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="static/notifications.css">
+    <link rel="stylesheet" href="static/index.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
 
 </head>
@@ -46,12 +47,16 @@
     {% if is_admin %}
     <div class="notification-wrapper p-3">
         <div class="notification-header d-flex justify-content-between align-items-center mb-4">
-            <h4 class="m-0">Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
+            <h4 class="m-0">New Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
         </div>
         <div class="notification-container">
             {% if notifications_info %}
                 {% for notification in notifications_info %}
-                <div class="notification-card mb-3" role="alert" data-notification-id="{{ notification.id_notification }}" data-company-id="{{ notification.company_id }}">
+                <div class="notification-card mb-3" role="alert" 
+                data-notification-id="{{ notification.id_notification }}" 
+                data-company-id="{{ notification.company_id }}"
+                data-status="{{ notification.status }}"
+                data-initial-status="{{ notification.status }}">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 {% if notification.type == 'company_registration' %}
@@ -237,12 +242,16 @@ function removeNotification(notificationCard) {
     {% elif is_company_admin %}
     <div class="notification-wrapper p-3">
         <div class="notification-header d-flex justify-content-between align-items-center mb-4">
-            <h4 class="m-0">Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
+            <h4 class="m-0">New Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
         </div>
         <div class="notification-container">
         {% if notifications_info %}
             {% for notification in notifications_info %}
-            <div class="notification-card mb-3" role="alert" data-notification-id="{{ notification.id_notification }}" data-company-id="{{ notification.company_id }}">
+            <div class="notification-card mb-3" role="alert" 
+            data-notification-id="{{ notification.id_notification }}" 
+            data-company-id="{{ notification.company_id }}"
+            data-status="{{ notification.status }}"
+            data-initial-status="{{ notification.status }}">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body">
                     {% if notification.type == 'company_invitation' %}
@@ -360,12 +369,16 @@ function removeNotification(notificationCard) {
     {% else %}
     <div class="notification-wrapper p-3">
         <div class="notification-header d-flex justify-content-between align-items-center mb-4">
-            <h4 class="m-0">Your Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
+            <h4 class="m-0">New Notifications <span class="badge bg-primary">{{ notifications }}</span></h4>
         </div>
         <div class="notification-container">
             {% if notifications_info %}
                 {% for notification in notifications_info %}
-                    <div class="notification-card mb-3" role="alert">
+                <div class="notification-card mb-3" role="alert" 
+                data-notification-id="{{ notification.id_notification }}" 
+                data-company-id="{{ notification.company_id }}"
+                data-status="{{ notification.status }}"
+                data-initial-status="{{ notification.status }}">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 {% if notification.type == 'company_invitation' %}
@@ -441,6 +454,49 @@ function removeNotification(notificationCard) {
         </div>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crea l'Intersection Observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const notificationCard = entry.target;
+                        const notificationId = notificationCard.getAttribute('data-notification-id');
+                        if (notificationId && notificationCard.getAttribute('data-status') === 'unread') {
+                            markNotificationAsRead(notificationId);
+                            notificationCard.setAttribute('data-status', 'read');
+                        }
+                    }
+                });
+            }, {
+                threshold: 0.6 // La notifica deve essere visibile almeno al 50%
+            });
+    
+            // Osserva tutte le notification cards
+            document.querySelectorAll('.notification-card').forEach(card => {
+                observer.observe(card);
+            });
+        });
+    
+        // Funzione per marcare una notifica come letta
+        async function markNotificationAsRead(notificationId) {
+            try {
+                const response = await fetch(`/mark_notification_read/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    console.error('Failed to mark notification as read');
+                }
+            } catch (error) {
+                console.error('Error marking notification as read:', error);
+            }
+        }
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
        document.addEventListener('DOMContentLoaded', function() {
@@ -481,7 +537,7 @@ function removeNotification(notificationCard) {
     document.querySelectorAll('.reject-invite').forEach(button => {
         button.addEventListener('click', async function(e) {
             e.stopPropagation();
-            const notificationId = this.getAttribute('data-notification-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
             const action = 'reject';
             

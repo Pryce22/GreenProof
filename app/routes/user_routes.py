@@ -98,7 +98,7 @@ def handle_invitation(notification_id, action):
         
         elif action == 'reject':
             # Create rejection notification for company admin
-            success = user_controller.accept_invitation(notification['receiver_email'], notification['sender_email'], notification['company_id'])
+            success = user_controller.reject_invitation(notification['receiver_email'], notification['sender_email'], notification['company_id'])
         else:
             return jsonify({'success': False, 'error': 'Invalid action'})
         
@@ -192,3 +192,13 @@ def send_company_invitation():
         return jsonify({'success': True})
     else:
         return jsonify({'success': False, 'error': 'Failed to create invitation'})
+    
+
+@bp.route('/mark_notification_read/<notification_id>', methods=['POST'])
+def mark_notification_read(notification_id):
+    try:
+        success = notifications_controller.mark_as_read(notification_id)
+        return jsonify({'success': success})
+    except Exception as e:
+        print(f"Error in mark_notification_read: {e}")
+        return jsonify({'success': False, 'error': str(e)})

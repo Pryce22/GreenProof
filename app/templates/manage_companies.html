@@ -156,24 +156,56 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Variabili per il modal
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        const successPopup = new bootstrap.Modal(document.getElementById('successPopup'));
+        let companyIdToDelete;
 
-        // Gestisci l'evento di clic sul pulsante "Delete"
-        document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-            // Chiudi la modale di conferma (DeleteModal)
+// When delete icon is clicked, store the company ID
+document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+    button.addEventListener('click', function(e) {
+        companyIdToDelete = this.getAttribute('data-company-id');
+    });
+});
+
+// Handle delete confirmation
+document.getElementById('confirmDeleteButton').addEventListener('click', async function() {
+    try {
+        const response = await fetch(`/delete_company/${companyIdToDelete}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Close the delete confirmation modal
             deleteModal.hide();
             
-            // Mostra la modale del messaggio di successo
+            // Show success popup
             successPopup.show();
-        });
 
-        // Gestisci l'evento di clic sul pulsante "OK"
-        document.getElementById('okButton').addEventListener('click', function() {
-            // Chiudi la modale del messaggio di successo
-            successPopup.hide();
-        });
+            // Remove the company card from the UI
+            const companyCard = document.querySelector(`[data-company-id="${companyIdToDelete}"]`)
+                .closest('.col-lg-4');
+            companyCard.remove();
+
+            // Optional: Update UI if no companies left
+            if (document.querySelectorAll('.company-card').length === 0) {
+                document.getElementById('initialNoResults').classList.remove('d-none');
+            }
+        } else {
+            alert(data.error || 'Failed to delete company');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to delete company');
+    }
+});
+
+// Handle OK button in success popup
+document.getElementById('okButton').addEventListener('click', function() {
+    successPopup.hide();
+});
     </script>
 </body>
 </html>

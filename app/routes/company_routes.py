@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, session
-from app.controllers import company_controller, user_controller
+from app.controllers import company_controller, user_controller, notifications_controller
 from app.routes.auth_routes import get_user_info
 from werkzeug.utils import secure_filename
 import os
 import geonamescache
+import uuid
 
 bp = Blueprint('company', __name__)
 gc = geonamescache.GeonamesCache()
@@ -35,9 +36,12 @@ def company_register():
             user = user_controller.get_user_by_id(session['id'])
             if not user:
                 return jsonify({'success': False, 'error': 'User not found'})
+            
+            company_id = uuid.uuid4().int & (1<<32)-1
 
             # Extract form data
             company_data = {
+                'company_id': company_id,
                 'company_name': request.form['companyName'],
                 'company_phone_number': request.form['phone'],
                 'company_email': request.form['email'],
@@ -66,6 +70,7 @@ def company_register():
                 user = user_controller.get_user_by_id(user_id)
                 if user:
                     company_controller.send_admin_notification(user, company_data)
+                    notifications_controller.send_notification_to_admin('company registration', user['email'], company_id)
                 return jsonify({
                     'success': True,
                     'redirect': url_for('main.home')
@@ -197,6 +202,7 @@ def companies_administrator():
                              user=user, 
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
+                             notifications=notifications,
                              pending_companies_count=pending_companies_count)
     except Exception as e:
         print(f"Errore durante la ricerca delle compagnie: {e}")
@@ -205,6 +211,7 @@ def companies_administrator():
                              user_id=user_id, 
                              user=user, 
                              is_admin=is_admin, 
+                             notifications=notifications,
                              is_company_admin=is_company_admin)
 
 @bp.route('/modify_company/<int:company_id>', methods=['GET', 'POST'])
@@ -257,5 +264,12 @@ def modify_company(company_id):
                          user=user,
                          is_admin=is_admin,
                          is_company_admin=is_company_admin,
+                         notifications=notifications,
                          pending_companies_count=pending_companies_count)
 
+
+@bp.route('/delete_company/<int:company_id>', methods=['POST'])
+def delete_company(company_id):
+    
+    success = company_controller.delete_company(company_id)
+    return jsonify({'success': success, 'error': None if success else 'Failed to delete company'})
