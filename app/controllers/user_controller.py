@@ -193,6 +193,42 @@ def is_admin(user_id):
         print(f"Error checking admin status: {e}")
         return False
 
+def get_unique_company_admins():
+    """Returns the IDs of users who are the only admin of a company"""
+    try:
+        # Recupera tutte le compagnie che hanno almeno un amministratore
+        response = supabase.table('company_employe').select('user_id', 'company_id', 'company_admin').eq('company_admin', True).execute()
+        
+        if not response.data:
+            return []
+
+        # Un dizionario per memorizzare gli admin per ogni compagnia
+        company_admins = {}
+
+        # Popola il dizionario con gli ID degli admin per ogni compagnia
+        for record in response.data:
+            company_id = record['company_id']
+            user_id = record['user_id']
+
+            if company_id not in company_admins:
+                company_admins[company_id] = []
+
+            company_admins[company_id].append(user_id)
+
+        # Ora dobbiamo selezionare solo le compagnie con un singolo admin
+        unique_admins = []
+
+        for company_id, admins in company_admins.items():
+            if len(admins) == 1:
+                unique_admins.append(admins[0])
+
+        return unique_admins
+
+    except Exception as e:
+        print(f"Error fetching unique company admins: {e}")
+        return []
+
+
 def is_company_admin(user_id):
     """Check if user is admin"""
     try:
@@ -648,3 +684,53 @@ def get_all_user_emails():
     except Exception as e:
         print(f"Error getting all user emails: {e}")
         return []
+    
+def get_all_users():
+    try:
+        # Recupera tutti gli utenti dalla tabella 'user'
+        user_response = supabase.table('user').select('*').execute()
+
+        # Controlla se la risposta contiene dati
+        if user_response.data:
+            return user_response.data
+        else:
+            return []  # Restituisce una lista vuota se non ci sono utenti
+
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return []  # Restituisce una lista vuota in caso di errore
+    
+
+def get_users_by_name_or_surname(search_term):
+    try:
+        name_response = supabase.table('user') \
+            .select('*') \
+            .ilike('name', f'%{search_term}%') \
+            .execute()
+
+        # Seconda query per il cognome
+        surname_response = supabase.table('user') \
+            .select('*') \
+            .ilike('surname', f'%{search_term}%') \
+            .execute()
+
+        # Unisci i risultati delle due query (evita duplicati)
+        users = name_response.data + surname_response.data
+
+        # Rimuovi duplicati
+        unique_users = [dict(t) for t in {tuple(user.items()) for user in users}]
+
+        return unique_users
+    except Exception as e:
+        print(f"Error searching users by name or surname: {e}")
+        return []  # Restituisce una lista vuota in caso di errore
+    
+def delete_user(user_id):
+    try:
+        response=supabase.table('user').delete().eq('id', user_id).execute()
+        return response
+    except Exception as e:
+        print(f"Error searching users by name or surname: {e}")
+        return []  # Restituisce una lista vuota in caso di errore
+
+

@@ -197,6 +197,7 @@ def companies_administrator():
                              user=user, 
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
+                             notifications=notifications,
                              pending_companies_count=pending_companies_count)
     except Exception as e:
         print(f"Errore durante la ricerca delle compagnie: {e}")
@@ -205,6 +206,7 @@ def companies_administrator():
                              user_id=user_id, 
                              user=user, 
                              is_admin=is_admin, 
+                             notifications=notifications,
                              is_company_admin=is_company_admin)
 
 @bp.route('/modify_company/<int:company_id>', methods=['GET', 'POST'])
@@ -257,5 +259,6 @@ def modify_company(company_id):
                          user=user,
                          is_admin=is_admin,
                          is_company_admin=is_company_admin,
+                         notifications=notifications,
                          pending_companies_count=pending_companies_count)
 
