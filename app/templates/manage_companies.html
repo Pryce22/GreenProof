@@ -171,15 +171,24 @@
 
     <script>
         let companyIdToDelete;
+        let deleteModal;
+        let successPopup;
 
-// When delete icon is clicked, store the company ID
+// Quando il DOM è pronto, inizializza i modali di Bootstrap
+document.addEventListener('DOMContentLoaded', () => {
+    // Inizializza i modali di Bootstrap
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    successPopup = new bootstrap.Modal(document.getElementById('successPopup'));
+});
+
+// Quando viene cliccato l'icona di cancellazione, memorizza l'ID dell'azienda
 document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
     button.addEventListener('click', function(e) {
         companyIdToDelete = this.getAttribute('data-company-id');
     });
 });
 
-// Handle delete confirmation
+// Gestisci la conferma della cancellazione
 document.getElementById('confirmDeleteButton').addEventListener('click', async function() {
     try {
         const response = await fetch(`/delete_company/${companyIdToDelete}`, {
@@ -192,34 +201,33 @@ document.getElementById('confirmDeleteButton').addEventListener('click', async f
         const data = await response.json();
 
         if (data.success) {
-            // Close the delete confirmation modal
+            // Chiudi il modal di conferma cancellazione
             deleteModal.hide();
             
-            // Show success popup
+            // Mostra il popup di successo
             successPopup.show();
 
-            // Remove the company card from the UI
+            // Rimuovi la card dell'azienda dalla UI
             const companyCard = document.querySelector(`[data-company-id="${companyIdToDelete}"]`)
                 .closest('.col-lg-4');
             companyCard.remove();
 
-            // Optional: Update UI if no companies left
+            // Opzionale: aggiorna l'interfaccia se non ci sono più aziende
             if (document.querySelectorAll('.company-card').length === 0) {
                 document.getElementById('initialNoResults').classList.remove('d-none');
             }
-        } else {
-            alert(data.error || 'Failed to delete company');
-        }
+        } 
     } catch (error) {
         console.error('Error:', error);
         alert('Failed to delete company');
     }
 });
 
-// Handle OK button in success popup
+// Gestisci il bottone OK nel popup di successo
 document.getElementById('okButton').addEventListener('click', function() {
     successPopup.hide();
 });
+
     </script>
 </body>
 </html>

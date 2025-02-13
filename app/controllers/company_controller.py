@@ -307,7 +307,10 @@ def reject_company(sender_email, receiver_email, company_id):
 def delete_company(company_id):
     try:
         result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
-        return True if result.data else False
+        if result:
+            return True
+        else:
+            return False
     except Exception as e:
         print(f"Error deleting company: {e}")
         return False

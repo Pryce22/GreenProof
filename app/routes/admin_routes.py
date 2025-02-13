@@ -67,7 +67,7 @@ def process_notification(notification_id):
     
 @bp.route('/admin_manage_company', methods=['GET'])
 def admin_manage_company():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     search_query = request.args.get('query', '').strip()
 
     try:
@@ -87,8 +87,7 @@ def admin_manage_company():
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
                              notifications=notifications,
-                             search_query=search_query,
-                             pending_companies_count=pending_companies_count)
+                             search_query=search_query)
     except Exception as e:
         print(f"Errore durante la ricerca delle compagnie: {e}")
         return render_template('manage_companies.html', 
@@ -105,7 +104,7 @@ def admin_manage_company():
 @bp.route('/admin_manage_user', methods=['GET', 'POST'])
 def admin_manage_user():
     # Ottieni informazioni sull'utente
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     unique_admin=user_controller.get_unique_company_admins()
 
     # Verifica se l'utente è autenticato
@@ -114,13 +113,11 @@ def admin_manage_user():
     
     search_query = request.args.get('search', '')
 
-    # Se è presente una query di ricerca, filtra gli utenti
     if search_query:
-        # Passa il search_query alla funzione get_all_users per filtrare i risultati
-        users_info = user_controller.get_users_by_name_or_surname(search_query)
+        users_info = [user for user in user_controller.get_users_by_name_or_surname(search_query) if user["id"] != user_id]
     else:
-        # Se non c'è ricerca, restituisci tutti gli utenti
-        users_info = user_controller.get_all_users()
+        users_info = [user for user in user_controller.get_all_users() if user["id"] != user_id]
+
 
     # Se non è amministratore di una compagnia, solo le informazioni di base
     return render_template('manage_user.html', 
@@ -128,7 +125,6 @@ def admin_manage_user():
                            user=user, 
                            is_admin=is_admin, 
                            is_company_admin=is_company_admin, 
-                           pending_companies_count=pending_companies_count,
                            users_info=users_info,
                            search_query=search_query,
                            unique_admins=unique_admin,
