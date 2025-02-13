@@ -82,10 +82,14 @@
                                             <td>{{ users.phone_number }}</td>
                                         
                                             <td>
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                        data-id="{{ users.id }}">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
+                                                {% if users.id not in unique_admins %}
+                                                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                                            data-id="{{ users.id }}">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Admin</span>
+                                                {% endif %}
                                             </td>
                                             
                                             
@@ -192,7 +196,7 @@ document.getElementById('confirmDeleteButton').addEventListener('click', async f
             console.log("Server response:", data); // Aggiungi il log della risposta
 
             if (data.success) {
-                alert('User deleted successfully!');
+                //alert('User deleted successfully!');
                 location.reload(); // Ricarica la pagina per vedere l'utente rimosso
             } else {
                 alert('Failed to delete user.');

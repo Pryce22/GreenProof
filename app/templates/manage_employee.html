@@ -223,5 +223,13 @@
     }
 });
     </script>
+    <script>
+        document.getElementById("searchButton").addEventListener("click", function() {
+            let searchQuery = document.getElementById("searchInput").value;
+            // Reload the page with the search query in the URL
+            window.location.href = window.location.pathname + "?search_query=" + encodeURIComponent(searchQuery);
+        });
+    </script>
+    
 </body>
 </html>
