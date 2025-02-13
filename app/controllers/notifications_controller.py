@@ -82,6 +82,24 @@ def get_notification_by_id(notification_id):
     notification = notification.data[0] if notification.data else None
     return notification
 
+def send_notification_to_admin(type, sender, company_id):
+    try:
+        # Get all company admins
+        admins = supabase.table('roles') \
+            .select('email') \
+            .eq('admin', True) \
+            .execute()
+        if not admins.data:
+            return False
+        
+        # Send a notification to each admin
+        for admin in admins.data:
+            create_notification(type, sender, admin['email'], company_id)
+        return True
+    except Exception as e:
+        print(f"Error sending notification to admins: {e}")
+        return False
+
 def mark_as_read(notification_id):
     try:
         response = supabase.table('notifications') \

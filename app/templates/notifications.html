@@ -122,14 +122,45 @@
             const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
+            const action = 'approve registration';
             
             try {
-                const response = await fetch(`/admin/notification/${notificationId}/process`, {
+                const response = await fetch(`/admin/notification/${notificationId}/${action}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ action: 'approve' })
+                    body: JSON.stringify({ action: 'approve registration' })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    removeNotification(notificationCard);
+                } else {
+                    alert(data.error || 'Failed to approve company');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to approve company');
+            }
+        });
+    });
+
+    document.querySelectorAll('.reject-btn').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const companyId = this.getAttribute('data-company-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            const action = 'reject registration';
+            
+            try {
+                const response = await fetch(`/admin/notification/${notificationId}/${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: 'reject registration' })
                 });
                 const data = await response.json();
                 
@@ -152,15 +183,49 @@
             const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
+            const action = 'approve elimination';
             
             if (confirm('Are you sure you want to eliminate this company? This action cannot be undone.')) {
                 try {
-                    const response = await fetch(`/admin/notification/${notificationId}/process`, {
+                    const response = await fetch(`/admin/notification/${notificationId}/${action}`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({ action: 'eliminate' })
+                        body: JSON.stringify({ action: 'approve elimination' })
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        removeNotification(notificationCard);
+                    } else {
+                        alert(data.error || 'Failed to eliminate company');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to eliminate company');
+                }
+            }
+        });
+    });
+
+
+    document.querySelectorAll('.approve-elimination-btn').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const companyId = this.getAttribute('data-company-id');
+            const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
+            const notificationCard = this.closest('.notification-card');
+            const action = 'reject elimination';
+            
+            if (confirm('Are you sure you want to eliminate this company? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`/admin/notification/${notificationId}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ action: 'reject elimination' })
                     });
                     const data = await response.json();
                     

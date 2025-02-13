@@ -33,8 +33,8 @@ def eliminate_company(company_id):
     success = company_controller.eliminate_company(company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to eliminate company'})
 
-@bp.route('/notification/<notification_id>/process', methods=['POST'])
-def process_notification(notification_id):
+@bp.route('/notification/<notification_id>/<action>', methods=['POST'])
+def process_notification(notification_id,action):
     """Process a notification (approve/reject/eliminate) and delete it"""
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not is_admin:
@@ -46,13 +46,20 @@ def process_notification(notification_id):
         if not notif:
             return jsonify({'success': False, 'error': 'Notification not found'})
         company_id = notif['company_id']
+        sender_email = notif['receiver_email']
+        receiver_email = notif['sender_email']
         
         # Process based on notification type
         success = False
-        if notif['type'] == 'company_registration':
-            success = company_controller.approve_company(company_id)
-        elif notif['type'] == 'company_elimination':
-            success = company_controller.eliminate_company(company_id)
+
+        if action == 'approve registration':
+            success = company_controller.approve_company(sender_email, receiver_email, company_id)
+        elif action == 'reject registration':
+            success = company_controller.reject_company(sender_email, receiver_email, company_id)
+        elif action == 'approve elimination':
+            success = company_controller.eliminate_company(sender_email, receiver_email, company_id)
+        elif action == 'reject elimination':
+            success = notifications_controller.create_notification("rejection elimination company", sender_email, receiver_email, company_id)
             
         # If company operation was successful, delete the notification
         if success:
