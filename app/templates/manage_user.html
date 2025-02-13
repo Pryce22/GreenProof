@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='manage_user.css') }}" rel="stylesheet">
+    
+</head>
+<body>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <!-- Left section -->
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                    </a>
+                    <a class="navbar-brand mb-0" href="/">
+                        Sustainable Food Supply Chain
+                    </a>
+                </div>
+
+                <!-- Right section -->
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                        {% include 'includes/user_menu.html' %}
+                    {% else %}
+                        <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                        <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+    <div class="container py-5 min-vh-100">
+        <h1 class="text-center mb-4">User Management System</h1>
+    
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                
+                        <h5 class="card-title mb-0 me-auto">User List</h5>
+                        <!-- Sezione di ricerca su una sola riga -->
+                        <div class="input-group d-flex w-100">
+                            <form method="GET" action="{{ url_for('admin.admin_manage_user') }}" class="d-flex w-100">
+                                <input type="text" class="form-control bg-white text-dark" placeholder="Search user by name or surname..." name="search" id="searchInput">
+                                <button class="btn btn-light ms-2" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                    
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Surname</th>
+                                        <th>Birthday</th>
+                                        <th>Email</th>
+                                        <th>Phone Number</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for users in users_info %}
+                                        <tr>
+                                            <td>{{ users.name }}</td>
+                                            <td>{{ users.surname }}</td>
+                                            <td>{{ users.birthday }}</td>
+                                            <td>{{ users.email }}</td>
+                                            <td>{{ users.phone_number }}</td>
+                                        
+                                            <td>
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                                                        data-id="{{ users.id }}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                            
+                                            
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="6" class="text-center">No user found in the System.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>    
+        
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Confirm Deletion</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this user?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <!-- Bottone per confermare l'eliminazione -->
+                        <button type="button" id="confirmDeleteButton" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        
+    </div>
+    </main>
+    
+    
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Farm Fresh Market</h5>
+                    <p>Connecting farmers and consumers directly</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">About Us</a></li>
+                        <li><a href="#" class="text-light">Products</a></li>
+                        <li><a href="#" class="text-light">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <div class="social-icons">
+                        <i class="bi bi-facebook me-2"></i>
+                        <i class="bi bi-twitter-x me-2"></i>
+                        <i class="bi bi-instagram"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+
+    <script>
+  // Variabile globale per memorizzare l'ID dell'utente da eliminare
+let userIdToDelete = null;
+
+// Quando si apre il modal, recupera l'ID dell'utente dal pulsante
+$('#deleteModal').on('show.bs.modal', function (event) {
+    // Ottieni il pulsante che ha attivato il modal
+    const button = $(event.relatedTarget);
+    
+    // Estrai l'ID dell'utente dal data-id del pulsante
+    userIdToDelete = button.data('id');
+    
+    // Log per assicurarti che l'ID venga preso correttamente
+    console.log("User ID to delete: ", userIdToDelete);
+});
+document.getElementById('confirmDeleteButton').addEventListener('click', async function() {
+    if (userIdToDelete !== null) {
+        try {
+            // Invia la richiesta di eliminazione al server
+            console.log("User ID to delete:", userIdToDelete);
+
+            const response = await fetch(`/admin/delete_user/${userIdToDelete}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+            console.log("Server response:", data); // Aggiungi il log della risposta
+
+            if (data.success) {
+                alert('User deleted successfully!');
+                location.reload(); // Ricarica la pagina per vedere l'utente rimosso
+            } else {
+                alert('Failed to delete user.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to delete user.');
+        }
+    }
+});
+
+
+        
+    </script>
+</body>
+</html>
