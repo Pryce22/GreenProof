@@ -622,7 +622,7 @@ def get_employees_by_companies(excluded_user_id):
 def get_companies_information_by_user_id(user_id):
     try:
         # Ottieni tutti gli ID delle aziende a cui l'utente è associato
-        company_ids = get_companies_by_user_id(user_id)
+        company_ids = get_companies_id_by_user_id(user_id)
         
         if not company_ids:
             return []

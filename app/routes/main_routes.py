@@ -5,7 +5,7 @@ bp = Blueprint('main', __name__)
 
 @bp.route('/')
 def home():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     return render_template('index.html', 
                          user_id=user_id, 
                          user=user, 

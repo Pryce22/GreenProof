@@ -8,7 +8,7 @@ bp = Blueprint('admin', __name__)
 
 @bp.route('/company/approve/<int:company_id>', methods=['POST'])
 def approve_company(company_id):
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not is_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
     
@@ -17,7 +17,7 @@ def approve_company(company_id):
 
 @bp.route('/company/reject/<int:company_id>', methods=['POST'])
 def reject_company(company_id):
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not is_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
     
@@ -26,7 +26,7 @@ def reject_company(company_id):
 
 @bp.route('/company/eliminate/<int:company_id>', methods=['POST'])
 def eliminate_company(company_id):
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not is_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
     
@@ -36,7 +36,7 @@ def eliminate_company(company_id):
 @bp.route('/notification/<notification_id>/process', methods=['POST'])
 def process_notification(notification_id):
     """Process a notification (approve/reject/eliminate) and delete it"""
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not is_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
         

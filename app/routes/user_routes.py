@@ -6,7 +6,7 @@ bp = Blueprint('user', __name__)
 
 @bp.route('/user_profile', methods=['GET', 'POST'])
 def user_profile():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     companies= user_controller.get_companies_by_user_id(user_id)
 
     if not user_id:
@@ -15,14 +15,14 @@ def user_profile():
         unique_company_admin=user_controller.is_unique_company_admin(user_id)
         unique_admin=user_controller.get_company_ids_where_user_is_unique_admin(user_id)
         
-        return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, unique_company_admin=unique_company_admin, companies=companies, unique_admin=unique_admin, notifications = notifications, pending_companies_count=pending_companies_count)
+        return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, unique_company_admin=unique_company_admin, companies=companies, unique_admin=unique_admin, notifications = notifications)
     
-    return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, companies=companies, notifications = notifications, pending_companies_count=pending_companies_count)
+    return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, companies=companies, notifications = notifications)
 
 
 @bp.route('/notifications', methods=['GET'])
 def notifications():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications= get_user_info()
     if not user_id:
         return redirect(url_for('auth.login'))
     
@@ -81,7 +81,7 @@ def update_user():
 
 @bp.route('/handle_invitation/<notification_id>/<action>', methods=['POST'])
 def handle_invitation(notification_id, action):
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not user_id:
         return jsonify({'success': False, 'error': 'Not authenticated'})
     
@@ -116,7 +116,7 @@ def handle_invitation(notification_id, action):
 @bp.route('/manage_employee', methods=['GET', 'POST'])
 def manage_employee():
     # Ottieni informazioni sull'utente
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
 
     # Verifica se l'utente è autenticato
     if not user_id:
@@ -143,8 +143,7 @@ def manage_employee():
                                is_company_admin=is_company_admin, 
                                unique_company_admin=unique_company_admin, 
                                companies=companies, 
-                               unique_admin=unique_admin, 
-                               pending_companies_count=pending_companies_count,
+                               unique_admin=unique_admin,
                                employees=employees,
                                info_company=info_company,
                                email=email,
@@ -156,8 +155,7 @@ def manage_employee():
                            user=user, 
                            is_admin=is_admin, 
                            is_company_admin=is_company_admin, 
-                           companies=companies, 
-                           pending_companies_count=pending_companies_count,
+                           companies=companies,
                            info_company=info_company,
                            email=email,
                            notifications=notifications)
@@ -165,7 +163,7 @@ def manage_employee():
 
 @bp.route('/send_company_invitation', methods=['POST'])
 def send_company_invitation():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
     

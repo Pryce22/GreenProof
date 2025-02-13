@@ -11,7 +11,6 @@ def get_user_info():
     user = None
     is_admin = False
     is_company_admin = False
-    pending_companies_count = 0
     notifications = []
     
     if user_id:
@@ -19,10 +18,7 @@ def get_user_info():
         is_admin = user_controller.is_admin(user_id)
         is_company_admin = user_controller.is_company_admin(user_id)
         notifications = notifications_controller.get_unread_notifications_count(user['email'])
-        if is_admin:
-            pending_companies = company_controller.get_pending_companies()
-            pending_companies_count = len(pending_companies)
-    return user_id, user, is_admin, is_company_admin, notifications, pending_companies_count
+    return user_id, user, is_admin, is_company_admin, notifications, 
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -55,7 +51,7 @@ def login():
             'error': 'Invalid email or password'
         })
     
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     return render_template('login.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications=notifications)
 
 @bp.route('/register', methods=['GET', 'POST'])
@@ -94,7 +90,7 @@ def register():
             return jsonify({'success': True, 'redirect': url_for('auth.mfa')})
         return jsonify({'success': False, 'error': 'Failed to send verification email'})
     
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     return render_template('register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications=notifications)
 
 @bp.route('/resend-verification', methods=['POST'])
@@ -163,7 +159,7 @@ def mfa():
         
         return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
         
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications=notifications)
 
 @bp.route('/password_recover', methods=['GET', 'POST'])

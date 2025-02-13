@@ -23,7 +23,7 @@ def validate_file_size(file):
 
 @bp.route('/company_register', methods=['GET', 'POST'])
 def company_register():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     if not user_id:
         return redirect(url_for('auth.login'))
     
@@ -88,11 +88,11 @@ def company_register():
                 'error': 'An unexpected error occurred'
             })
 
-    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications = notifications, pending_companies_count=pending_companies_count)
+    return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications = notifications)
 
 @bp.route('/search_companies', methods=['GET'])
 def search_companies():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     search_query = request.args.get('query', '').strip()
     
     try:
@@ -124,7 +124,7 @@ def search_companies():
 
 @bp.route('/information_company/<int:company_id>')
 def information_company(company_id):
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications= get_user_info()
     
     company = company_controller.get_company_by_id(company_id)
     if company is None:
@@ -181,7 +181,7 @@ def get_cities():
 
 @bp.route('/companies_of_administrator', methods=['GET'])
 def companies_administrator():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     
     try:
         # Verifica se l'utente è un amministratore di alcune compagnie
@@ -202,8 +202,7 @@ def companies_administrator():
                              user=user, 
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
-                             notifications=notifications,
-                             pending_companies_count=pending_companies_count)
+                             notifications=notifications)
     except Exception as e:
         print(f"Errore durante la ricerca delle compagnie: {e}")
         return render_template('manage_companies.html', 
@@ -216,7 +215,7 @@ def companies_administrator():
 
 @bp.route('/modify_company/<int:company_id>', methods=['GET', 'POST'])
 def modify_company(company_id):
-    user_id, user, is_admin, is_company_admin, notifications,  pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     
     company = company_controller.get_company_by_id(company_id)
     if company is None:
@@ -264,8 +263,7 @@ def modify_company(company_id):
                          user=user,
                          is_admin=is_admin,
                          is_company_admin=is_company_admin,
-                         notifications=notifications,
-                         pending_companies_count=pending_companies_count)
+                         notifications=notifications)
 
 
 @bp.route('/delete_company/<int:company_id>', methods=['POST'])
