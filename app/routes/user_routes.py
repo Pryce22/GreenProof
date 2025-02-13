@@ -125,9 +125,9 @@ def manage_employee():
     # Ottieni le company_id per l'utente
     companies = user_controller.get_companies_by_user_id(user_id)
     info_company = user_controller.get_companies_information_by_user_id(user_id)
-
+    
     search_query = request.args.get('search_query', '').strip()
-
+    
     # Se l'utente è un amministratore di una compagnia
     if is_company_admin:
         unique_company_admin = user_controller.is_unique_company_admin(user_id)
@@ -135,14 +135,19 @@ def manage_employee():
 
         # Ottieni i dettagli degli employee per le compagnie dell'utente
         if search_query:
-            employees = user_controller.get_users_by_name_or_surname(search_query)
+            employees_by_name_or_surname = user_controller.get_users_by_name_or_surname(search_query)
+            
+            all_employees=user_controller.get_employees_by_companies(user_id)
+           
             # Filtra solo i dipendenti che appartengono a una delle aziende dell'utente
-            employees = [emp for emp in employees if emp['company_id'] in [company['company_id'] for company in companies]]
+            employees = [employee for employee in all_employees
+                        if any(emp['id'] == employee['id'] for emp in employees_by_name_or_surname)]
+            
         else:
             employees = user_controller.get_employees_by_companies(user_id)
 
         email = user_controller.get_all_user_emails()
-
+        
         # Passa tutte le informazioni alla template
         return render_template('manage_employee.html',
                                user_id=user_id,
@@ -208,4 +213,23 @@ def mark_notification_read(notification_id):
         return jsonify({'success': success})
     except Exception as e:
         print(f"Error in mark_notification_read: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+    
+
+@bp.route('/delete_employee', methods=['POST'])
+def delete_employee_route():
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        company_id = data.get('company_id')
+
+        response = user_controller.delete_employee(user_id, company_id)
+        
+        # Se la risposta della funzione di eliminazione è positiva, ritorniamo success
+        if response:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to delete employee'})
+
+    except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
