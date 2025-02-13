@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Farm Fresh Market</title>
+<title>Sustainable Food Supply Chain</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="static/index.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
@@ -146,7 +146,7 @@
 
   <section id="products" class="py-5">
     <div class="container">
-      <h2 class="text-center mb-5">Featured Companies</h2>
+      <h2 class="text-center mb-5">Greener Companies</h2>
       <div class="row g-4">
         {% for company in top_companies %}
         <div class="col-md-4">
@@ -154,7 +154,6 @@
             <img src="{{ company.company_image or 'https://images.unsplash.com/photo-1554469384-e58fac16e23a' }}" class="card-img-top" alt="{{ company.company_name }}">
             <div class="card-body">
               <h5 class="card-title">{{ company.company_name }}</h5>
-              <p class="card-text">{{ company.company_description }}</p>
               <p class="text-success fw-bold">{{ company.token }} CO₂ Tokens</p>
               <a href="/information_company/{{ company.company_id }}" class="btn btn-success w-100">View Details</a>
             </div>
@@ -170,22 +169,128 @@
       <div class="row justify-content-center">
         <div class="col-md-6 text-center">
           <h2>Contact Us</h2>
-          <form>
+          <form id="contactForm" method="POST" action="/contact">
             <div class="mb-3">
-              <input type="text" class="form-control" placeholder="Your Name">
+              <input type="text" id="name" name="name" class="form-control" placeholder="Your Name" required minlength="2" maxlength="50">
+              <div class="invalid-feedback" id="nameError"></div>
             </div>
             <div class="mb-3">
-              <input type="email" class="form-control" placeholder="Your Email">
+              <input type="email" id="email" name="email" class="form-control" placeholder="Your Email" required>
+              <div class="invalid-feedback" id="emailError"></div>
             </div>
             <div class="mb-3">
-              <textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
-            </div>
+                <textarea id="message" name="message" rows="5" class="form-control" placeholder="Your Message" required maxlength="500"></textarea>
+                <div class="text-end"><small id="messageCount">0/500</small></div>
+                <div class="invalid-feedback" id="messageError"></div>
+              </div>
             <button type="submit" class="btn btn-success">Send Message</button>
           </form>
         </div>
       </div>
     </div>
   </section>
+  <!-- Inserisci questo script subito prima della chiusura del tag </body> -->
+<script>
+    document.getElementById('message').addEventListener('input', function() {
+      const length = this.value.length;
+      document.getElementById('messageCount').textContent = `${length}/500`;
+    });
+  </script>
+
+  <!-- Assicurati che il markup del Toast sia presente -->
+
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="contactToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <!-- Il messaggio dinamico verrà inserito qui -->
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const form = event.target;
+    
+      // Clear any previous error messages
+      form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+      form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+    
+      let valid = true;
+      
+      // Validate name
+      const nameInput = document.getElementById('name');
+      const nameError = document.getElementById('nameError');
+      const nameValue = nameInput.value.trim();
+      if(nameValue.length < 2 || nameValue.length > 50) {
+        nameError.textContent = "Name must be between 2 and 50 characters.";
+        nameInput.classList.add("is-invalid");
+        valid = false;
+      }
+      
+      // Validate email
+      const emailInput = document.getElementById('email');
+      const emailError = document.getElementById('emailError');
+      const emailValue = emailInput.value.trim();
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if(!emailPattern.test(emailValue)) {
+        emailError.textContent = "Please enter a valid email address.";
+        emailInput.classList.add("is-invalid");
+        valid = false;
+      }
+      
+      // Validate message
+      const messageInput = document.getElementById('message');
+      const messageError = document.getElementById('messageError');
+      const messageValue = messageInput.value.trim();
+      if(messageValue.length > 500) {
+        messageError.textContent = "Message must not exceed 500 characters.";
+        messageInput.classList.add("is-invalid");
+        valid = false;
+      }
+      
+      if (!valid) return;
+      
+      const formData = new FormData(form);
+      
+      fetch('/contact', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json().then(data => ({status: response.status, body: data})))
+      .then(res => {
+        if (res.status === 200 && res.body.success) {
+          // Show the Toast with the success message
+          document.querySelector('#contactToast .toast-body').textContent = res.body.message;
+          const toast = new bootstrap.Toast(document.getElementById('contactToast'), { delay: 3000 });
+          toast.show();
+          form.reset();
+          document.getElementById('messageCount').textContent = "0/500";
+        } else {
+          // Handle validation or other errors
+          if (res.body.errors) {
+            for (const [field, errorMsg] of Object.entries(res.body.errors)) {
+              const input = document.getElementById(field);
+              const errorDiv = document.getElementById(field + 'Error');
+              if (input && errorDiv) {
+                input.classList.add('is-invalid');
+                errorDiv.textContent = errorMsg;
+              }
+            }
+          } else if (res.body.error) {
+            alert(res.body.error);
+          }
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("An error occurred. Please try again later.");
+      });
+    });
+  </script>
 
 <footer class="bg-dark text-light py-4">
 <div class="container">
@@ -197,9 +302,9 @@
 <div class="col-md-4">
 <h5>Quick Links</h5>
 <ul class="list-unstyled">
-<li><a href="#" class="text-light">About Us</a></li>
-<li><a href="#" class="text-light">Products</a></li>
-<li><a href="#" class="text-light">Contact</a></li>
+<li><a href="#about-us" class="text-light">About Us</a></li>
+<li><a href="#products" class="text-light">Greener Companies</a></li>
+<li><a href="#contact" class="text-light">Contact</a></li>
 </ul>
 </div>
 <div class="col-md-4">

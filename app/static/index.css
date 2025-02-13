@@ -59,17 +59,7 @@
     font-weight: bold;
     margin-bottom: 1rem;
     }
-    
-    .btn-success {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    padding: 0.8rem 2rem;
-    }
-    
-    .btn-success:hover {
-    background-color: darken(var(--primary), 10%);
-    border-color: darken(var(--primary), 10%);
-    }
+
 
     .btn-profile {
         font-size: 1rem;
@@ -181,4 +171,21 @@
 /* Spinge il tasto in fondo */
 #products .card-body a.btn-success {
     margin-top: auto;
+}
+
+.btn-success {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    padding: 0.8rem 2rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #27632a !important;
+    border-color: #27632a !important;
+}
+
+#contact textarea {
+    resize: vertical;  /* Consente solo la modifica verticale */
+    max-height: 250px;  /* Imposta l'altezza massima, regola il valore in base alle tue necessità */
 }

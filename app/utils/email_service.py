@@ -105,3 +105,59 @@ class EmailService:
         </body>
         </html>
         """
+    
+    def _get_contact_email_template(self, name, email, message):
+        return f"""
+        <html>
+        <head>
+            <style>
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f9f9f9;
+                    margin: 0;
+                    padding: 0;
+                }}
+                .container {{
+                    max-width: 600px;
+                    margin: 30px auto;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                    padding: 20px;
+                }}
+                h2 {{
+                    color: #28a745;
+                    text-align: center;
+                }}
+                p {{
+                    line-height: 1.5;
+                    font-size: 14px;
+                }}
+                .footer {{
+                    text-align: center;
+                    font-size: 12px;
+                    color: #888888;
+                    margin-top: 20px;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>Nuovo messaggio da Contatto</h2>
+                <p><strong>Nome:</strong> {name}</p>
+                <p><strong>Email:</strong> {email}</p>
+                <p><strong>Messaggio:</strong></p>
+                <p>{message}</p>
+                <div class="footer">
+                    Sustainable Food Supply Chain ©
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+
+    def send_contact_email(self, name, email, message):
+        subject = f"Nuovo messaggio da {name}"
+        html_content = self._get_contact_email_template(name, email, message)
+        # Scegli l'indirizzo di destinazione (ad esempio, l'indirizzo dell'admin)
+        return self.send_email(to_email="ssb2024.2025@gmail.com", subject=subject, html_content=html_content)
