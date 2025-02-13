@@ -3,6 +3,8 @@ from app.controllers import user_controller, company_controller, notifications_c
 import re
 import uuid
 import time
+from datetime import datetime, date
+
 
 bp = Blueprint('auth', __name__)
 
@@ -57,6 +59,8 @@ def login():
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        
+
         email = request.form['email']
         first_name = request.form['firstName']
         surname = request.form['surname']
@@ -73,7 +77,27 @@ def register():
         password_pattern = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$")
         if not password_pattern.match(password):
             return jsonify({'success': False, 'error': 'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character'})
-
+        
+        # Check phone number validity: controlla che il numero abbia solo cifre e il segno +
+        phone_pattern = re.compile(r'^\+?\d{10,15}$')
+        if not phone_pattern.match(phone_number):
+            return jsonify({'success': False, 'error': 'Invalid phone number format'})
+        
+        # Check birth_date validity
+        try:
+            birth_date_obj = datetime.strptime(birth_date, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'success': False, 'error': 'Invalid birth date format. Use YYYY-MM-DD'})
+        
+        # La data di nascita non deve essere nel futuro
+        if birth_date_obj > date.today():
+            return jsonify({'success': False, 'error': 'Birth date cannot be in the future'})
+        
+        # Verifica che l'utente abbia almeno 18 anni (puoi modificare questa soglia a piacere)
+        age = (date.today() - birth_date_obj).days // 365
+        if age < 16:
+            return jsonify({'success': False, 'error': 'You must be at least 16 years old'})
+        
         # Store registration data in session
         session['pending_registration'] = {
             'id': id,

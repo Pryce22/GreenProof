@@ -67,7 +67,7 @@ def process_notification(notification_id):
     
 @bp.route('/admin_manage_company', methods=['GET'])
 def admin_manage_company():
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     search_query = request.args.get('query', '').strip()
 
     try:
@@ -87,8 +87,7 @@ def admin_manage_company():
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
                              notifications=notifications,
-                             search_query=search_query,
-                             pending_companies_count=pending_companies_count)
+                             search_query=search_query)
     except Exception as e:
         print(f"Errore durante la ricerca delle compagnie: {e}")
         return render_template('manage_companies.html', 
@@ -105,7 +104,7 @@ def admin_manage_company():
 @bp.route('/admin_manage_user', methods=['GET', 'POST'])
 def admin_manage_user():
     # Ottieni informazioni sull'utente
-    user_id, user, is_admin, is_company_admin, notifications, pending_companies_count = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     unique_admin=user_controller.get_unique_company_admins()
 
     # Verifica se l'utente è autenticato
@@ -127,8 +126,7 @@ def admin_manage_user():
                            user_id=user_id, 
                            user=user, 
                            is_admin=is_admin, 
-                           is_company_admin=is_company_admin, 
-                           pending_companies_count=pending_companies_count,
+                           is_company_admin=is_company_admin,
                            users_info=users_info,
                            search_query=search_query,
                            unique_admins=unique_admin,

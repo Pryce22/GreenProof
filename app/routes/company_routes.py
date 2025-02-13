@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 import os
 import geonamescache
 import uuid
+import re
 
 bp = Blueprint('company', __name__)
 gc = geonamescache.GeonamesCache()
@@ -38,6 +39,12 @@ def company_register():
                 return jsonify({'success': False, 'error': 'User not found'})
             
             company_id = uuid.uuid4().int & (1<<32)-1
+            company_phone_number = request.form.get('phone')
+
+            company_phone_pattern = re.compile(r'^\+?\d{10,15}$')
+            if not company_phone_pattern.match(company_phone_number):
+                return jsonify({'success': False, 'error': 'Invalid phone number format'})
+
 
             # Extract form data
             company_data = {
@@ -61,7 +68,8 @@ def company_register():
                     'success': False,
                     'error': 'A company with this name already exists'
                 })
-
+            
+           
             # Create company
             result = company_controller.create_company(**company_data)
 
