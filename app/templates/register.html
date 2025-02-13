@@ -88,13 +88,13 @@
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Phone Number*</label>
-                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter your phone number" required>
-                                <div class="invalid-feedback">Please enter a valid phone number.</div>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="Enter your phone number" pattern="^\+?\d{10,15}$" required>
+                                <div class="invalid-feedback">Please enter a valid phone number (10-15 digits, may include a leading +).</div>
                             </div>
                             <div class="mb-3">
                                 <label for="birthDate" class="form-label">Birth Date*</label>
                                 <input type="date" class="form-control" id="birthDate" name="birthDate" required>
-                                <div class="invalid-feedback">Please enter a valid birth date. You must be at least 13 years old.</div>
+                                <div class="invalid-feedback">Please enter a valid birth date. You must be at least 16 years old.</div>
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="terms" required>
@@ -142,6 +142,15 @@
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
         const togglePasswordIcon = document.querySelector('#togglePasswordIcon');
+
+        const birthDateInput = document.getElementById('birthDate');
+        const today = new Date();
+        const year = today.getFullYear() - 16;
+        let month = today.getMonth() + 1;
+        let day = today.getDate();
+        if(month < 10) month = '0' + month;
+        if(day < 10) day = '0' + day;
+        birthDateInput.max = `${year}-${month}-${day}`;
 
         togglePassword.addEventListener('click', function (e) {
             // toggle the type attribute

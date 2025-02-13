@@ -26,6 +26,11 @@ body {
     margin: 0; /* Reset body margin */
 }
 
+.btn-profile {
+    position: relative;
+    z-index: 1000;
+}
+
 .notification-wrapper {
     max-width: 1200px; /* Increased from 800px */
     margin: 0 auto;

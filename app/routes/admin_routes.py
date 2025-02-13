@@ -68,6 +68,7 @@ def process_notification(notification_id):
 @bp.route('/admin_manage_company', methods=['GET'])
 def admin_manage_company():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     search_query = request.args.get('query', '').strip()
 
     try:
@@ -104,6 +105,7 @@ def admin_manage_company():
 @bp.route('/admin_manage_user', methods=['GET', 'POST'])
 def admin_manage_user():
     # Ottieni informazioni sull'utente
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     unique_admin=user_controller.get_unique_company_admins()
 

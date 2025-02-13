@@ -79,6 +79,7 @@
         margin-right: 0 !important;
         background-color: #212529 !important;
         border-color: #212529 !important;
+        z-index: 1000; /* Ensure the button is above other elements */
     }
     
     .btn-profile:hover {
