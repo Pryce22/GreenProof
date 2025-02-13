@@ -274,10 +274,27 @@ def approve_company(sender_email, receiver_email, company_id):
     try:
         result = supabase.from_('companies').update({'status': True}).eq('company_id', company_id).execute()
         if result.data:
-            # Send notification to the sender
+
+            user = user_controller.get_user_by_email(receiver_email)
+            if user:
+                user_id = user.get('id')
+                # Inserisci nella tabella company_employe rendendo l'utente admin della compagnia
+                admin_response = supabase.from_('company_employe').insert({
+                    'user_id': user_id,
+                    'company_id': company_id,
+                    'company_admin': True
+                }).execute()
+                if not admin_response.data:
+                    print("Failed to set user as company admin")
+                    return False
+            else:
+                print("User not found for receiver email")
+                return False
+                
             notifications_controller.create_notification('acception registration company', sender_email, receiver_email, company_id)
             return True
-        else: False
+        else:
+            return False
     except Exception as e:
         print(f"Error approving company: {e}")
         return False
