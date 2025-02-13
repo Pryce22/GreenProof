@@ -43,6 +43,12 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(0, 112, 243, 0.25);
 }
 
+#address,
+#description {
+    resize: vertical;  /* Consente solo la modifica verticale */
+    max-height: 250px;  /* Imposta l'altezza massima, regola il valore in base alle tue necessità */
+}
+
 /* Unified select styling */
 .form-select, .select2-container--default .select2-selection--single {
     height: auto;
