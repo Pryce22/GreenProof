@@ -113,7 +113,7 @@
                             </div>
                             <div class="mb-3 form-check">
                                 <input type="checkbox" class="form-check-input" id="terms" required>
-                                <label class="form-check-label" for="terms">I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a></label>
+                                <label class="form-check-label" for="terms">I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a></label>
                                 <div class="invalid-feedback">You must agree before submitting</div>
                             </div>
                             <button type="submit" class="btn btn-primary w-100" id="submitBtn">
@@ -126,6 +126,90 @@
             </div>
         </div>
     </div>
+
+
+<!-- Modal Terms -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted text-center">Last Updated: <strong>14/02/2025</strong></p>
+
+                <div class="terms-content" style="max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f8f9fa;">
+                    <h6>1. Introduction</h6>
+                    <p>By using <strong>GreenProof</strong>, you agree to these terms. If you do not agree, do not use our services.</p>
+            
+                    <h6>2. Services</h6>
+                    <p>GreenProof facilitates the trading and management of CO₂ credits to offset emissions.</p>
+            
+                    <h6>3. Account & Security</h6>
+                    <p>Users must provide accurate information and are responsible for securing their accounts.</p>
+            
+                    <h6>4. CO₂ Credit Transactions</h6>
+                    <p>All transactions are final and subject to international carbon trading regulations.</p>
+            
+                    <h6>5. Fees & Payments</h6>
+                    <p>Transaction fees apply. Payments must be processed through our secure gateway.</p>
+            
+                    <h5>6. Data & Privacy</h6>
+                    <p>Personal data is processed according to our <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>. We do not sell user data.</p>
+            
+                    <h6>7. Liability</h6>
+                    <p>GreenProof is not liable for financial losses or market fluctuations in CO₂ credits.</p>
+            
+                    <h6>8. Amendments</h6>
+                    <p>We may update these terms at any time. Continued use implies acceptance.</p>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal Privacy -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="privacyModalLabel">Privacy Policy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted text-center">Last Updated: <strong>14/02/2025</strong></p>
+
+            <div class="privacy-content" style="max-height: 250px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f8f9fa;">
+                
+                <h6>1. Data Collection</h6>
+                <p>We collect personal information such as name, email, and transaction details to provide our services.</p>
+
+                <h6>2. Use of Data</h6>
+                <p>Your data is used to facilitate CO₂ credit transactions, improve our platform, and comply with regulations.</p>
+
+                <h6>3. Data Sharing</h6>
+                <p>We do not sell user data. Data may be shared with regulatory bodies or partners only when necessary.</p>
+
+                <h6>4. Security Measures</h6>
+                <p>We implement encryption and access controls to protect user data from unauthorized access.</p>
+
+                <h6>5. Cookies & Tracking</h6>
+                <p>We use cookies to enhance user experience. You can manage cookie preferences in your browser settings.</p>
+
+                <h6>6. User Rights</h6>
+                <p>You have the right to access, modify, or delete your data by contacting our support team.</p>
+
+                <h6>7. Policy Updates</h6>
+                <p>We may update this Privacy Policy. Continued use of our services implies acceptance.</p>
+
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <footer class="bg-dark text-light py-4">
         <div class="container">
