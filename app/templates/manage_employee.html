@@ -44,13 +44,17 @@
                 <div class="card">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 me-auto">Employee List</h5>
-                        <div class="input-group">
-                            <input type="text" class="form-control bg-white text-dark" placeholder="Search employees by name..." id="searchInput">
-                            <button class="btn btn-light" id="searchButton" data-bs-target="#searchModal">
-                                <i class="bi bi-search"></i>
-                            </button>
+                        <div class="input-group d-flex w-100">
+                            <form method="GET" action="{{ url_for('user.manage_employee') }}" class="d-flex w-100">
+                                <input type="text" class="form-control bg-white text-dark" placeholder="Search employees by name or surname..." name="search_query" id="searchInput">
+                                <button class="btn btn-light ms-2" type="submit">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
+      
+
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -61,7 +65,7 @@
                                         <th>Company</th>
                                         <th>Email</th>
                                         <th>Phone Number</th>
-                                        <th>Actions</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -72,10 +76,12 @@
                                             <td>{{ employee.company_name }}</td>
                                             <td>{{ employee.email }}</td>
                                             <td>{{ employee.phone_number }}</td>
-                                            <td>
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                            <td class="text-center">
+                                                <!-- Pulsante di eliminazione -->
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}">
                                                     <i class="bi bi-trash"></i>
-                                                </button>
+                                                </button>                                               
+
                                             </td>
                                         </tr>
                                     {% else %}
@@ -153,6 +159,25 @@
             </div>
         </div>
     </div>
+
+        <!-- Success Confirmation Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Employee Deleted</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    The employee has been successfully deleted.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     
     <footer class="bg-dark text-light py-4">
         <div class="container">
@@ -182,14 +207,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        document.getElementById("searchButton").addEventListener("click", function() {
-            let searchQuery = document.getElementById("searchInput").value;
-            alert("Searching for: " + searchQuery);
-        });
-    </script>
-    
+   
     <script>
     document.getElementById("inviteForm").addEventListener("submit", async function(event) {
     event.preventDefault();
@@ -223,13 +241,71 @@
     }
 });
     </script>
-    <script>
-        document.getElementById("searchButton").addEventListener("click", function() {
-            let searchQuery = document.getElementById("searchInput").value;
-            // Reload the page with the search query in the URL
-            window.location.href = window.location.pathname + "?search_query=" + encodeURIComponent(searchQuery);
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$('#deleteModal .btn-danger').on('click', async function() {
+    // Verifica se i dati sono presenti
+    var employeeId = $(this).data('employee-id');
+    console.log(employeeId)
+    var companyId = $(this).data('company-id');
+    console.log(companyId)
+
+    if (!employeeId || !companyId) {
+        console.error('Missing employee ID or company ID');
+        alert('Error: Missing employee or company ID.');
+        return;  // Ferma l'esecuzione in caso di errore
+    }
+
+    try {
+        const response = await fetch('/delete_employee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: employeeId,
+                company_id: companyId  // Passa entrambi i dati al backend
+            })
         });
-    </script>
+
+        const data = await response.json();
+
+        if (data.success) {
+        $('#deleteModal').modal('hide');
+        // Mostra il modal di successo
+        $('#successModal').modal('show');
+        // Puoi ricaricare la pagina dopo che il modal è stato chiuso
+        $('#successModal').on('hidden.bs.modal', function () {
+            location.reload();  // Ricarica la pagina per aggiornare la lista degli impiegati
+        });
+    } else {
+    alert('Error deleting employee');
+}
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to delete employee');
+    }
+});
+
+$('#deleteModal').on('show.bs.modal', function (event) {
+    // Get the button that triggered the modal
+    var button = $(event.relatedTarget);
+    var employeeId = button.data('employee-id');
+    var companyId = button.data('company-id');
+
+    // Set the employee ID and company ID on the delete button inside the modal
+    var modal = $(this);
+    modal.find('.btn-danger').data('employee-id', employeeId);
+    modal.find('.btn-danger').data('company-id', companyId);
+});
+
+
+
+</script>
+
+
     
 </body>
 </html>

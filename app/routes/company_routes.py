@@ -135,6 +135,9 @@ def information_company(company_id):
     user_id, user, is_admin, is_company_admin, notifications= get_user_info()
     
     company = company_controller.get_company_by_id(company_id)
+    info_of_admin = []
+    info_of_admin=company_controller.get_admin_info_by_company(company_id)
+
     if company is None:
         return "Company not found", 404
         
@@ -147,6 +150,7 @@ def information_company(company_id):
                          user_id=user_id,
                          user=user,
                          is_admin=is_admin,
+                         info_of_admin=info_of_admin,
                          is_company_admin=is_company_admin,
                          notifications = notifications)
 

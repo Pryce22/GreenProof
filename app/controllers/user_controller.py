@@ -641,10 +641,12 @@ def get_employees_by_companies(excluded_user_id):
                     user_details['id'] = user_id  # Aggiungi user_id ai dettagli
 
                     # Recupera il nome della compagnia dalla tabella 'companies'
-                    company_response = supabase.table('companies').select('company_name').eq('company_id', company_id).execute()
+                    company_response = supabase.table('companies').select('company_name', 'company_id').eq('company_id', company_id).execute()
                     if company_response.data:
-                        company_name = company_response.data[0]['company_name']
-                        user_details['company_name'] = company_name  # Aggiungi il nome della compagnia
+                        company_data = company_response.data[0]  # Dati della compagnia
+                        user_details['company_name'] = company_data['company_name']  # Aggiungi il nome della compagnia
+                        user_details['company_id'] = company_data['company_id']  # Aggiungi l'id della compagnia
+
 
                         employees.append(user_details)
 
@@ -716,7 +718,6 @@ def get_users_by_name_or_surname(search_term):
 
         # Unisci i risultati delle due query (evita duplicati)
         users = name_response.data + surname_response.data
-
         # Rimuovi duplicati
         unique_users = [dict(t) for t in {tuple(user.items()) for user in users}]
 
@@ -733,4 +734,12 @@ def delete_user(user_id):
         print(f"Error searching users by name or surname: {e}")
         return []  # Restituisce una lista vuota in caso di errore
 
+
+def delete_employee(user_id, company_id):
+    try:
+        response=supabase.table('company_employe').delete().eq('user_id', user_id).eq('company_id', company_id).execute()
+        return response
+    except Exception as e:
+        print(f"Error searching users by name or surname: {e}")
+        return []  # Restituisce una lista vuota in caso di errore
 
