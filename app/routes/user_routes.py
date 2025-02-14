@@ -1,8 +1,48 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
 from app.controllers import user_controller, company_controller, notifications_controller
 from app.routes.auth_routes import get_user_info
+import re
+from datetime import datetime, date
 
 bp = Blueprint('user', __name__)
+
+# Add validation functions
+def validate_email(email):
+    pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+    return bool(pattern.match(email))
+
+def validate_name(name):
+    pattern = re.compile(r'^[A-Za-z]{2,50}$')
+    return bool(pattern.match(name))
+
+def validate_phone_number(phone):
+    pattern = re.compile(r'^\+?\d{10,15}$')
+    return bool(pattern.match(phone))
+
+def validate_birthday(birth_date_str):
+    try:
+        birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+        today = date.today()
+        age = (today - birth_date).days / 365
+        return birth_date <= today and age >= 16
+    except ValueError:
+        return False
+
+def validate_field(field, value):
+    validators = {
+        'email': (validate_email, 'Invalid email format'),
+        'name': (validate_name, 'Name must be between 2 and 50 characters and contain only letters'),
+        'surname': (validate_name, 'Surname must be between 2 and 50 characters and contain only letters'),
+        'phone_number': (validate_phone_number, 'Invalid phone number format'),
+        'birthday': (validate_birthday, 'Invalid birthday or user must be at least 16 years old')
+    }
+
+    if field not in validators:
+        return True, None
+
+    validator_func, error_message = validators[field]
+    is_valid = validator_func(value)
+    return is_valid, error_message if not is_valid else None
 
 @bp.route('/user_profile', methods=['GET', 'POST'])
 def user_profile():
@@ -72,11 +112,30 @@ def update_user():
     field = data.get('field')
     value = data.get('value')
     
-    if not field or not value:
+    if not field or value is None:
         return jsonify({'success': False, 'error': 'Missing data'})
-        
+
+    # Validate the field
+    is_valid, error_message = validate_field(field, value)
+    if not is_valid:
+        return jsonify({'success': False, 'error': error_message})
+
+    # Additional email-specific checks
+    if field == 'email':
+        # Check if email already exists
+        if user_controller.check_email_exists(value):
+            return jsonify({'success': False, 'error': 'Email already in use'})
+            
+        # Update the email
+        if user_controller.update_user_info(session['id'], field, value):
+            # Clear the session to force logout
+            session.clear()
+            return jsonify({'success': True, 'requireLogout': True})
+            
+    # For all other fields
     if user_controller.update_user_info(session['id'], field, value):
         return jsonify({'success': True})
+        
     return jsonify({'success': False, 'error': 'Update failed'})
 
 @bp.route('/handle_invitation/<notification_id>/<action>', methods=['POST'])

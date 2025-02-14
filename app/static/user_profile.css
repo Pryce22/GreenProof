@@ -55,6 +55,8 @@ footer .container {
     border-radius: var(--radius);
     border: 1px solid var(--border);
     box-shadow: var(--shadow);
+    padding: 1rem; /* Increased padding for better spacing */
+    background-color: var(--card); /* Ensure background color consistency */
 }
 
 .profile-img {
@@ -62,40 +64,73 @@ footer .container {
     height: 120px;
     object-fit: cover;
     border: 3px solid var(--primary);
+    border-radius: 50%; /* Make profile image circular */
 }
 
 .welcome-text {
-    color: var(--primary);
-    font-size: 1.75rem;
-    font-weight: 600;
+    color: #2c3e50;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+    border-bottom: 2px solid var(--border);
 }
 
 .field-label {
-    color: var(--muted-foreground);
-    font-size: 0.875rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.field-value {
+    font-size: 1.1rem;
     font-weight: 500;
+    color: #2c3e50;
+    margin-bottom: 0;
+    margin: 0;
+    padding: 0.75rem 0;
+    flex-grow: 1;
 }
 
 .btn-edit {
     color: var(--accent);
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem;
+    border-radius: 50%;
     transition: all 0.3s ease;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-edit:hover {
-    color: var(--primary);
-    background-color: var(--secondary);
-    border-radius: var(--radius);
+    background-color: var(--accent);
+    color: white;
 }
 
 .list-group-item {
     border-color: var(--border);
-    padding: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: var(--radius);
+    transition: background-color 0.3s ease;
+}
+
+.list-group-item:hover {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .modal-content {
     border-radius: var(--radius);
     border: none;
+    padding: 1.5rem; /* Added padding for better spacing */
 }
 
 .modal-header {
@@ -113,7 +148,7 @@ footer .container {
     }
     
     .welcome-text {
-        font-size: 1.5rem;
+        font-size: 1.75rem; /* Adjusted font size for smaller screens */
     }
 }
 
@@ -185,19 +220,86 @@ a.dropdown-item:not([href="/logout"]) {
 }
 
 .edit-input {
-    width: 70%;
+    width: 85%;
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
+    margin-right: 1rem;
+}
+
+.edit-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
 }
 
 .edit-buttons {
     display: flex;
     gap: 0.5rem;
+    margin-left: 1rem;
+    align-items: center;
 }
 
 .save-cancel-buttons {
     display: flex;
     gap: 0.25rem;
+    margin-left: auto; /* Align buttons to the right */
 }
 
 .btn-save, .btn-cancel {
-    padding: 0.25rem 0.5rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-save {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-save:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+/* Toast Styles */
+.toast-container {
+    z-index: 1056;
+}
+
+.toast {
+    min-width: 300px;
+}
+
+.toast.bg-success,
+.toast.bg-danger,
+.toast.bg-info {
+    color: white;
+}
+
+.toast.bg-success .toast-header,
+.toast.bg-danger .toast-header,
+.toast.bg-info .toast-header {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.toast.bg-success .btn-close,
+.toast.bg-danger .btn-close,
+.toast.bg-info .btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.toast.bg-warning {
+    color: #000;
+}
+
+.toast.bg-warning .toast-header {
+    background: rgba(0, 0, 0, 0.1);
 }

@@ -10,6 +10,16 @@
 <link rel="stylesheet" href="static/user_profile.css">
 </head>
 <body>
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="notification-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+            </div>
+        </div>
+    </div>
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg bg-light navbar-light">
             <div class="container-fluid px-4">
@@ -19,7 +29,7 @@
                         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
                     </a>
                     <a class="navbar-brand mb-0" href="/">
-                        Sustainable Food Supply Chain
+                        GreenProof
                     </a>
                 </div>
         
@@ -39,7 +49,7 @@
 <main class="flex-grow-1">
     <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-12 col-lg-8">
+            <div class="col-12 col-lg-10">
                 <div class="profile-card card shadow-sm">
                     <div class="card-header bg-transparent text-center py-4">
                         <h2 class="welcome-text mb-0">Welcome {{ user.name + " " + user.surname}}</h2>
@@ -91,27 +101,49 @@
                                 </div>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
+                                <div class="w-100">
                                     <span class="field-label">Email Address</span>
-                                    <p class="mb-0 field-value">{{ user.email }}</p>
-                                    <input type="email" class="form-control edit-input d-none" value="{{ user.email }}">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <p class="mb-0 field-value" data-field="email">{{ user.email }}</p>
+                                        <input type="email" class="form-control edit-input d-none" value="{{ user.email }}">
+                                        <div class="edit-buttons">
+                                            <button class="btn btn-edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <div class="btn-group save-cancel-buttons d-none">
+                                                <button class="btn btn-success btn-save">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-cancel">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button class="btn btn-edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
                             </li>
-                            
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
+                                <div class="w-100">
                                     <span class="field-label">Phone Number</span>
-                                    <p class="mb-0 field-value">{{ user.phone_number }}</p>
-                                    <input type="text" class="form-control edit-input d-none" value="{{ user.phone_number }}">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <p class="mb-0 field-value" data-field="phone_number">{{ user.phone_number }}</p>
+                                        <input type="text" class="form-control edit-input d-none" value="{{ user.phone_number }}">
+                                        <div class="edit-buttons">
+                                            <button class="btn btn-edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <div class="btn-group save-cancel-buttons d-none">
+                                                <button class="btn btn-success btn-save">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-cancel">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button class="btn btn-edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
                             </li>
-                            
                             {% if not is_admin %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
@@ -128,16 +160,27 @@
                                 </div>
                             </li>
                         {% endif %}
-                        
-                            
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
+                                <div class="w-100">
                                     <span class="field-label">Birthday</span>
-                                    <p class="mb-0">{{ user.birthday }}</p>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <p class="mb-0 field-value" data-field="birthday">{{ user.birthday }}</p>
+                                        <input type="date" class="form-control edit-input d-none" value="{{ user.birthday }}">
+                                        <div class="edit-buttons">
+                                            <button class="btn btn-edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <div class="btn-group save-cancel-buttons d-none">
+                                                <button class="btn btn-success btn-save">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                                <button class="btn btn-danger btn-cancel">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button class="btn btn-edit">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
                             </li>                        
                         </ul>
                     </div>
@@ -195,19 +238,73 @@
     </div>
 </div>
 
+<div class="modal fade" id="emailConfirmModal" tabindex="-1" aria-labelledby="emailConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="emailConfirmModalLabel">Confirm Email Change</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Changing your email will require you to log in again. Do you wish to continue?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-email-cancel" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary btn-email-confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function confirmEmailChange() {
+      return new Promise((resolve) => {
+        const modalEl = document.getElementById('emailConfirmModal');
+        const confirmBtn = modalEl.querySelector('.btn-email-confirm');
+        const cancelBtn = modalEl.querySelector('.btn-email-cancel');
+  
+        // Funzione per pulire gli handler e nascondere la modale
+        const cleanup = () => {
+          confirmBtn.removeEventListener('click', onConfirm);
+          cancelBtn.removeEventListener('click', onCancel);
+        };
+  
+        const onConfirm = () => {
+          cleanup();
+          resolve(true);
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          modal.hide();
+        };
+  
+        const onCancel = () => {
+          cleanup();
+          resolve(false);
+          const modal = bootstrap.Modal.getInstance(modalEl);
+          modal.hide();
+        };
+  
+        confirmBtn.addEventListener('click', onConfirm, { once: true });
+        cancelBtn.addEventListener('click', onCancel, { once: true });
+  
+        const emailModal = new bootstrap.Modal(modalEl, {});
+        emailModal.show();
+      });
+    }
+  </script>
+
 <footer class="bg-dark text-light py-4">
     <div class="container">
     <div class="row">
     <div class="col-md-4">
-    <h5>Farm Fresh Market</h5>
-    <p>Connecting farmers and consumers directly</p>
+    <h5>GreenProof</h5>
+    <p>Empowering a greener future from farm to table</p>
     </div>
     <div class="col-md-4">
     <h5>Quick Links</h5>
     <ul class="list-unstyled">
-    <li><a href="#" class="text-light">About Us</a></li>
-    <li><a href="#" class="text-light">Products</a></li>
-    <li><a href="#" class="text-light">Contact</a></li>
+    <li><a href="/#about" class="text-light">About Us</a></li>
+    <li><a href="/#products" class="text-light">Greener Companies</a></li>
+    <li><a href="/#contact" class="text-light">Contact</a></li>
     </ul>
     </div>
     <div class="col-md-4">
@@ -220,64 +317,231 @@
     </div>
     </div>
     </div>
-    </footer>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const editButtons = document.querySelectorAll('.btn-edit');
-    
-    editButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const listItem = this.closest('.list-group-item');
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButtons = document.querySelectorAll('.btn-edit');
+        let currentEditingField = null;
+        const welcomeText = document.querySelector('.welcome-text');
+        const toast = new bootstrap.Toast(document.getElementById('notification-toast'));
+
+        function showNotification(message, title = 'Notification', type = 'info') {
+            const toastElement = document.getElementById('notification-toast');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Remove any existing color classes
+            toastElement.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info');
+            
+            // Add appropriate color class
+            switch(type) {
+                case 'success':
+                    toastElement.classList.add('bg-success', 'text-white');
+                    break;
+                case 'error':
+                    toastElement.classList.add('bg-danger', 'text-white');
+                    break;
+                case 'warning':
+                    toastElement.classList.add('bg-warning');
+                    break;
+                default:
+                    toastElement.classList.add('bg-info', 'text-white');
+            }
+            
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            toast.show();
+        }
+
+        function updateWelcomeText() {
+            const nameValue = document.querySelector('[data-field="name"]').textContent;
+            const surnameValue = document.querySelector('[data-field="surname"]').textContent;
+            welcomeText.textContent = `Welcome ${nameValue} ${surnameValue}`;
+        }
+
+        // Validation patterns
+        const validationRules = {
+            email: {
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Please enter a valid email address'
+            },
+            phone_number: {
+                pattern: /^\+?\d{10,15}$/,
+                message: 'Phone number must be 10-15 digits and may include a leading +'
+            },
+            name: {
+                pattern: /^[A-Za-z]{2,50}$/,
+                message: 'Name must be between 2 and 50 characters and contain only letters'
+            },
+            surname: {
+                pattern: /^[A-Za-z]{2,50}$/,
+                message: 'Surname must be between 2 and 50 characters and contain only letters'
+            },
+            birthday: {
+                validate: function(value) {
+                    const birthDate = new Date(value);
+                    const today = new Date();
+                    const minAge = new Date();
+                    minAge.setFullYear(today.getFullYear() - 16);
+                    return birthDate <= minAge;
+                },
+                message: 'You must be at least 16 years old'
+            }
+        };
+
+        function validateField(field, value) {
+            const rules = validationRules[field];
+            if (!rules) return { valid: true };
+
+            if (rules.pattern) {
+                return {
+                    valid: rules.pattern.test(value),
+                    message: rules.message
+                };
+            }
+
+            if (rules.validate) {
+                return {
+                    valid: rules.validate(value),
+                    message: rules.message
+                };
+            }
+
+            return { valid: true };
+        }
+        
+        function exitEditMode(listItem) {
             const fieldValue = listItem.querySelector('.field-value');
             const editInput = listItem.querySelector('.edit-input');
-            const editButtons = this.closest('.edit-buttons');
+            const editButtons = listItem.querySelector('.edit-buttons');
             const saveButtons = listItem.querySelector('.save-cancel-buttons');
             
-            // Show edit mode
-            fieldValue.classList.add('d-none');
-            editInput.classList.remove('d-none');
-            editButtons.querySelector('.btn-edit').classList.add('d-none');
-            saveButtons.classList.remove('d-none');
+            fieldValue.classList.remove('d-none');
+            editInput.classList.add('d-none');
+            editButtons.querySelector('.btn-edit').classList.remove('d-none');
+            saveButtons.classList.add('d-none');
             
-            // Handle save
-            saveButtons.querySelector('.btn-save').addEventListener('click', function() {
-                const field = fieldValue.dataset.field;
-                const value = editInput.value;
+            // Reset input value and remove any error styling
+            editInput.value = fieldValue.textContent.trim();
+            editInput.classList.remove('is-invalid');
+            const errorDiv = listItem.querySelector('.invalid-feedback');
+            if (errorDiv) errorDiv.remove();
+            
+            currentEditingField = null;
+        }
+        
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const listItem = this.closest('.list-group-item');
                 
-                // Send update to server
-                fetch('/update_user', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        field: field,
-                        value: value
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        fieldValue.textContent = value;
-                        exitEditMode();
+                if (currentEditingField && currentEditingField !== listItem) {
+                    exitEditMode(currentEditingField);
+                }
+                
+                const fieldValue = listItem.querySelector('.field-value');
+                const editInput = listItem.querySelector('.edit-input');
+                const editButtons = this.closest('.edit-buttons');
+                const saveButtons = listItem.querySelector('.save-cancel-buttons');
+                
+                fieldValue.classList.add('d-none');
+                editInput.classList.remove('d-none');
+                editButtons.querySelector('.btn-edit').classList.add('d-none');
+                saveButtons.classList.remove('d-none');
+                
+                currentEditingField = listItem;
+                
+                // Add input validation on change
+                editInput.addEventListener('input', function() {
+                    const field = fieldValue.dataset.field;
+                    const validation = validateField(field, this.value);
+                    
+                    if (!validation.valid) {
+                        this.classList.add('is-invalid');
+                        let errorDiv = listItem.querySelector('.invalid-feedback');
+                        if (!errorDiv) {
+                            errorDiv = document.createElement('div');
+                            errorDiv.className = 'invalid-feedback';
+                            this.parentNode.appendChild(errorDiv);
+                        }
+                        errorDiv.textContent = validation.message;
+                        saveButtons.querySelector('.btn-save').disabled = true;
+                    } else {
+                        this.classList.remove('is-invalid');
+                        const errorDiv = listItem.querySelector('.invalid-feedback');
+                        if (errorDiv) errorDiv.remove();
+                        saveButtons.querySelector('.btn-save').disabled = false;
                     }
                 });
+                
+                saveButtons.querySelector('.btn-save').addEventListener('click', async function() {
+                    const field = fieldValue.dataset.field;
+                    const value = editInput.value;
+                    
+                    const validation = validateField(field, value);
+                    if (!validation.valid) {
+                        return;
+                    }
+                    
+                    if (field === 'email') {
+                        const confirmed = await confirmEmailChange();
+                        if (!confirmed) {
+                            return;
+                        }
+                    }
+                    
+                    fetch('/update_user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            field: field,
+                            value: value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.requireLogout) {
+                                showNotification(
+                                    "Your email has been updated. You will now be logged out. Please log in again with your new email.",
+                                    "Email Updated",
+                                    "info"
+                                );
+                                setTimeout(() => {
+                                    window.location.href = '/logout';
+                                }, 3000);
+                            } else {
+                                fieldValue.textContent = value;
+                                exitEditMode(listItem);
+                                showNotification("Update successful!", "Success", "success");
+                                
+                                if (field === 'name' || field === 'surname') {
+                                    updateWelcomeText();
+                                }
+                            }
+                        } else if (data.error) {
+                            showNotification(data.error, "Error", "error");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification(
+                            'An error occurred while updating the field.',
+                            "Error",
+                            "error"
+                        );
+                    });
+                }, { once: true });
+                
+                saveButtons.querySelector('.btn-cancel').addEventListener('click', function() {
+                    exitEditMode(listItem);
+                }, { once: true });
             });
-            
-            // Handle cancel
-            saveButtons.querySelector('.btn-cancel').addEventListener('click', exitEditMode);
-            
-            function exitEditMode() {
-                fieldValue.classList.remove('d-none');
-                editInput.classList.add('d-none');
-                editButtons.querySelector('.btn-edit').classList.remove('d-none');
-                saveButtons.classList.add('d-none');
-            }
         });
     });
-});
 </script>
 </body>
 </html>
