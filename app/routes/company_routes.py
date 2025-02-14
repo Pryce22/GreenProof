@@ -22,6 +22,23 @@ def validate_file_size(file):
     file.seek(0)
     return size <= MAX_FILE_SIZE
 
+import re
+
+def validate_email(email):
+    pattern = r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+def validate_phone(phone):
+    pattern = r'^\+?\d{10,15}$'
+    return re.match(pattern, phone) is not None
+
+def validate_website(website):
+    if not website:
+        return True
+    if not website.startswith('https://'):
+        website = 'https://' + website
+    return website.startswith('https://')
+
 @bp.route('/company_register', methods=['GET', 'POST'])
 def company_register():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -238,23 +255,44 @@ def modify_company(company_id):
 
     if request.method == 'POST':
         try:
-            # Estrai i dati dalla richiesta
+            # Extract form data
             company_name = request.form.get('company_name')
             company_phone_number = request.form.get('company_phone_number')
             company_email = request.form.get('company_email')
             company_industry = request.form.get('company_industry')
             company_website = request.form.get('company_website')
             company_description = request.form.get('company_description')
-            
-            # Estrai l'immagine (file)
-            company_logo = request.files.get('company_logo') if 'company_logo' in request.files else None # Ottieni il file immagine
 
-            company_image_url=None
-            if company_logo != None:
+            # Validation checks with user-friendly messages
+            if len(company_name) < 2:
+                return jsonify({"success": False, "error": "Company name must be at least 2 characters long"})
+
+            if not validate_email(company_email):
+                return jsonify({"success": False, "error": "Please enter a valid email address"})
+
+            if not validate_phone(company_phone_number):
+                return jsonify({"success": False, "error": "Please enter a valid phone number (+XX followed by 10-15 digits)"})
+
+            if company_website and not validate_website(company_website):
+                return jsonify({"success": False, "error": "Website URL must start with https://"})
+
+            if len(company_description) > 1500:
+                return jsonify({"success": False, "error": "Description must not exceed 1500 characters"})
+
+            # Handle image upload with user-friendly messages
+            company_logo = request.files.get('company_logo')
+            company_image_url = None
+            
+            if company_logo and company_logo.filename != '':
+                if not allowed_file(company_logo.filename):
+                    return jsonify({"success": False, "error": "Please upload only JPG, PNG or GIF files"})
+                
+                if not validate_file_size(company_logo):
+                    return jsonify({"success": False, "error": "Image size must not exceed 3MB"})
+                    
                 company_image_url = company_controller.upload_company_image(company_id, company_logo)
-            
 
-            # Passa tutti i dati a `update_company`
+            # Update company
             company_controller.update_company(
                 company_id=company_id,
                 company_name=company_name,
@@ -263,11 +301,13 @@ def modify_company(company_id):
                 company_industry=company_industry,
                 company_website=company_website,
                 company_description=company_description,
-                company_image=company_image_url  # Se c'è un'immagine, passa l'URL, altrimenti None
+                company_image=company_image_url
             )
+            
             return jsonify({"success": True})
+
         except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 500
+            return jsonify({"success": False, "error": "An unexpected error occurred. Please try again."}), 200  # Note: 200 status to allow toast to show
 
     return render_template('modify_company.html', 
                          company=company,
