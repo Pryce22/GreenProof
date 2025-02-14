@@ -9,6 +9,8 @@
     <link href="/static/modify_company.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <style>
         .is-invalid {
             border-color: #dc3545 !important;
@@ -61,11 +63,14 @@
                         <!-- Colonna con il Logo -->
                         <div class="col-md-3">
                             <div class="text-center mb-3">
-                                <img id="companyLogo" src="{{ company.company_image }}" class="rounded-circle company-logo img-fluid" alt="Company Logo">
+                                <img id="companyLogo" src="{{ company.company_image }}" class="company-logo img-fluid" alt="Company Logo">
                                 <div class="mt-2">
                                     <label class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-camera"></i> Change Logo
-                                        <input type="file" class="d-none" accept=".jpg,.png,.gif" required id="logoInput">
+                                        <p class="small text">
+                                            The image must be in PNG, JPG, or JPEG format and must not exceed 3 MB.
+                                        </p>
+                                        <input type="file" class="d-none" accept=".jpg,.png,.jpeg" required id="logoInput">
                                     </label>
                                 </div>
                             </div>
@@ -76,7 +81,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Company Name</label>
                                 <div class="input-group has-validation">
-                                    <input type="text" class="form-control" value="{{ company.company_name }}" 
+                                    <input type="text" name="company_name" class="form-control" value="{{ company.company_name }}" 
                                            required minlength="2" id="companyNameInput" disabled>
                                     <button class="btn btn-outline-secondary" type="button" id="editCompanyNameBtn">
                                         <i class="bi bi-pencil"></i>
@@ -89,7 +94,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Phone Number</label>
                                     <div class="input-group has-validation">
-                                        <input type="tel" class="form-control" value="{{ company.company_phone_number }}" 
+                                        <input type="tel" name="company_phone_number" class="form-control" value="{{ company.company_phone_number }}" 
                                                required pattern="^\+?\d{10,15}$" id="companyPhoneInput" disabled
                                                title="Enter phone number in international format, e.g. +1234567890 (10-15 digits)">
                                         <button class="btn btn-outline-secondary" type="button" id="editPhoneBtn">
@@ -101,7 +106,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Email Address</label>
                                     <div class="input-group has-validation">
-                                        <input type="email" class="form-control" value="{{ company.company_email }}" 
+                                        <input type="email" name="company_email" class="form-control" value="{{ company.company_email }}" 
                                                required id="companyEmailInput" disabled>
                                         <button class="btn btn-outline-secondary" type="button" id="editEmailBtn">
                                             <i class="bi bi-pencil"></i>
@@ -116,7 +121,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Industry</label>
                                     <div class="input-group">
-                                        <select class="form-select" id="companyIndustrySelect" disabled>
+                                        <select name="company_industry" class="form-select" id="companyIndustrySelect" disabled>
                                             <option selected>{{ company.company_industry }}</option>
                                             <!-- Opzioni dinamiche -->
                                         </select>
@@ -128,7 +133,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Website</label>
                                     <div class="input-group">
-                                        <input type="url" class="form-control" value="{{ company.company_website }}" 
+                                        <input type="url" name="company_website" class="form-control" value="{{ company.company_website }}" 
                                                id="companyWebsiteInput" disabled placeholder="https://">
                                         <button class="btn btn-outline-secondary" type="button" id="editWebsiteBtn">
                                             <i class="bi bi-pencil"></i>
@@ -136,47 +141,11 @@
                                     </div>
                                 </div>
                             </div>  
-                        
-<!--
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Country</label>
-                        <div class="input-group">
-                            <select class="form-select" id="companyCountrySelect" name="company_country" required>
-                                <option value="{{ company.company_country }}" selected>{{ company.company_country }}</option>
-                            </select>
-                            <button class="btn btn-outline-secondary" type="button" id="editCountryBtn">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">City</label>
-                        <div class="input-group">
-                            <select class="form-select" id="companyCityInput" name="company_city" required>
-                                <option value="{{ company.company_city }}" selected>{{ company.company_city }}</option>
-                            </select>
-                            <button class="btn btn-outline-secondary" type="button" id="editCityBtn">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Address</label>
-                    <div class="input-group">
-                        <textarea class="form-control" rows="2" id="companyAddressInput" disabled>{{ company.company_address }}</textarea>
-                        <button class="btn btn-outline-secondary" type="button" id="editAddressBtn">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                    </div>
-                </div>
-                -->
 
                 <div class="mb-3">
                     <label class="form-label">Company Description</label>
                     <div class="input-group">
-                        <textarea class="form-control" rows="4" id="companyDescriptionInput" maxlength="1500" disabled>{{ company.company_description }}</textarea>
+                        <textarea name="company_description" class="form-control" rows="4" id="companyDescriptionInput" maxlength="1500" disabled>{{ company.company_description }}</textarea>
                         <button class="btn btn-outline-secondary" type="button" id="editDescriptionBtn">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -259,8 +228,6 @@
 
 
 
-
-
 <footer class="bg-dark text-light py-4">
     <div class="container">
     <div class="row">
@@ -290,138 +257,252 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- Consolidated Validation & Submission Scripts -->
 <script>
-    function toggleEdit(id) {
-        var inputField = document.getElementById(id);
-        var isDisabled = inputField.disabled;
-        inputField.disabled = !isDisabled;
-        if (!isDisabled) inputField.focus();
-    }
+  // Configurazione Toastr per assicurare che il messaggio sia visibile
+  toastr.options = {
+      "closeButton": true,
+      "positionClass": "toast-top-right",
+      "timeOut": "5000"
+  };
 
-    document.getElementById('editCompanyNameBtn').addEventListener('click', function() {
-        toggleEdit('companyNameInput');
-    });
-    document.getElementById('editPhoneBtn').addEventListener('click', function() {
-        toggleEdit('companyPhoneInput');
-    });
-    document.getElementById('editEmailBtn').addEventListener('click', function() {
-        toggleEdit('companyEmailInput');
-    });
-    document.getElementById('editWebsiteBtn').addEventListener('click', function() {
-        toggleEdit('companyWebsiteInput');
-    });
+  // Funzione di validazione per gli input generici
+  function validateField(input, validationFn, errorMessage) {
+      const isValid = validationFn(input.value);
+      const tooltip = input.parentElement.querySelector('.invalid-tooltip');
+      if (!isValid) {
+          input.classList.add('is-invalid');
+          if (tooltip) tooltip.style.display = 'block';
+          return false;
+      } else {
+          input.classList.remove('is-invalid');
+          if (tooltip) tooltip.style.display = 'none';
+          return true;
+      }
+  }
 
-    document.getElementById('editDescriptionBtn').addEventListener('click', function() {
-        toggleEdit('companyDescriptionInput');
-    });
+  // Validazione specifica per l'immagine
+  function validateImage(file) {
+      const maxSize = 3 * 1024 * 1024; // 3MB
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      if (file.size > maxSize) {
+          toastr.options.timeOut = 5000;  // Opzionale: aumenta la durata della notifica
+          toastr.error('Image size must not exceed 3MB');
+          return false;
+      }
+      if (!validTypes.includes(file.type)) {
+          toastr.error('Please upload only JPG, PNG or GIF files');
+          return false;
+      }
+      return true;
+  }
+
+  // Funzione per abilitare/disabilitare l'editing di un campo
+  function toggleEdit(id) {
+      var inputField = document.getElementById(id);
+      inputField.disabled = !inputField.disabled;
+      if (!inputField.disabled) {
+          inputField.focus();
+          inputField.dispatchEvent(new Event('input'));
+      }
+  }
+
+  // Listener per la validazione in tempo reale
+  document.getElementById('companyNameInput').addEventListener('input', function() {
+      validateField(this, value => value.length >= 2, 'Company name must be at least 2 characters long');
+  });
+  document.getElementById('companyPhoneInput').addEventListener('input', function() {
+      validateField(this, value => /^\+?\d{10,15}$/.test(value), 'Enter valid phone number (+XX followed by 10-15 digits)');
+  });
+  document.getElementById('companyEmailInput').addEventListener('input', function() {
+      validateField(this, value => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value), 'Please enter a valid email address');
+  });
+  document.getElementById('companyDescriptionInput').addEventListener('input', function() {
+      var currentLength = this.value.length;
+      document.getElementById('currentCount').textContent = currentLength;
+      if (this.value.length > 1500) {
+          toastr.error('Description must not exceed 1500 characters');
+          this.classList.add('is-invalid');
+      } else {
+          this.classList.remove('is-invalid');
+      }
+  });
+  document.getElementById('logoInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const maxSize = 3 * 1024 * 1024; // 3MB
+      console.log("File size:", file.size);
+      if (file.size > maxSize) {
+          toastr.error('Image size must not exceed 3MB');
+          // Opzionale: per debug, mostra anche un alert
+          // alert("File too large (" + (file.size/1024/1024).toFixed(2) + " MB). Maximum allowed is 3MB.");
+          event.target.value = '';
+          return;
+      }
+      if (!validateImage(file)) {
+          event.target.value = '';
+          return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+          document.getElementById('companyLogo').src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+  });
+
+  // Funzione unificata di submit che esegue tutte le validazioni
+  function submitForm() {
+      const emailInput = document.getElementById('companyEmailInput');
+      const phoneInput = document.getElementById('companyPhoneInput');
+      const nameInput = document.getElementById('companyNameInput');
+      const websiteInput = document.getElementById('companyWebsiteInput');
+      const logoInput = document.getElementById('logoInput');
+      const descriptionInput = document.getElementById('companyDescriptionInput');
+
+      let isValid = true;
+      if (!validateField(nameInput, value => value.length >= 2, 'Company name must be at least 2 characters long')) isValid = false;
+      if (!validateField(emailInput, value => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value), 'Please enter a valid email address')) isValid = false;
+      if (!validateField(phoneInput, value => /^\+?\d{10,15}$/.test(value), 'Enter valid phone number (+XX followed by 10-15 digits)')) isValid = false;
+      if (descriptionInput.value.length > 1500) {
+          toastr.error('Description must not exceed 1500 characters');
+          descriptionInput.classList.add('is-invalid');
+          isValid = false;
+      }
+      if (logoInput.files.length > 0 && !validateImage(logoInput.files[0])) {
+          isValid = false;
+      }
+      // Prepara l'URL per il sito se necessario
+      if (websiteInput.value && !websiteInput.value.startsWith('https://')) {
+          websiteInput.value = 'https://' + websiteInput.value;
+      }
+      if (!isValid) {
+          toastr.error('Please correct the errors before saving');
+          return false;
+      }
+      // Se tutte le validazioni sono superate, mostra il popup di conferma
+      $('#confirmModal').modal('show');
+  }
+
+  // Listener sul pulsante "Save Changes"
+  document.querySelector('.btn-primary[data-bs-toggle="modal"]').addEventListener('click', function(e) {
+      e.preventDefault();
+      submitForm();
+  });
+
+  // Handler per il pulsante di conferma del modal (invio finale)
+  document.getElementById('modalConfirmBtn').addEventListener('click', function() {
+      const formData = new FormData(document.getElementById('companyEditForm'));
+      const logoInput = document.getElementById('logoInput');
+      if (logoInput.files.length > 0) {
+          formData.append('company_logo', logoInput.files[0]);
+      }
+      document.getElementById("loadingOverlay").style.display = "flex";
+      document.getElementById("modalConfirmBtn").disabled = true;
+      fetch(`/modify_company/${"{{ company['company_id'] }}"}`, {
+          method: 'POST',
+          body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              $('#confirmModal').modal('hide');
+              $('#successPopup').modal('show');
+              document.getElementById('okButton').addEventListener('click', function() {
+                  $('#successPopup').modal('hide');
+                  window.location.href = '/companies_of_administrator';
+              });
+          } else {
+              toastr.error(data.error || 'An error occurred while updating the company');
+              document.getElementById("loadingOverlay").style.display = "none";
+              document.getElementById("modalConfirmBtn").disabled = false;
+          }
+      })
+      .catch(error => {
+          console.error('Error updating company:', error);
+          toastr.error('There was an error updating the company');
+          document.getElementById("loadingOverlay").style.display = "none";
+          document.getElementById("modalConfirmBtn").disabled = false;
+      });
+  });
+
+  // Aggiungi event listener per i pulsanti di modifica
+  document.getElementById('editCompanyNameBtn').addEventListener('click', function() {
+      toggleEdit('companyNameInput');
+  });
+  document.getElementById('editPhoneBtn').addEventListener('click', function() {
+      toggleEdit('companyPhoneInput');
+  });
+  document.getElementById('editEmailBtn').addEventListener('click', function() {
+      toggleEdit('companyEmailInput');
+  });
+  document.getElementById('editIndustryBtn').addEventListener('click', function() {
+      toggleEdit('companyIndustrySelect');
+  });
+  document.getElementById('editWebsiteBtn').addEventListener('click', function() {
+      toggleEdit('companyWebsiteInput');
+  });
+  document.getElementById('editDescriptionBtn').addEventListener('click', function() {
+      toggleEdit('companyDescriptionInput');
+  });
 </script>
 
+<!-- Consolidated Validation & Submission Scripts -->
 <script>
-    // JavaScript per rimuovere la selezione corrente dalle opzioni
-    function populateIndustryOptions() {
-    const selectedIndustry = "{{ company.company_industry }}".toLowerCase(); // Normalizza il valore del database
-    const industryOptions = ["Transporter", "Manufacturer", "Processor", "Retailer"];
-    const industrySelect = document.getElementById('companyIndustrySelect');
-
-    // Pulisce il select rimuovendo tutte le opzioni esistenti
-    industrySelect.innerHTML = "";
-
-    // Aggiungi l'opzione selezionata come primo valore visibile
-    const selectedOptionElement = document.createElement("option");
-    selectedOptionElement.textContent = selectedIndustry.charAt(0).toUpperCase() + selectedIndustry.slice(1);
-    selectedOptionElement.value = selectedIndustry.charAt(0).toUpperCase() + selectedIndustry.slice(1);
-    selectedOptionElement.selected = true;
-    industrySelect.appendChild(selectedOptionElement);
-
-    // Filtra e aggiungi le altre opzioni, evitando duplicati
-    industryOptions.filter(option => option.toLowerCase() !== selectedIndustry).forEach(option => {
-        const optionElement = document.createElement("option");
-        optionElement.textContent = option;
-        optionElement.value = option;
-        industrySelect.appendChild(optionElement);
-    });
-}
-
-
-
-    // Popola le opzioni all'inizio
-    populateIndustryOptions();
-
-    // Gestire la modifica dei campi
-    function toggleEdit(fieldId) {
-        const field = document.getElementById(fieldId);
-        field.disabled = !field.disabled;
-    }
-
-    document.getElementById('editIndustryBtn').addEventListener('click', function() {
-        toggleEdit('companyIndustrySelect');
-    });
-</script>
-
-
-<script>
-    const company_id = "{{ company['company_id'] }}";
-    document.addEventListener("DOMContentLoaded", function () {
-    const confirmBtn = document.getElementById("modalConfirmBtn");
-
-    if (confirmBtn) {
-        confirmBtn.addEventListener("click", function () {
-            console.log("Confirm button clicked!");
-            submitForm();  // Funzione per inviare il form
-        });
-    } else {
-        console.log("modalConfirmBtn non trovato nel DOM");
-    }
-});
-
-
-// Email validation function
-function validateEmail(email) {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
-}
-
-// Add validation before form submission
-function submitForm() {
-    const emailInput = document.getElementById('companyEmailInput');
-    const phoneInput = document.getElementById('companyPhoneInput');
-    const nameInput = document.getElementById('companyNameInput');
-    const websiteInput = document.getElementById('companyWebsiteInput');
-    
-    // Configure toastr
+    // Configurazione iniziale di toastr
     toastr.options = {
         "closeButton": true,
-        "progressBar": true,
         "positionClass": "toast-top-right",
-        "timeOut": "5000"
+        "preventDuplicates": true,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
     };
 
-    // Validate all fields
-    const isEmailValid = validateField(emailInput, 
-        value => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value));
-    const isPhoneValid = validateField(phoneInput, 
-        value => /^\+?\d{10,15}$/.test(value));
-    const isNameValid = validateField(nameInput, 
-        value => value.length >= 2);
-
-    if (!isEmailValid || !isPhoneValid || !isNameValid) {
-        toastr.error('Please correct the errors before saving');
-        return false;
+    // Funzione validazione immagine aggiornata
+    function validateImage(file) {
+        const maxSize = 3 * 1024 * 1024; // 3MB
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        
+        if (file.size > maxSize) {
+            toastr.error(`File too large (${(file.size/1024/1024).toFixed(2)}MB). Maximum allowed is 3MB.`);
+            return false;
+        }
+        if (!validTypes.includes(file.type)) {
+            toastr.error('Please upload only JPG, PNG or GIF files');
+            return false;
+        }
+        return true;
     }
 
-    // Website validation (if provided)
-    if (websiteInput.value && !websiteInput.value.startsWith('https://')) {
-        websiteInput.value = 'https://' + websiteInput.value;
-    }
+    // Event listener per il file input aggiornato
+    document.getElementById('logoInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-    // Show confirmation modal
-    $('#confirmModal').modal('show');
+        if (!validateImage(file)) {
+            event.target.value = ''; // Reset input
+            return;
+        }
 
-    // Update modal confirm button handler
-    document.getElementById('modalConfirmBtn').onclick = function() {
-        // Rest of your existing form submission code
-        const formData = new FormData();
-        const existingLogoUrl = "{{ company['company_image'] }}";
+        // Se la validazione passa, mostra l'anteprima
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('companyLogo').src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+
+    // Handler aggiornato per l'invio del form
+    document.getElementById('modalConfirmBtn').addEventListener('click', function() {
+        const form = document.getElementById('companyEditForm');
+        const formData = new FormData(form);
+        
+        // Aggiungi manualmente i campi al FormData
         formData.append('company_name', document.getElementById('companyNameInput').value);
         formData.append('company_phone_number', document.getElementById('companyPhoneInput').value);
         formData.append('company_email', document.getElementById('companyEmailInput').value);
@@ -429,19 +510,20 @@ function submitForm() {
         formData.append('company_website', document.getElementById('companyWebsiteInput').value);
         formData.append('company_description', document.getElementById('companyDescriptionInput').value);
 
-        // Aggiungi il file immagine se è stato selezionato
         const logoInput = document.getElementById('logoInput');
-        if (logoInput.files && logoInput.files.length > 0) {
+        if (logoInput.files.length > 0) {
+            if (!validateImage(logoInput.files[0])) {
+                return;
+            }
             formData.append('company_logo', logoInput.files[0]);
-        } else {
-            formData.append('company_logo', existingLogoUrl || "");
         }
 
-        // Mostra il loader e disabilita il pulsante di conferma
+        // Mostra loading overlay
         document.getElementById("loadingOverlay").style.display = "flex";
         document.getElementById("modalConfirmBtn").disabled = true;
 
-        fetch(`/modify_company/${company_id}`, {
+        // Invia i dati al backend
+        fetch(`/modify_company/{{ company['company_id'] }}`, {
             method: 'POST',
             body: formData
         })
@@ -450,126 +532,26 @@ function submitForm() {
             if (data.success) {
                 $('#confirmModal').modal('hide');
                 $('#successPopup').modal('show');
-
-                // Dopo 20 secondi, esegui il reindirizzamento alla pagina finale
-                document.getElementById('okButton').addEventListener('click', function() {
-                    $('#successPopup').modal('hide');
+                document.getElementById('okButton').onclick = function() {
                     window.location.href = '/companies_of_administrator';
-                });
+                };
             } else {
                 toastr.error(data.error || 'An error occurred while updating the company');
-                document.getElementById("loadingOverlay").style.display = "none";
-                document.getElementById("modalConfirmBtn").disabled = false;
+                $('#confirmModal').modal('hide');
             }
         })
         .catch(error => {
-            console.error('Error updating company:', error);
-            toastr.error('There was an error updating the company');
+            console.error('Error:', error);
+            toastr.error('An error occurred while updating the company');
+        })
+        .finally(() => {
             document.getElementById("loadingOverlay").style.display = "none";
             document.getElementById("modalConfirmBtn").disabled = false;
         });
-    };
-}
-
-// Add these validation functions
-function validateField(input, validationFn, errorMessage) {
-    const isValid = validationFn(input.value);
-    const tooltip = input.parentElement.querySelector('.invalid-tooltip');
-    
-    if (!isValid) {
-        input.classList.add('is-invalid');
-        if (tooltip) {
-            tooltip.style.display = 'block';
-        }
-        return false;
-    } else {
-        input.classList.remove('is-invalid');
-        if (tooltip) {
-            tooltip.style.display = 'none';
-        }
-        return true;
-    }
-}
-
-// Add real-time validation listeners
-document.getElementById('companyNameInput').addEventListener('input', function() {
-    validateField(this, 
-        value => value.length >= 2,
-        'Company name must be at least 2 characters long'
-    );
-});
-
-document.getElementById('companyPhoneInput').addEventListener('input', function() {
-    validateField(this, 
-        value => /^\+?\d{10,15}$/.test(value),
-        'Enter valid phone number (+XX followed by 10-15 digits)'
-    );
-});
-
-document.getElementById('companyEmailInput').addEventListener('input', function() {
-    validateField(this, 
-        value => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value),
-        'Please enter a valid email address'
-    );
-});
-
-// Update the toggle edit function to trigger validation
-function toggleEdit(id) {
-    var inputField = document.getElementById(id);
-    var isDisabled = inputField.disabled;
-    inputField.disabled = !isDisabled;
-    if (!isDisabled) {
-        inputField.focus();
-        // Trigger initial validation when enabling the field
-        inputField.dispatchEvent(new Event('input'));
-    }
-}
-</script>
-
- <script>
-  // Funzione per attivare o disattivare l'editing
-function toggleEditDescription() {
-    var descriptionInput = document.getElementById('companyDescriptionInput');
-    var isDisabled = descriptionInput.disabled;
-    descriptionInput.disabled = !isDisabled;
-
-    // Aggiungi la logica per il conteggio dei caratteri solo se il campo è abilitato
-    if (!isDisabled) {
-        descriptionInput.focus();
-    }
-}
-
-// Aggiungi il controllo dei caratteri mentre l'utente scrive nella textarea
-document.getElementById('companyDescriptionInput').addEventListener('input', function() {
-    var currentLength = this.value.length;
-    document.getElementById('currentCount').textContent = currentLength;
-});
-
-    </script>
- 
-
-<script>
-    document.getElementById('logoInput').addEventListener('change', function(event) {
-        var file = event.target.files[0];
-        
-        if (file) {
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                // Imposta la nuova immagine come fonte del logo
-                document.getElementById('companyLogo').src = e.target.result;
-            }
-
-            // Leggi il file come URL di base64
-            reader.readAsDataURL(file);
-        }
     });
+
+    // ...rest of existing code (validateField, toggleEdit, other event listeners)...
 </script>
-
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>    
 
 </body>
 </html>

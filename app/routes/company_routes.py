@@ -255,59 +255,70 @@ def modify_company(company_id):
 
     if request.method == 'POST':
         try:
-            # Extract form data
-            company_name = request.form.get('company_name')
-            company_phone_number = request.form.get('company_phone_number')
-            company_email = request.form.get('company_email')
-            company_industry = request.form.get('company_industry')
-            company_website = request.form.get('company_website')
-            company_description = request.form.get('company_description')
-
-            # Validation checks with user-friendly messages
-            if len(company_name) < 2:
-                return jsonify({"success": False, "error": "Company name must be at least 2 characters long"})
-
-            if not validate_email(company_email):
-                return jsonify({"success": False, "error": "Please enter a valid email address"})
-
-            if not validate_phone(company_phone_number):
-                return jsonify({"success": False, "error": "Please enter a valid phone number (+XX followed by 10-15 digits)"})
-
-            if company_website and not validate_website(company_website):
-                return jsonify({"success": False, "error": "Website URL must start with https://"})
-
-            if len(company_description) > 1500:
-                return jsonify({"success": False, "error": "Description must not exceed 1500 characters"})
-
-            # Handle image upload with user-friendly messages
-            company_logo = request.files.get('company_logo')
-            company_image_url = None
+            # Get existing company data
+            existing_company = company_controller.get_company_by_id(company_id)
             
-            if company_logo and company_logo.filename != '':
-                if not allowed_file(company_logo.filename):
-                    return jsonify({"success": False, "error": "Please upload only JPG, PNG or GIF files"})
-                
-                if not validate_file_size(company_logo):
-                    return jsonify({"success": False, "error": "Image size must not exceed 3MB"})
-                    
-                company_image_url = company_controller.upload_company_image(company_id, company_logo)
+            # Merge form data with existing data (keep existing values if not in form)
+            company_data = {
+                'company_name': request.form.get('company_name', existing_company['company_name']),
+                'company_phone_number': request.form.get('company_phone_number', existing_company['company_phone_number']),
+                'company_email': request.form.get('company_email', existing_company['company_email']),
+                'company_industry': request.form.get('company_industry', existing_company['company_industry']),
+                'company_website': request.form.get('company_website', existing_company['company_website']),
+                'company_description': request.form.get('company_description', existing_company['company_description'])
+            }
 
-            # Update company
-            company_controller.update_company(
-                company_id=company_id,
-                company_name=company_name,
-                company_phone_number=company_phone_number,
-                company_email=company_email,
-                company_industry=company_industry,
-                company_website=company_website,
-                company_description=company_description,
-                company_image=company_image_url
-            )
-            
-            return jsonify({"success": True})
+            # Only validate fields that are actually being updated
+            if company_data['company_name'] != existing_company['company_name']:
+                if len(company_data['company_name']) < 2:
+                    return jsonify({"success": False, "error": "Company name must be at least 2 characters long"})
+
+            if company_data['company_email'] != existing_company['company_email']:
+                if not validate_email(company_data['company_email']):
+                    return jsonify({"success": False, "error": "Please enter a valid email address"})
+
+            if company_data['company_phone_number'] != existing_company['company_phone_number']:
+                if not validate_phone(company_data['company_phone_number']):
+                    return jsonify({"success": False, "error": "Please enter a valid phone number (+XX followed by 10-15 digits)"})
+
+            if company_data['company_website'] != existing_company['company_website']:
+                if company_data['company_website'] and not validate_website(company_data['company_website']):
+                    return jsonify({"success": False, "error": "Website URL must start with https://"})
+
+            if company_data['company_description'] != existing_company['company_description']:
+                if len(company_data['company_description']) > 1500:
+                    return jsonify({"success": False, "error": "Description must not exceed 1500 characters"})
+
+            # Handle image upload separately
+            if 'company_logo' in request.files and request.files['company_logo'].filename:
+                file = request.files['company_logo']
+                if not allowed_file(file.filename):
+                    return jsonify({"success": False, "error": "Invalid file type"})
+                if not validate_file_size(file):
+                    return jsonify({"success": False, "error": "File size must not exceed 3MB"})
+                try:
+                    company_image_url = company_controller.upload_company_image(company_id, file)
+                    if company_image_url:
+                        company_data['company_image'] = company_image_url
+                    else:
+                        return jsonify({"success": False, "error": "Failed to upload image"})
+                except Exception as e:
+                    print(f"Error uploading image: {e}")
+                    return jsonify({"success": False, "error": "Failed to upload image"})
+            else:
+                # Keep existing image
+                company_data['company_image'] = existing_company.get('company_image')
+
+            # Update company with merged data
+            result = company_controller.update_company(company_id, **company_data)
+            if result.get('success'):
+                return jsonify({"success": True})
+            else:
+                return jsonify({"success": False, "error": result.get('message', "Failed to update company")})
 
         except Exception as e:
-            return jsonify({"success": False, "error": "An unexpected error occurred. Please try again."}), 200  # Note: 200 status to allow toast to show
+            print(f"Error in modify_company: {e}")
+            return jsonify({"success": False, "error": str(e)}), 500
 
     return render_template('modify_company.html', 
                          company=company,
@@ -316,7 +327,6 @@ def modify_company(company_id):
                          is_admin=is_admin,
                          is_company_admin=is_company_admin,
                          notifications=notifications)
-
 
 @bp.route('/delete_company/<int:company_id>', methods=['POST'])
 def delete_company(company_id):

@@ -177,33 +177,30 @@ def upload_company_image(company_id, image_file):
         file_extension = os.path.splitext(original_filename)[1]
         new_filename = f"company_{company_id}{file_extension}"
 
-        # Controlla se esiste già un'immagine per questa azienda e cancellala prima di caricare la nuova
-        existing_images = get_all_company_images()
-        existing_image_url = next((img for img in existing_images if f"company_{company_id}" in img), None)
-
-        if existing_image_url:
-            existing_filename = existing_image_url.split("/")[-1].split("?")[0]  # Estrai il nome del file esistente
-            supabase.storage.from_('company_logos').remove(existing_filename)  # Rimuove il file esistente
-            print(f"Deleted existing image: {existing_filename}")
+        # Prima di caricare, verifica se esiste già un'immagine e rimuovila
+        try:
+            existing_images = supabase.storage.from_('company_logos').list()
+            for item in existing_images:
+                if f"company_{company_id}" in item['name']:
+                    supabase.storage.from_('company_logos').remove([item['name']])
+                    break
+        except Exception as e:
+            print(f"Warning when checking existing image: {e}")
 
         # Leggi il contenuto del file
         file_content = image_file.read()
+        image_file.seek(0)  # Reset file pointer after reading
 
         # Carica il nuovo file su Supabase
-        response = supabase.storage \
-            .from_('company_logos') \
-            .upload(
-                path=new_filename,
-                file=file_content,
-                file_options={"content-type": image_file.content_type}
-            )
+        response = supabase.storage.from_('company_logos').upload(
+            path=new_filename,
+            file=file_content,
+            file_options={"content-type": image_file.content_type}
+        )
 
         if response:
             # Ottieni l'URL pubblico della nuova immagine
-            public_url = supabase.storage \
-                .from_('company_logos') \
-                .get_public_url(new_filename)
-            
+            public_url = supabase.storage.from_('company_logos').get_public_url(new_filename)
             print(f"Image uploaded successfully: {public_url}")
             return public_url
 
@@ -356,8 +353,19 @@ def reject_company(sender_email, receiver_email, company_id):
     
 def delete_company(company_id):
     try:
+        # Recupera il record della compagnia per controllare se esiste un'immagine associata
+        company = get_company_by_id(company_id)
+        filename = None
+        if company and company.get('company_image'):
+            image_url = company['company_image']
+            # Estrai il nome del file dall'URL
+            filename = image_url.split('/')[-1].split('?')[0]
+                
+        # Procedi con la cancellazione della compagnia
         result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
-        if result:
+        if result and filename:
+            storage_response = supabase.storage.from_('company_logos').remove([filename])
+        if result and storage_response:
             return True
         else:
             return False

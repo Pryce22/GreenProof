@@ -115,3 +115,9 @@
     }
     }
 
+    .btn-lightblue {
+        background-color: #4da6ff !important; /* blu più chiaro */
+        border-color: #4da6ff !important;
+        color: #ffffff !important;
+    }
+
