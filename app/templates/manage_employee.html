@@ -65,6 +65,7 @@
                                         <th>Company</th>
                                         <th>Email</th>
                                         <th>Phone Number</th>
+                                        <th class="text-center">Roles</th>
                                         <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
@@ -76,11 +77,27 @@
                                             <td>{{ employee.company_name }}</td>
                                             <td>{{ employee.email }}</td>
                                             <td>{{ employee.phone_number }}</td>
+                                            
+                                            <td class="text-center">
+                                                {% if employee.company_admin %}
+                                                    <span class="badge bg-success">Admin</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Employee</span>
+                                                {% endif %}
+                                            </td>
+
                                             <td class="text-center">
                                                 <!-- Pulsante di eliminazione -->
                                                 <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}">
                                                     <i class="bi bi-trash"></i>
-                                                </button>                                               
+                                                </button>     
+                                                {% if employee.company_admin %}
+                                                  
+                                                {% else %}
+                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#makeAdminModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}">
+                                                        <i class="bi bi-person-lock"></i> Make Admin
+                                                    </button>
+                                                {% endif %}
 
                                             </td>
                                         </tr>
@@ -178,6 +195,41 @@
         </div>
     </div>
 
+    <div class="modal fade" id="makeAdminModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Are you sure you want to make this employee an admin?</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    This action will grant the employee administrator privileges. Do you want to continue?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="confirmMakeAdminBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Promotion Success Modal -->
+    <div class="modal fade" id="promotionSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Promotion Successful</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    The employee has been successfully promoted to an administrator.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <footer class="bg-dark text-light py-4">
         <div class="container">
@@ -305,6 +357,63 @@ $('#deleteModal').on('show.bs.modal', function (event) {
 
 </script>
 
+<script>$('#makeAdminModal').on('show.bs.modal', function (event) {
+    // Get the button that triggered the modal
+    var button = $(event.relatedTarget);
+    var employeeId = button.data('employee-id');
+    var companyId = button.data('company-id');
+
+    // Store the employee and company ID in the confirmation button
+    var modal = $(this);
+    modal.find('#confirmMakeAdminBtn').data('employee-id', employeeId);
+    modal.find('#confirmMakeAdminBtn').data('company-id', companyId);
+});
+
+$('#confirmMakeAdminBtn').on('click', async function() {
+    var employeeId = $(this).data('employee-id');
+    var companyId = $(this).data('company-id');
+
+    if (!employeeId || !companyId) {
+        console.error('Missing employee ID or company ID');
+        alert('Error: Missing employee or company ID.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/promote_to_admin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                employee_id: employeeId,
+                company_id: companyId
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Success response
+            $('#makeAdminModal').modal('hide');
+            $('#promotionSuccessModal').modal('show');
+
+            // Close success modal and reload after closing
+            $('#promotionSuccessModal').on('hidden.bs.modal', function () {
+                location.reload();  // Reload the page to reflect the promotion
+            });
+        } else {
+            // Error response
+            alert(data.error || 'Error promoting employee');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to promote employee');
+    }
+});
+
+</script>
 
     
 </body>

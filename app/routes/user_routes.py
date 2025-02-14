@@ -183,6 +183,7 @@ def manage_employee():
 
     # Ottieni le company_id per l'utente
     companies = user_controller.get_companies_by_user_id(user_id)
+    
     info_company = user_controller.get_companies_information_by_user_id(user_id)
     
     search_query = request.args.get('search_query', '').strip()
@@ -206,7 +207,6 @@ def manage_employee():
             employees = user_controller.get_employees_by_companies(user_id)
 
         email = user_controller.get_all_user_emails()
-        
         # Passa tutte le informazioni alla template
         return render_template('manage_employee.html',
                                user_id=user_id,
@@ -292,3 +292,28 @@ def delete_employee_route():
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+
+@bp.route('/promote_to_admin', methods=['POST'])
+def promote_to_admin():
+    try:
+        # Get data from the request
+        data = request.get_json()
+        employee_id = data.get('employee_id')
+        company_id = data.get('company_id')
+
+        # Verify that the data is provided
+        if not employee_id or not company_id:
+            return jsonify({"error": "employee_id and company_id are required"}), 400
+
+        # Call the function to promote the user to admin
+        success = user_controller.set_company_admin(company_id, employee_id)
+        # Return a response based on the success of the operation
+        if success:
+            return jsonify({"message": "Employee successfully promoted to admin."}), 200
+        else:
+            return jsonify({"error": "An error occurred during promotion."}), 500
+
+    except Exception as e:
+        print(f"Error in route: {e}")
+        return jsonify({"error": "Internal server error"}), 500
