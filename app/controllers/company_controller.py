@@ -223,6 +223,39 @@ def get_company_by_id(company_id):
     except Exception as e:
         print(f"Error getting company: {e}")
         return None
+    
+def get_id_admin_by_company(company_id):  
+    try:
+        response = supabase.table('company_employe').select('user_id').eq('company_id', company_id).eq('company_admin', True).execute()
+        if len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting company: {e}")
+        return None
+
+def get_admin_info_by_company(company_id):
+    try:
+        # Ottieni gli ID degli admin per la compagnia
+        admin_ids_response = supabase.table('company_employe').select('user_id').eq('company_id', company_id).eq('company_admin', True).execute()
+        
+        if len(admin_ids_response.data) == 0:
+            return []  # Se non ci sono admin, ritorna una lista vuota
+        
+        admin_info_list = []
+        
+        # Per ogni admin ID trovato, ottieni le informazioni dell'utente
+        for admin in admin_ids_response.data:
+            user_info = user_controller.get_user_by_id(admin['user_id'])
+            if user_info:  # Se le informazioni sono state trovate
+                admin_info_list.append(user_info)
+        
+        return admin_info_list
+    
+    except Exception as e:
+        print(f"Error getting admin info for company {company_id}: {e}")
+        return None
+
 
 """
 def get_companies_by_owner(user_id):
