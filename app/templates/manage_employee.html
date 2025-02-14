@@ -77,7 +77,7 @@
                                             <td>{{ employee.company_name }}</td>
                                             <td>{{ employee.email }}</td>
                                             <td>{{ employee.phone_number }}</td>
-                                            
+
                                             <td class="text-center">
                                                 {% if employee.company_admin %}
                                                     <span class="badge bg-success">Admin</span>
@@ -230,6 +230,44 @@
             </div>
         </div>
     </div>
+
+    <!-- Invitation Success Modal -->
+    <div class="modal fade" id="invitationSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Request Sent Successfully</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    The invitation has been successfully sent to the employee.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal di errore -->
+<div class="modal fade" id="emailErrorModal" tabindex="-1" aria-labelledby="emailErrorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailErrorModalLabel">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This email is already associated with this company!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     
     <footer class="bg-dark text-light py-4">
         <div class="container">
@@ -261,11 +299,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
    
     <script>
+    const employees = JSON.parse('{{ employees_json | safe }}');
+
     document.getElementById("inviteForm").addEventListener("submit", async function(event) {
     event.preventDefault();
     
     const companyId = document.getElementById("company").value;
     const email = document.getElementById("email").value;
+    
+    const emailExists = employees.some(employee => 
+                employee.company_id == companyId && employee.email.toLowerCase() === email.toLowerCase()
+            );
+
+            if (emailExists) {
+                $('#emailErrorModal').modal('show');
+                return;
+            }
     
     try {
         const response = await fetch('/send_company_invitation', {
@@ -282,7 +331,9 @@
         const data = await response.json();
         
         if (data.success) {
-            alert("Invitation sent successfully!");
+            
+            $('#invitationSuccessModal').modal('show');
+
             document.getElementById("inviteForm").reset();
         } else {
             alert(data.error || "Failed to send invitation");

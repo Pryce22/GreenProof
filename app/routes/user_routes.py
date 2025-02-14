@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
+from flask import Blueprint, json, render_template, request, redirect, url_for, session, jsonify
 from app.controllers import user_controller, company_controller, notifications_controller
 from app.routes.auth_routes import get_user_info
 import re
@@ -206,6 +206,8 @@ def manage_employee():
         else:
             employees = user_controller.get_employees_by_companies(user_id)
 
+        employees_json=json.dumps(employees)
+
         email = user_controller.get_all_user_emails()
         # Passa tutte le informazioni alla template
         return render_template('manage_employee.html',
@@ -217,6 +219,7 @@ def manage_employee():
                                companies=companies,
                                unique_admin=unique_admin,
                                employees=employees,
+                               employees_json=employees_json,
                                info_company=info_company,
                                email=email,
                                notifications=notifications)
