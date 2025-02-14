@@ -247,6 +247,8 @@ a.dropdown-item:not([href="/logout"]) {
     margin-left: auto; /* Align buttons to the right */
 }
 
+
+
 .btn-save, .btn-cancel {
     padding: 0.5rem;
     border-radius: 50%;
@@ -256,6 +258,11 @@ a.dropdown-item:not([href="/logout"]) {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+}
+
+footer .container {
+    padding-left: 10rem;
+    padding-right: 1rem;
 }
 
 .btn-save {

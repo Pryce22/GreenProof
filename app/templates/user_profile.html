@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="static/user_profile.css">
+
 </head>
 <body>
     <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -107,9 +108,15 @@
                                         <p class="mb-0 field-value" data-field="email">{{ user.email }}</p>
                                         <input type="email" class="form-control edit-input d-none" value="{{ user.email }}">
                                         <div class="edit-buttons">
+                                            {% if not is_admin %}
                                             <button class="btn btn-edit">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
+                                            {% else %}
+                                            <button class="btn btn-edit" disabled title="Admins cannot modify email">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            {% endif %}
                                             <div class="btn-group save-cancel-buttons d-none">
                                                 <button class="btn btn-success btn-save">
                                                     <i class="bi bi-check"></i>
