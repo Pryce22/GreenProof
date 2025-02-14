@@ -88,13 +88,13 @@
 
                                             <td class="text-center">
                                                 <!-- Pulsante di eliminazione -->
-                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}">
-                                                    <i class="bi bi-trash"></i>
+                                                <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}"title="Delete User">
+                                                    <i class="bi bi-trash" title="Delete User"></i>
                                                 </button>     
                                                 {% if employee.company_admin %}
                                                   
                                                 {% else %}
-                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#makeAdminModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}">
+                                                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#makeAdminModal" data-employee-id="{{ employee.id }}" data-company-id="{{ employee.company_id }}" title="Promote to Admin">
                                                         <i class="bi bi-person-lock"></i> Make Admin
                                                     </button>
                                                 {% endif %}
@@ -336,11 +336,13 @@
 
             document.getElementById("inviteForm").reset();
         } else {
-            alert(data.error || "Failed to send invitation");
+            $('#emailErrorModal .modal-body').html(`<p>${data.error || "Failed to send invitation"}</p>`);
+            $('#emailErrorModal').modal('show');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Failed to send invitation');
+        $('#emailErrorModal .modal-body').html(`<p>${data.error || "Failed to send invitation"}</p>`);
+            $('#emailErrorModal').modal('show');
     }
 });
     </script>

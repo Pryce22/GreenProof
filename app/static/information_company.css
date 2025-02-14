@@ -10,7 +10,10 @@
     --border: #E5E7EB;
     --ring: #10B981;
 }
-
+.navbar img {
+    max-height: 40px; /* Imposta un'altezza massima */
+    width: auto; /* Mantiene le proporzioni corrette */
+}
 
 
 body {
