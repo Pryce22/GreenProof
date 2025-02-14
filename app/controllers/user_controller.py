@@ -169,8 +169,6 @@ def get_companies_by_user_id(user_id):
         return None
 
 
-
-
 def get_user_role(user_id):
     """Get the role of a user"""
     try:
@@ -626,13 +624,14 @@ def get_employees_by_companies(excluded_user_id):
             return []
 
         # Ottieni tutti gli user_id delle persone associate alle compagnie (escludendo te stesso)
-        response = supabase.table('company_employe').select('user_id', 'company_id').in_('company_id', company_ids).neq('user_id', excluded_user_id).execute()
+        response = supabase.table('company_employe').select('user_id', 'company_id', 'company_admin').in_('company_id', company_ids).neq('user_id', excluded_user_id).execute()
 
         if len(response.data) > 0:
             employees = []
             for record in response.data:
                 user_id = record['user_id']
                 company_id = record['company_id']
+                company_admin= record['company_admin']
 
                 # Recupera i dettagli dell'utente dalla tabella 'user'
                 user_response = supabase.table('user').select('name', 'surname', 'phone_number', 'email').eq('id', user_id).execute()
@@ -646,7 +645,7 @@ def get_employees_by_companies(excluded_user_id):
                         company_data = company_response.data[0]  # Dati della compagnia
                         user_details['company_name'] = company_data['company_name']  # Aggiungi il nome della compagnia
                         user_details['company_id'] = company_data['company_id']  # Aggiungi l'id della compagnia
-
+                        user_details['company_admin'] = company_admin
 
                         employees.append(user_details)
 
@@ -743,3 +742,24 @@ def delete_employee(user_id, company_id):
         print(f"Error searching users by name or surname: {e}")
         return []  # Restituisce una lista vuota in caso di errore
 
+
+def set_company_admin(company_id, user_id):
+    """Set the company admin and handle any errors"""
+    
+    try:
+        # Aggiornare il campo company_admin a TRUE per la combinazione company_id e user_id
+        response = supabase.table('company_employe') \
+            .update({'company_admin': True}) \
+            .eq('company_id', company_id) \
+            .eq('user_id', user_id) \
+            .execute()
+        
+        # Verifica se l'aggiornamento è andato a buon fine
+        if response.data:
+            return True
+        else:
+            print(f"Failed to promote user {user_id} to admin in company {company_id}")
+            return False
+    except Exception as e:
+        print(f"Error setting company admin: {e}")
+        return False
