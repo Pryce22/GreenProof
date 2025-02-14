@@ -211,84 +211,96 @@
   </div>
   
   <script>
-    document.getElementById('contactForm').addEventListener('submit', function(event) {
-      event.preventDefault();
-      const form = event.target;
-    
-      // Clear any previous error messages
-      form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-      form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
-    
-      let valid = true;
-      
-      // Validate name
-      const nameInput = document.getElementById('name');
-      const nameError = document.getElementById('nameError');
-      const nameValue = nameInput.value.trim();
-      if(nameValue.length < 2 || nameValue.length > 50) {
-        nameError.textContent = "Name must be between 2 and 50 characters.";
-        nameInput.classList.add("is-invalid");
-        valid = false;
-      }
-      
-      // Validate email
-      const emailInput = document.getElementById('email');
-      const emailError = document.getElementById('emailError');
-      const emailValue = emailInput.value.trim();
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if(!emailPattern.test(emailValue)) {
-        emailError.textContent = "Please enter a valid email address.";
-        emailInput.classList.add("is-invalid");
-        valid = false;
-      }
-      
-      // Validate message
-      const messageInput = document.getElementById('message');
-      const messageError = document.getElementById('messageError');
-      const messageValue = messageInput.value.trim();
-      if(messageValue.length > 500) {
-        messageError.textContent = "Message must not exceed 500 characters.";
-        messageInput.classList.add("is-invalid");
-        valid = false;
-      }
-      
-      if (!valid) return;
-      
-      const formData = new FormData(form);
-      
-      fetch('/contact', {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => response.json().then(data => ({status: response.status, body: data})))
-      .then(res => {
-        if (res.status === 200 && res.body.success) {
-          // Show the Toast with the success message
-          document.querySelector('#contactToast .toast-body').textContent = res.body.message;
-          const toast = new bootstrap.Toast(document.getElementById('contactToast'), { delay: 3000 });
-          toast.show();
-          form.reset();
-          document.getElementById('messageCount').textContent = "0/500";
+    function showToast(message, type) {
+        const toastEl = document.getElementById('contactToast');
+        const toastBody = toastEl.querySelector('.toast-body');
+        toastBody.textContent = message;
+        
+        // Modifica il colore del toast in base al tipo (success o error)
+        if (type === 'error') {
+            toastEl.classList.remove('text-bg-success');
+            toastEl.classList.add('text-bg-danger');
         } else {
-          // Handle validation or other errors
-          if (res.body.errors) {
-            for (const [field, errorMsg] of Object.entries(res.body.errors)) {
-              const input = document.getElementById(field);
-              const errorDiv = document.getElementById(field + 'Error');
-              if (input && errorDiv) {
-                input.classList.add('is-invalid');
-                errorDiv.textContent = errorMsg;
-              }
-            }
-          } else if (res.body.error) {
-            alert(res.body.error);
-          }
+            toastEl.classList.remove('text-bg-danger');
+            toastEl.classList.add('text-bg-success');
         }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        alert("An error occurred. Please try again later.");
-      });
+        
+        // Crea e mostra il toast utilizzando l'API di Bootstrap
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+    
+    document.getElementById('contactForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const form = event.target;
+      
+        // Clear any previous error messages
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+      
+        let valid = true;
+        
+        // Validate name
+        const nameInput = document.getElementById('name');
+        const nameError = document.getElementById('nameError');
+        const nameValue = nameInput.value.trim();
+        if(nameValue.length < 2 || nameValue.length > 50) {
+            nameError.textContent = "Name must be between 2 and 50 characters.";
+            nameInput.classList.add("is-invalid");
+            valid = false;
+        }
+        
+        // Validate email
+        const emailInput = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+        const emailValue = emailInput.value.trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if(!emailPattern.test(emailValue)) {
+            emailError.textContent = "Please enter a valid email address.";
+            emailInput.classList.add("is-invalid");
+            valid = false;
+        }
+        
+        // Validate message
+        const messageInput = document.getElementById('message');
+        const messageError = document.getElementById('messageError');
+        const messageValue = messageInput.value.trim();
+        if(messageValue.length > 500) {
+            messageError.textContent = "Message must not exceed 500 characters.";
+            messageInput.classList.add("is-invalid");
+            valid = false;
+        }
+        
+        if (!valid) return;
+        
+        const formData = new FormData(form);
+        
+        fetch('/contact', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json().then(data => ({status: response.status, body: data})))
+        .then(res => {
+            // Se è rate limited (status 429) oppure se c'è un errore specifico, mostra il toast
+            if (res.status === 429 || (res.body && res.body.error)) {
+                const errorMessage = res.body.error || "An error occurred. Please try again later.";
+                showToast(errorMessage, 'error');
+                return;
+            }
+            
+            // Se il messaggio è stato inviato correttamente, mostra il toast di successo
+            if (res.status === 200 && res.body.success) {
+                showToast("Il tuo messaggio è stato inviato correttamente.", 'success');
+                // Resetta il form e il conteggio dei caratteri
+                form.reset();
+                document.getElementById('messageCount').textContent = "0/500";
+            }
+            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast("An error occurred. Please try again later.", 'error');
+        });
     });
   </script>
 
