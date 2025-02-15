@@ -11,7 +11,7 @@
     --ring: #10B981;
 }
 .navbar img {
-    max-height: 50px;
+    max-height: 40px;
     width: auto;
     object-fit: contain;
 }
