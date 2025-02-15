@@ -13,6 +13,10 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 </head>
 <body>
 <header class="sticky-top">
@@ -428,6 +432,46 @@
             });
         });
     </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>// Funzione validazione immagine aggiornata
+    toastr.options = {
+        "closeButton": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": true,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    };
+        function validateImage(file) {
+            const maxSize = 3 * 1024 * 1024; // 3MB
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            
+            if (file.size > maxSize) {
+                toastr.error(`File too large (${(file.size/1024/1024).toFixed(2)}MB). Maximum allowed is 3MB.`);
+                return false;
+            }
+            if (!validTypes.includes(file.type)) {
+                toastr.error('Please upload only JPG, PNG or GIF files');
+                return false;
+            }
+            return true;
+        }
+    
+        // Event listener per il file input aggiornato
+        document.getElementById('logo').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+    
+            if (!validateImage(file)) {
+                event.target.value = ''; // Reset input
+                return;
+            }
+        });</script>
         
 </body>
 </html>
