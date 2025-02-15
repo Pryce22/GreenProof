@@ -84,7 +84,7 @@
                                             <td class="text-center">
                                                 {% if users.id not in unique_admins %}
                                                     <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" 
-                                                            data-id="{{ users.id }}">
+                                                            data-id="{{ users.id }}" title="Delete User">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 {% else %}
