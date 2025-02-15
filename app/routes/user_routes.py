@@ -247,6 +247,10 @@ def send_company_invitation():
     company_id = data.get('company_id')
     receiver_email = data.get('email')
     
+    is_him = user['email'] == receiver_email
+    if is_him:
+        return jsonify({'success': False, 'error': 'You cannot invite yourself'})
+    
     if not company_id or not receiver_email:
         return jsonify({'success': False, 'error': 'Missing data'})
     
