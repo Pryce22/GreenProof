@@ -331,10 +331,20 @@ def approve_company(sender_email, receiver_email, company_id):
     
 def delete_company_notification(sender_email, company_id):
     try:
-        admin_id = supabase.table('roles').select('user_id').eq('admin', True).execute()
-        receiver_email = supabase.table('user').select('email').eq('id', admin_id).execute()
+        admin_response = supabase.table('roles').select('user_id').eq('admin', True).execute()
+        if not admin_response.data or len(admin_response.data) == 0:
+            print("No admin found")
+            return False
 
-        notifications_controller.delete_notification('company_elimination', sender_email, receiver_email, company_id)
+        admin_id = admin_response.data[0]['user_id']
+
+        user_response = supabase.table('user').select('email').eq('id', admin_id).execute()
+        if not user_response.data or len(user_response.data) == 0:
+            print("Admin email not found")
+            return False
+        
+        receiver_email = user_response.data[0]['email']
+        notifications_controller.create_notification('company_elimination', sender_email, receiver_email, company_id)
         return True
     except Exception as e:
         print(f"Error deleting company notification: {e}")
