@@ -467,7 +467,7 @@ def store_reset_token(email, token):
             }) \
             .execute()
             
-        print(f"Token stored in DB: {token} for email: {email}")
+        #print(f"Token stored in DB: {token} for email: {email}")
         return True
     except Exception as e:
         print(f"Error storing reset token: {e}")
@@ -476,7 +476,7 @@ def store_reset_token(email, token):
 def validate_reset_token(token):
     """Validate the reset token and return associated email if valid"""
     try:
-        print(f"Validating token: {token}")
+        #print(f"Validating token: {token}")
         ten_minutes_ago = time.time() - (10 * 60) 
         ten_minutes_ago = datetime.fromtimestamp(ten_minutes_ago, tz=timezone.utc)
         # Recupera il token dal database e verifica che non sia scaduto e non sia già stato usato
@@ -494,18 +494,17 @@ def validate_reset_token(token):
             .eq('is_used', False) \
             .execute()
         
-        print(f"Token validation response: {response.data}")
+        #print(f"Token validation response: {response.data}")
         if response.data and len(response.data) > 0:
             token_data = response.data[0]  # Supponiamo che ci sia solo un token valido
             created_at = datetime.fromisoformat(token_data['created_at'])  # Converti la stringa in datetime
             #created_at = created_at.replace(tzinfo=None)
             expiration_time = created_at + timedelta(minutes=1)
-            print(expiration_time)
+            #print(expiration_time)
 
         # Controlla se il token è ancora valido
             if datetime.now(timezone.utc) < expiration_time:
                 token_data = response.data[0]
-                print("sono QUi")
                 return token_data['email']
             else:
                 # Elimina i token scaduti
@@ -763,3 +762,26 @@ def set_company_admin(company_id, user_id):
     except Exception as e:
         print(f"Error setting company admin: {e}")
         return False
+    
+def check_user_by_email_if_is_admin(email):
+    try:
+        # Prima otteniamo l'ID dell'utente basato sull'email
+        response_user = supabase.table('user').select('id').eq('email', email).execute()
+        
+        # Se non troviamo l'utente con quell'email
+        if len(response_user.data) == 0:
+            return False
+        #print(response_user.data[0]['id'])
+        user_id = response_user.data[0]['id']
+        # Ora controlliamo se questo user_id è presente nel tavolo 'roles' con admin = TRUE
+        response_roles = supabase.table('roles').select('user_id').eq('user_id', user_id).eq('admin', True).execute()
+        
+        # Se l'utente ha il ruolo di admin
+        if len(response_roles.data) > 0:
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Error checking admin status: {e}")
+        return False
+

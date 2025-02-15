@@ -40,7 +40,7 @@
             </div>
         </nav>
     </header>
-
+    
     <section class="hero-section">
         <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
           <div class="carousel-inner">
@@ -49,7 +49,9 @@
               <div class="carousel-caption">
                 <h1>Sustainable Food Supply Chain</h1>
                 <p></p>
+                {% if not is_admin %}
                 <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                {% endif %}
               </div>
             </div>
             <div class="carousel-item" data-bs-interval="4000">
@@ -57,7 +59,9 @@
               <div class="carousel-caption">
                 <h1>Sustainable Food Supply Chain</h1>
                 <p></p>
+                {% if not is_admin %}
                 <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                {% endif %}
               </div>
             </div>
             <div class="carousel-item" data-bs-interval="4000">
@@ -65,15 +69,19 @@
               <div class="carousel-caption">
                 <h1>Sustainable Food Supply Chain</h1>
                 <p></p>
+                {% if not is_admin %}
                 <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                {% endif %}
               </div>
             </div>
             <div class="carousel-item" data-bs-interval="4000">
                 <img src="static/images/home5.jpg" class="d-block w-100" alt="Fresh Produce">
                 <div class="carousel-caption">
                   <h1>Sustainable Food Supply Chain</h1>
-                  <p></p>
+                  <p></p> 
+                  {% if not is_admin %}
                   <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                  {% endif %}
                 </div>
               </div>
           </div>

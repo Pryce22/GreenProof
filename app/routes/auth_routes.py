@@ -231,7 +231,7 @@ def password_recover():
             
             # Verifica che il token sia stato salvato correttamente
             stored_tokens = session.get('reset_tokens', {})
-            print(f"Tokens after storing: {stored_tokens}")  # Debug print
+            #print(f"Tokens after storing: {stored_tokens}")  # Debug print
             
             # Send reset email
             if user_controller.send_password_reset_email(email, reset_token):
@@ -246,7 +246,7 @@ def password_recover():
             })
             
         except Exception as e:
-            print(f"Error in password reset: {e}")  # Debug print
+            #print(f"Error in password reset: {e}")  # Debug print
             return jsonify({
                 'success': False,
                 'error': 'An error occurred during password reset.'
@@ -256,9 +256,9 @@ def password_recover():
 
 @bp.route('/password_recover_2/<token>', methods=['GET', 'POST'])
 def password_recover_2(token):
-    print(f"Accessing password_recover_2 with token: {token}")  # Debug print
+    #print(f"Accessing password_recover_2 with token: {token}")  # Debug print
     email = user_controller.validate_reset_token(token)
-    print(email)
+    #print(email)
     
     if not email:
         return render_template('error.html', 

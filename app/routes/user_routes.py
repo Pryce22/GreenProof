@@ -251,7 +251,7 @@ def send_company_invitation():
         return jsonify({'success': False, 'error': 'Missing data'})
     
     # Verify if the email exists in the database
-    if not user_controller.check_email_exists(receiver_email):
+    if not user_controller.check_email_exists(receiver_email) or user_controller.check_user_by_email_if_is_admin(receiver_email):
         return jsonify({'success': False, 'error': 'User email not found'})
     
     # Create a company invitation notification
