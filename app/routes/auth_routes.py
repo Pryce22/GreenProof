@@ -143,8 +143,7 @@ def resend_verification():
 def mfa():
     if request.method == 'GET':
         # Se non c'è un timestamp salvato, inizializzalo
-        if 'verification_start_time' not in session:
-            session['verification_start_time'] = time.time()
+        session['verification_start_time'] = time.time()
             
     if request.method == 'POST':
         token = request.form.get('verificationCode')
