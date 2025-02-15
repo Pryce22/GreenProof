@@ -330,6 +330,9 @@ def modify_company(company_id):
 
 @bp.route('/delete_company/<int:company_id>', methods=['POST'])
 def delete_company(company_id):
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    if not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
-    success = company_controller.delete_company(company_id)
+    success = company_controller.delete_company_notification(user["email"],company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to delete company'})
