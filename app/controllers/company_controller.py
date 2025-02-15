@@ -334,7 +334,7 @@ def delete_company_notification(sender_email, company_id):
         admin_id = supabase.table('roles').select('user_id').eq('admin', True).execute()
         receiver_email = supabase.table('user').select('email').eq('id', admin_id).execute()
 
-        notifications_controller.delete_notification('company_elimination', sender_email, receiver_email, company_id)
+        notifications_controller.create_notification('company_elimination', sender_email, receiver_email, company_id)
         return True
     except Exception as e:
         print(f"Error deleting company notification: {e}")
