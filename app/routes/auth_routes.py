@@ -142,9 +142,11 @@ def resend_verification():
 @bp.route('/mfa', methods=['GET', 'POST'])
 def mfa():
     if request.method == 'GET':
-        # Se non c'è un timestamp salvato, inizializzalo
+        # Resetta il timer ad ogni caricamento della pagina MFA
         session['verification_start_time'] = time.time()
-            
+        # (Opzionalmente, resetta anche i tentativi)
+        session.pop('verification_attempts', None)
+    
     if request.method == 'POST':
         token = request.form.get('verificationCode')
         if not token:
@@ -152,17 +154,29 @@ def mfa():
             
         pending_login = session.get('pending_login')
         pending_registration = session.get('pending_registration')
+        attempts = session.get('verification_attempts', 0)
         
         if pending_login:
-            # Handle login MFA
             if user_controller.verify_token(token, pending_login['email']):
                 session.pop('pending_login', None)
                 session['id'] = pending_login['user_id']
+                session.pop('verification_attempts', None)
                 return jsonify({'success': True, 'redirect': url_for('main.home')})
-            return jsonify({'success': False, 'error': 'Invalid verification code'})
-            
+            else:
+                attempts += 1
+                session['verification_attempts'] = attempts
+                if attempts >= 3:
+                    # Raggiunto il limite di tentativi: rinvia un nuovo codice
+                    user_controller.send_verification_email(pending_login['email'])
+                    session['verification_start_time'] = time.time()
+                    session.pop('verification_attempts', None)
+                    return jsonify({
+                        'success': False,
+                        'error': 'Too many invalid attempts. A new verification code has been sent to your email.'
+                    })
+                return jsonify({'success': False, 'error': 'Invalid verification code'})
+                
         elif pending_registration:
-            # Handle registration MFA
             if user_controller.verify_token(token, pending_registration['email']):
                 if user_controller.create_user(
                     id=pending_registration['id'],
@@ -177,13 +191,27 @@ def mfa():
                     user = user_controller.get_user_by_email(pending_registration['email'])
                     if user:
                         session['id'] = user['id']
+                        session.pop('verification_attempts', None)
                         return jsonify({'success': True, 'redirect': url_for('main.home')})
                 return jsonify({'success': False, 'error': 'Failed to create account'})
+            else:
+                attempts += 1
+                session['verification_attempts'] = attempts
+                if attempts >= 3:
+                    user_controller.send_verification_email(pending_registration['email'])
+                    session['verification_start_time'] = time.time()
+                    session.pop('verification_attempts', None)
+                    return jsonify({
+                        'success': False,
+                        'error': 'Too many invalid attempts. A new verification code has been sent to your email.'
+                    })
+                return jsonify({'success': False, 'error': 'Invalid verification code'})
         
         return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
-        
+    
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
-    return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications=notifications)
+    return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin,
+                           is_company_admin=is_company_admin, notifications=notifications)
 
 @bp.route('/password_recover', methods=['GET', 'POST'])
 def password_recover():

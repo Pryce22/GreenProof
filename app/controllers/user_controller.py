@@ -114,7 +114,7 @@ def verify_token(token, email):
         session.pop('verification_attempts', None)
         # Generate and send new token
         send_verification_email(email)
-        return 'max_attempts'
+        return False
         
     # Increment attempts
     session['verification_attempts'] = attempts + 1
