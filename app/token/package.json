@@ -1,0 +1,22 @@
+{
+  "name": "token",
+  "version": "1.0.0",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@openzeppelin/contracts": "4.9.3",
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "token": "file:",
+    "truffle": "^5.11.5",
+    "web3": "^4.16.0"
+  }
+}

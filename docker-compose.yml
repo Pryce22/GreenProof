@@ -1,0 +1,185 @@
+
+
+services:
+  besu-validator1:
+    image: hyperledger/besu:24.12.2
+    container_name: besu-validator1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: >
+      --genesis-file=/network/genesis.json
+      --data-path=/var/lib/besu
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,QBFT,DEBUG,WEB3,TXPOOL,ADMIN,MINER,PERM
+      --host-allowlist="*"
+      --rpc-http-host=0.0.0.0
+      --p2p-port=30303
+      --rpc-http-port=8545
+      --rpc-http-cors-origins="*"
+      --logging=INFO
+      --node-private-key-file=/network/Node-1/key
+      --min-gas-price=0 
+      --miner-enabled
+      --sync-mode=FULL
+      --miner-coinbase=0x2d4e045a52bcf751469f13b50edf7a62bae3490c
+      --sync-min-peers=0
+      --static-nodes-file=/network/static-nodes.json
+      --revert-reason-enabled=true
+      --discovery-enabled=true 
+      --p2p-enabled=true                  
+      --rpc-http-max-active-connections=100
+      --rpc-ws-enabled
+      --rpc-ws-host=0.0.0.0
+      --rpc-ws-port=8550
+      --rpc-ws-api=ETH,NET,QBFT,DEBUG,WEB3,TXPOOL,ADMIN,MINER,PERM
+    ports:
+      - "8545:8545"
+      - "8550:8550"
+      - "30303:30303"
+    volumes:
+      - ./app/QBFT-Network:/network
+      - besu-data1:/var/lib/besu
+    restart: unless-stopped
+    networks:
+      besu-network:
+        ipv4_address: 172.25.0.2
+    environment:
+      - BESU_LOGGING=INFO
+      - BESU_NETWORK=dev
+    healthcheck:
+      test: ["CMD", "curl", "-X", "POST", "-H", "Content-Type: application/json", "-d", '{"jsonrpc":"2.0","method":"qbft_getValidatorsByBlockNumber","params":["latest"],"id":1}', "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+
+
+  besu-validator2:
+    image: hyperledger/besu:24.12.2
+    container_name: besu-validator2
+    command: >
+      --genesis-file=/network/genesis.json
+      --data-path=/var/lib/besu
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,QBFT,DEBUG,WEB3,TXPOOL,ADMIN,MINER
+      --host-allowlist=*
+      --rpc-http-host=0.0.0.0
+      --p2p-port=30304
+      --rpc-http-port=8546
+      --rpc-http-cors-origins=*
+      --logging=INFO
+      --node-private-key-file=/network/Node-2/key
+      --sync-min-peers=0
+      --sync-mode=FULL
+      --min-gas-price=0
+      --miner-enabled
+      --miner-coinbase=0x4f50611e368b3f19ac1f67acaac0b201c75ef463 
+      --bootnodes=enode://ad1fca74960fcc63248c080462de362d8a39c006e018a8992f10faff1c2e41c167fea1377e4ba30da36cf5d4a24309535a34d053eea9f40d7d06fc3496412b5f@172.25.0.2:30303
+      --static-nodes-file=/network/static-nodes.json
+      --revert-reason-enabled=true
+      --tx-pool-price-bump=0
+    ports:
+      - "8546:8546"
+      - "30304:30304"
+    volumes:
+      - ./app/QBFT-Network:/network
+      - besu-data2:/var/lib/besu
+    restart: unless-stopped
+    networks:
+      besu-network:
+        ipv4_address: 172.25.0.3
+    environment:
+      - BESU_LOGGING=INFO
+      - BESU_NETWORK=dev
+
+  besu-validator3:
+    image: hyperledger/besu:24.12.2
+    container_name: besu-validator3
+    command: >
+      --genesis-file=/network/genesis.json
+      --data-path=/var/lib/besu
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,QBFT,DEBUG,WEB3,TXPOOL,ADMIN,MINER
+      --host-allowlist=*
+      --rpc-http-host=0.0.0.0
+      --p2p-port=30305
+      --rpc-http-port=8547
+      --rpc-http-cors-origins=*
+      --logging=INFO
+      --node-private-key-file=/network/Node-3/key
+      --sync-min-peers=0
+      --sync-mode=FULL
+      --min-gas-price=0
+      --miner-enabled
+      --miner-coinbase=0x35b81b5c1eef16940d72077ba5e8cd075ae5609e
+      --bootnodes=enode://ad1fca74960fcc63248c080462de362d8a39c006e018a8992f10faff1c2e41c167fea1377e4ba30da36cf5d4a24309535a34d053eea9f40d7d06fc3496412b5f@172.25.0.2:30303
+      --static-nodes-file=/network/static-nodes.json
+      --revert-reason-enabled=true
+      --tx-pool-price-bump=0
+    ports:
+      - "8547:8547"
+      - "30305:30305"
+    volumes:
+      - ./app/QBFT-Network:/network
+      - besu-data3:/var/lib/besu
+    restart: unless-stopped
+    networks:
+      besu-network:
+        ipv4_address: 172.25.0.4
+    environment:
+      - BESU_LOGGING=INFO
+      - BESU_NETWORK=dev
+
+  besu-validator4:
+    image: hyperledger/besu:24.12.2
+    container_name: besu-validator4
+    command: >
+      --genesis-file=/network/genesis.json
+      --data-path=/var/lib/besu
+      --rpc-http-enabled
+      --rpc-http-api=ETH,NET,QBFT,DEBUG,WEB3,TXPOOL,ADMIN,MINER
+      --host-allowlist=*
+      --rpc-http-host=0.0.0.0
+      --p2p-port=30306
+      --rpc-http-port=8548
+      --rpc-http-cors-origins=*
+      --logging=INFO
+      --node-private-key-file=/network/Node-4/key
+      --sync-min-peers=0
+      --sync-mode=FULL
+      --min-gas-price=0
+      --miner-enabled
+      --miner-coinbase=0x3a7d8b2c365bf3653005e05ed5ccf04bb6c5249e 
+      --bootnodes=enode://ad1fca74960fcc63248c080462de362d8a39c006e018a8992f10faff1c2e41c167fea1377e4ba30da36cf5d4a24309535a34d053eea9f40d7d06fc3496412b5f@172.25.0.2:30303
+      --static-nodes-file=/network/static-nodes.json
+      --revert-reason-enabled=true
+      --tx-pool-price-bump=0
+    ports:
+      - "8548:8548"
+      - "30306:30306"
+    volumes:
+      - ./app/QBFT-Network:/network
+      - besu-data4:/var/lib/besu
+    restart: unless-stopped
+    networks:
+      besu-network:
+        ipv4_address: 172.25.0.5
+    environment:
+      - BESU_LOGGING=INFO
+      - BESU_NETWORK=dev
+
+networks:
+  besu-network:
+    driver: bridge
+    internal: false
+    name: besu-network
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  besu-data1:
+  besu-data2:
+  besu-data3:
+  besu-data4:
