@@ -1,0 +1,5 @@
+* text=auto
+*.json text eol=lf
+*.js text eol=lf
+CURRENT text eol=lf
+OPTIONS* text eol=lf
