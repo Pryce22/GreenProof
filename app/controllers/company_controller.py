@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from app.controllers import user_controller
 from app.controllers import notifications_controller
 from app.utils.email_service import EmailService
+from app.controllers.eth_account_controller import get_token_balance
 
 
 
@@ -388,19 +389,49 @@ def get_all_company_images():
         print(f"Error getting company images: {e}")
         return []
 
-def get_top_companies():
+def update_all_companies_token_balances():
+    """
+    Updates token balances for all companies in the database
+    """
     try:
+        # Get all companies with ETH addresses
+        companies = get_all_companies_with_eth_address()
+        
+        for company in companies:
+            if company.get('eth_address'):
+                # Get current token balance from blockchain
+                current_balance = get_token_balance(company['eth_address'])
+                
+                # Update token balance in database
+                supabase.table('companies') \
+                    .update({'token': current_balance}) \
+                    .eq('company_id', company['company_id']) \
+                    .execute()
+        return True
+    except Exception as e:
+        print(f"Error updating companies token balances: {e}")
+        return False
+
+def get_top_companies():
+    """
+    Returns top 3 companies by token balance
+    """
+    try:
+        update_all_companies_token_balances()
+        # Get companies sorted by token balance
         response = supabase.table('companies') \
             .select('*') \
             .eq('status', True) \
             .order('token', desc=True) \
             .limit(3) \
             .execute()
-        return response.data
+
+        return response.data if response.data else []
+
     except Exception as e:
         print(f"Error getting top companies: {e}")
         return []
-
+    
 def check_eth_address_unique(eth_address, exclude_company_id=None):
     try:
         query = supabase.table('companies').select('company_id').eq('eth_address', eth_address)
