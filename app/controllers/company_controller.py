@@ -1,12 +1,10 @@
 from app import supabase
-import uuid
 import os
 from werkzeug.utils import secure_filename
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from app.controllers import user_controller
 from app.controllers import notifications_controller
+from app.utils.email_service import EmailService
+
 
 
 def create_company(
@@ -87,88 +85,7 @@ def create_company(
         return {'success': False, 'error': str(e)}
 
 def send_admin_notification(user_info, company_data):
-    admin_email = "ssb2024.2025@gmail.com"
-    from_email = "ssb2024.2025@gmail.com"
-    from_password = "vpon ryms zupv owmt"
-    subject = "New Company Registration Request"
-
-    # Create HTML email content
-    html_content = f"""
-    <html>
-    <head>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                line-height: 1.6;
-                color: #333333;
-            }}
-            .container {{
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-            }}
-            .header {{
-                background-color: #2E7D32;
-                color: white;
-                padding: 20px;
-                text-align: center;
-                border-radius: 5px 5px 0 0;
-            }}
-            .content {{
-                background-color: #f9f9f9;
-                padding: 20px;
-                border-radius: 0 0 5px 5px;
-            }}
-            .info-label {{
-                font-weight: bold;
-                color: #2E7D32;
-            }}
-            .divider {{
-                border-top: 1px solid #ddd;
-                margin: 15px 0;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h2>New Company Registration Request</h2>
-            </div>
-            <div class="content">
-                <p><span class="info-label">Requested by:</span> {user_info['name']} {user_info['surname']} ({user_info['email']})</p>
-                <div class="divider"></div>
-                <h3>Company Details:</h3>
-                <p><span class="info-label">Company Name:</span> {company_data['company_name']}</p>
-                <p><span class="info-label">Industry:</span> {company_data['company_industry']}</p>
-                <p><span class="info-label">Email:</span> {company_data['company_email']}</p>
-                <p><span class="info-label">Phone:</span> {company_data['company_phone_number']}</p>
-                <p><span class="info-label">Location:</span> {company_data['company_address']}, {company_data['company_city']}, {company_data['company_country']}</p>
-                <p><span class="info-label">Website:</span> {company_data.get('company_website', 'Not provided')}</p>
-                <div class="divider"></div>
-                <p><span class="info-label">Description:</span><br>{company_data['company_description']}</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-
-    msg = MIMEMultipart('alternative')
-    msg['From'] = from_email
-    msg['To'] = admin_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(html_content, 'html'))
-
-    try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(from_email, from_password)
-        server.send_message(msg)
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"Error sending admin notification: {e}")
-        return False
+    EmailService.send_admin_notification(user_info, company_data)
 
 def upload_company_image(company_id, image_file):
     try:
@@ -305,6 +222,9 @@ def approve_company(sender_email, receiver_email, company_id):
         result = supabase.from_('companies').update({'status': True}).eq('company_id', company_id).execute()
         if result.data:
 
+
+            #EmailService.send_eth_credentials(receiver_email, eth_account, company['company_name'])
+
             user = user_controller.get_user_by_email(receiver_email)
             if user:
                 user_id = user.get('id')
@@ -322,6 +242,7 @@ def approve_company(sender_email, receiver_email, company_id):
                 return False
                 
             notifications_controller.create_notification('acception registration company', sender_email, receiver_email, company_id)
+            EmailService.send_company_approved_notification(receiver_email)
             return True
         else:
             return False
@@ -479,3 +400,84 @@ def get_top_companies():
     except Exception as e:
         print(f"Error getting top companies: {e}")
         return []
+
+def check_eth_address_unique(eth_address, exclude_company_id=None):
+    try:
+        query = supabase.table('companies').select('company_id').eq('eth_address', eth_address)
+        if exclude_company_id:
+            query = query.neq('company_id', exclude_company_id)
+        response = query.execute()
+        return len(response.data) == 0
+    except Exception as e:
+        print(f"Error checking ETH address uniqueness: {e}")
+        return False
+
+def update_company_eth_address(company_id, eth_address):
+    try:
+        # Check if the ETH address is unique (excluding current company)
+        if not check_eth_address_unique(eth_address, company_id):
+            return False
+            
+        # Update the company's ETH address
+        response = supabase.table('companies').update({
+            'eth_address': eth_address
+        }).eq('company_id', company_id).execute()
+        
+        return bool(response.data)
+        
+    except Exception as e:
+        print(f"Error updating company ETH address: {e}")
+        return False
+
+def get_all_companies_with_eth_address():
+    try:
+        result = supabase.from_('companies') \
+            .select('*') \
+            .filter("eth_address", "neq", "no address") \
+            .filter("eth_address", "neq", None) \
+            .filter("eth_address", "neq", "") \
+            .execute()
+
+        # Return the data or empty list if no results
+        return result.data if result.data else []
+
+    except Exception as e:
+        print(f"Error getting companies with ETH addresses: {e}")
+        return []
+
+def get_company_by_eth_address(eth_address):
+    try:
+        response = supabase.table('companies').select('*').eq('eth_address', eth_address).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        print(f"Error getting company by ETH address: {e}")
+        return None
+
+def create_token_request_notification(sender_email, sender_company_id ,receiver_company_id, amount, same_request):
+    try:
+
+        # Get receiver company admins
+        admin_response = supabase.table('company_employe').select('user_id').eq('company_id', receiver_company_id).eq('company_admin', True).execute()
+        if not admin_response.data:
+            return False
+
+        # Create notification for each admin
+        for admin in admin_response.data:
+            user = user_controller.get_user_by_id(admin['user_id'])
+            if user:
+                success = notifications_controller.create_notification(
+                    type='token_request',
+                    sender=sender_email,
+                    receiver=user['email'],
+                    company_id=receiver_company_id,
+                    amount=amount,
+                    same_request=same_request,
+                    sender_company_id=sender_company_id
+                )
+                if not success:
+                    return False
+
+        return True
+    except Exception as e:
+        print(f"Error creating token request notification: {e}")
+        return False

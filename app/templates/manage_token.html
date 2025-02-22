@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/index.css">
+    <link rel="stylesheet" href="/static/manage_token.css">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <!-- Left section -->
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                    </a>
+                    <a class="navbar-brand mb-0" href="/">
+                        GreenProof
+                    </a>
+                </div>
+        
+    
+                <!-- Right section -->
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                        {% include 'includes/user_menu.html' %}
+                    {% else %}
+                        <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                        <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="flex-grow-1">
+        <div class="container-fluid py-4">
+            <!-- Token Summary Card -->
+            <div class="card token-summary mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ company.company_image }}" alt="Token Logo" class="token-logo mb-3" style="width:180px; height:120px; object-fit: cover;">
+                    <h3 class="token-amount">{{ token_balance }}</h3>
+                    <button class="btn btn-primary mt-3 d-block mx-auto" data-bs-toggle="modal" data-bs-target="#requestTokenModal">
+                        <i class="bi bi-plus-circle me-2"></i>Request Tokens
+                    </button>
+                </div>
+            </div>
+            <!-- Transactions Table Card -->
+            <div class="card transactions-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Transaction History</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Transaction ID</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tx in transactions %}
+                                <tr>
+                                    <td>{{ tx.date }}</td>
+                                    <td>{{ tx.type }}</td>
+                                    <td>{{ tx.amount }} GTK</td>
+                                    <td>{{ tx.transactionHash }}</td>
+                                    <td>
+                                        {% if tx.status == 'Completed' %}
+                                            <span class="badge bg-success">{{ tx.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ tx.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No transactions found</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav aria-label="Transaction pagination">
+                        <ul class="pagination justify-content-end mb-0">
+                            {% if current_page > 1 %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ current_page - 1 }}">Previous</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Previous</a>
+                            </li>
+                            {% endif %}
+                            {% for p in page_numbers %}
+                            <li class="page-item {% if p == current_page %}active{% endif %}">
+                                <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                            </li>
+                            {% endfor %}
+                            {% if current_page < total_pages %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ current_page + 1 }}">Next</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- ...possible other content... -->
+        </div>
+    </main>
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-4">
+        <h5>GreenProof</h5>
+        <p>Empowering a greener future from farm to table</p>
+        </div>
+        <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+        <li><a href="#about" class="text-light">About Us</a></li>
+        <li><a href="#products" class="text-light">Greener Companies</a></li>
+        <li><a href="#contact" class="text-light">Contact</a></li>
+        </ul>
+        </div>
+        <div class="col-md-4">
+        <h5>Follow Us</h5>
+        <div class="social-icons">
+        <i class="bi bi-facebook me-2"></i>
+        <i class="bi bi-twitter-x me-2"></i>
+        <i class="bi bi-instagram"></i>
+        </div>
+        </div>
+        </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Update the request token modal -->
+    <div class="modal fade" id="requestTokenModal" tabindex="-1" aria-labelledby="requestTokenModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="requestTokenModalLabel">Request Tokens</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="tokenRequestForm" data-company-id="{{ company.company_id }}" data-user-id="{{ user_id }}">
+                        <div class="mb-3">
+                            <label for="tokenAmount" class="form-label">Amount of Tokens</label>
+                            <input type="number" class="form-control" id="tokenAmount" required min="1">
+                            <div class="form-text">Enter the number of tokens you want to request</div>
+                        </div>
+                        <div id="availableCompanies" class="mb-3 d-none">
+                            <label class="form-label">Available Companies</label>
+                            <select class="form-select" id="companySelect" required>
+                                <option value="">Select a company to request from</option>
+                            </select>
+                            <div class="form-text">These companies have sufficient tokens to fulfill your request</div>
+                        </div>
+                        <div id="noCompaniesMessage" class="alert alert-warning d-none">
+                            No companies found with sufficient tokens for this request.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitRequest" disabled>Submit Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this script before the closing body tag -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tokenAmountInput = document.getElementById('tokenAmount');
+        const tokenRequestForm = document.getElementById('tokenRequestForm');
+
+        tokenAmountInput.addEventListener('input', async function() {
+            const amount = this.value;
+            if (amount <= 0) return;
+
+            const companyId = document.getElementById('tokenRequestForm').dataset.companyId;
+            console.log('Requesting with:', { amount, companyId });
+
+            try {
+                const response = await fetch(`/check_available_companies/${companyId}?amount=${amount}`);
+                const data = await response.json();
+                const availableCompanies = document.getElementById('availableCompanies');
+                const noCompaniesMessage = document.getElementById('noCompaniesMessage');
+                const companySelect = document.getElementById('companySelect');
+                const submitButton = document.getElementById('submitRequest');
+
+                companySelect.innerHTML = '<option value="">Select a company to request from</option>';
+
+                if (data.companies && data.companies.length > 0) {
+                    data.companies.forEach(company => {
+                        const option = new Option(
+                            `${company.company_name} (Available: ${company.available_balance - 1000} tokens)`,
+                            company.eth_address
+                        );
+                        companySelect.add(option);
+                    });
+                    availableCompanies.classList.remove('d-none');
+                    noCompaniesMessage.classList.add('d-none');
+                    submitButton.disabled = false;
+                } else {
+                    availableCompanies.classList.add('d-none');
+                    noCompaniesMessage.classList.remove('d-none');
+                    submitButton.disabled = true;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                // Show error to user
+                const noCompaniesMessage = document.getElementById('noCompaniesMessage');
+                noCompaniesMessage.textContent = 'Error checking available companies. Please try again.';
+                noCompaniesMessage.classList.remove('d-none');
+            }
+        });
+
+        // Add submit request handler
+        document.getElementById('submitRequest').addEventListener('click', async function() {
+            const amount = document.getElementById('tokenAmount').value;
+            const receiverAddress = document.getElementById('companySelect').value;
+            const companyId = document.getElementById('tokenRequestForm').dataset.companyId;
+            const userId = document.getElementById('tokenRequestForm').dataset.userId;
+
+
+
+            try {
+                const response = await fetch('/submit_token_request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        receiver_address: receiverAddress,
+                        company_id: companyId,
+                        user_id: userId
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestTokenModal'));
+                    modal.hide();
+                    // Show success message
+                    alert('Token request submitted successfully');
+                } else {
+                    alert(data.error || 'Failed to submit request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to submit request');
+            }
+        });
+    });
+    </script>
+</body>
+</html>

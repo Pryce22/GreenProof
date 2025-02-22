@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Selector</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/static/select_company_to_manage_tokens.css">
+  <link rel="stylesheet" href="/static/index.css">
+</head>
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+  <header class="sticky-top">
+    <nav class="navbar navbar-expand-lg bg-light navbar-light">
+      <div class="container-fluid px-4">
+        <!-- Left section -->
+        <div class="d-flex align-items-center">
+          <a href="/" class="nav-link p-0 me-2">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+          </a>
+          <a class="navbar-brand mb-0" href="/">GreenProof</a>
+        </div>
+        <!-- Right section -->
+        <div class="d-flex align-items-center">
+          {% if user_id %}
+            {% include 'includes/user_menu.html' %}
+          {% else %}
+            <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+            <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main class="flex-grow-1">
+    <div class="container py-5">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <h4 class="mb-4">Select Company</h4>
+              <form method="POST">
+                <div class="company-select-wrapper">
+                  <select name="company_id" class="form-select company-select" aria-label="Company selection" required>
+                    <option value="" selected>Seleziona una compagnia</option>
+                    {% for company in companies %}
+                    <option value="{{ company.company_id }}"
+                            data-image="{{ company.company_image }}">
+                      {{ company.company_name }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <!-- Qui puoi eventualmente inserire uno script per visualizzare in anteprima i dettagli della compagnia selezionata -->
+                <div class="selected-company mt-4 d-none">
+                  <div class="d-flex align-items-center">
+                    <img src="" alt="Company logo" class="company-logo me-3">
+                    <div>
+                      <h5 class="company-name mb-1"></h5>
+                      <p class="company-details mb-0 text-muted"></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-3 d-flex justify-content-between">
+                  <button type="submit" class="btn btn-primary">Manage Tokens</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="bg-dark text-light py-4">
+    <div class="container">
+    <div class="row">
+    <div class="col-md-4">
+    <h5>GreenProof</h5>
+    <p>Empowering a greener future from farm to table</p>
+    </div>
+    <div class="col-md-4">
+    <h5>Quick Links</h5>
+    <ul class="list-unstyled">
+    <li><a href="#about" class="text-light">About Us</a></li>
+    <li><a href="#products" class="text-light">Greener Companies</a></li>
+    <li><a href="#contact" class="text-light">Contact</a></li>
+    </ul>
+    </div>
+    <div class="col-md-4">
+    <h5>Follow Us</h5>
+    <div class="social-icons">
+    <i class="bi bi-facebook me-2"></i>
+    <i class="bi bi-twitter-x me-2"></i>
+    <i class="bi bi-instagram"></i>
+    </div>
+    </div>
+    </div>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Eventuale script per il comportamento dinamico della select -->
+  <script>
+    // Esempio: mostra in anteprima i dettagli della compagnia selezionata
+    const companySelect = document.querySelector('.company-select');
+    const selectedCompany = document.querySelector('.selected-company');
+    const companyLogo = document.querySelector('.company-logo');
+    const companyName = document.querySelector('.company-name');
+    const companyDetails = document.querySelector('.company-details');
+    
+    companySelect.addEventListener('change', function () {
+      const selectedOption = companySelect.options[companySelect.selectedIndex];
+      if(selectedOption.value){
+        // Mostra il blocco con i dettagli (personalizza in base alle tue esigenze)
+        selectedCompany.classList.remove('d-none');
+        companyLogo.src = selectedOption.getAttribute('data-image');
+        companyName.textContent = selectedOption.text;
+        companyDetails.textContent = ""; // Puoi aggiungere ulteriori dettagli se disponibili
+      } else {
+        selectedCompany.classList.add('d-none');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 from app import supabase
 import uuid
 
-def create_notification(type, sender, receiver, company_id = None):
+def create_notification(type, sender, receiver, company_id = None, amount = None, same_request = None, sender_company_id = None):
 
     try:
         notification_id = uuid.uuid4().int & (1<<32)-1
@@ -13,7 +13,10 @@ def create_notification(type, sender, receiver, company_id = None):
             'sender_email': sender,
             'receiver_email': receiver,
             'status': 'unread',
-            'company_id': company_id
+            'company_id': company_id,
+            'requested_token': amount,
+            'same_request': same_request,
+            'sender_company_id': sender_company_id
         }
 
         response = supabase.table('notifications').insert(notification_data).execute()
@@ -110,3 +113,23 @@ def mark_as_read(notification_id):
     except Exception as e:
         print(f"Error marking notification as read: {e}")
         return False
+
+def delete_notification_for_all_admin_company(notification_id):
+    try:
+        # Get the notification to find related notifications
+        notification = get_notification_by_id(notification_id)
+        if not notification:
+            return False
+        
+        # Delete all notifications of the same type for the same company
+        result = supabase.table('notifications') \
+            .delete() \
+            .eq('same_request', notification['same_request']) \
+            .eq('company_id', notification['company_id']) \
+            .execute()
+            
+        return bool(result.data)
+    except Exception as e:
+        print(f"Error deleting company notifications: {e}")
+        return False
+    

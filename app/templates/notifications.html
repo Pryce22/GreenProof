@@ -347,6 +347,13 @@ function removeNotification(notificationCard) {
                                 <p class="notification-text mb-1">Your company registration has been approved</p>
                                 <small class="text-muted">{{ notification.created_at|format_date }}</small>
                             </div>
+                            {% if not notification.company.eth_address %}
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-primary setup-eth-btn" data-bs-toggle="modal" data-bs-target="#ethSetupModal">
+                                    <i class="bi bi-wallet2"></i> Setup ETH Account
+                                </button>
+                            </div>
+                            {% endif %}
                         </div>
                         {% elif notification.type == 'rejection registration company' %}
                         <div class="d-flex align-items-center">
@@ -415,6 +422,26 @@ function removeNotification(notificationCard) {
                                     <h6 class="notification-title mb-1">System Notification</h6>
                                     <p class="notification-text mb-1"> System Message</p>
                                     <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                            </div>
+
+                        {% elif notification.type == 'token_request' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon warning me-3">
+                                    <i class="bi bi-coin"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1">
+                                    <h6 class="notification-title mb-1">Token Request</h6>
+                                    <p class="notification-text mb-1">Company {{ notification.sender_company_name }} requests {{ notification.amount }} tokens</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="btn btn-success btn-sm me-2 approve-token-request" data-notification-id="{{ notification.id_notification }}">
+                                        <i class="bi bi-check-lg"></i> Approve
+                                    </button>
+                                    <button class="btn btn-danger btn-sm reject-token-request" data-notification-id="{{ notification.id_notification }}">
+                                        <i class="bi bi-x-lg"></i> Reject
+                                    </button>
                                 </div>
                             </div>
                     </div>
@@ -621,7 +648,107 @@ function removeNotification(notificationCard) {
             });
         });
     });
+    // Add handlers for token request buttons
+    document.querySelectorAll('.approve-token-request').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const notificationId = this.dataset.notificationId;
+            const notificationCard = this.closest('.notification-card');
+
+            // Check MetaMask connection first
+            const connectedAccount = await checkMetaMaskConnection();
+            if (!connectedAccount) return;
+
+            try {
+                const response = await fetch(`/approve_token_request/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Send transaction through MetaMask
+                    try {
+                        const txHash = await window.ethereum.request({
+                            method: 'eth_sendTransaction',
+                            params: [data.transaction],
+                        });
+
+                        // Notify backend of successful transaction
+                        const completionResponse = await fetch(`/complete_token_transfer/${notificationId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ transactionHash: txHash })
+                        });
+
+                        const completionData = await completionResponse.json();
+                        if (completionData.success) {
+                            removeNotification(notificationCard);
+                        } else {
+                            alert(completionData.error || 'Failed to complete token transfer');
+                        }
+                    } catch (error) {
+                        console.error('MetaMask error:', error);
+                        alert('Transaction was rejected or failed');
+                    }
+                } else {
+                    alert(data.error || 'Failed to approve token request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to approve token request');
+            }
+        });
+    });
+
+    document.querySelectorAll('.reject-token-request').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const notificationId = this.dataset.notificationId;
+            const notificationCard = this.closest('.notification-card');
+            
+            try {
+                const response = await fetch(`/reject_token_request/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    removeNotification(notificationCard);
+                } else {
+                    alert(data.error || 'Failed to reject token request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to reject token request');
+            }
+        });
+    });
 });
+
+// Add this function to check MetaMask connection
+async function checkMetaMaskConnection() {
+    if (typeof window.ethereum === 'undefined') {
+        alert('Please install MetaMask to process token transfers');
+        return false;
+    }
+
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        return accounts[0];
+    } catch (error) {
+        console.error('Error connecting to MetaMask:', error);
+        alert('Failed to connect to MetaMask');
+        return false;
+    }
+}
             
 
 function updateNotificationCount() {
@@ -723,6 +850,136 @@ function showConfirmationModal(message, onConfirm) {
   
   // Mostra la modale
   new bootstrap.Modal(modalEl).show();
+}
+</script>
+
+<!-- ETH Setup Modal -->
+<div class="modal fade" id="ethSetupModal" tabindex="-1" aria-labelledby="ethSetupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ethSetupModalLabel">Setup Ethereum Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="setup-steps mb-4">
+                    <h6 class="mb-3">Follow these steps to set up your Ethereum account:</h6>
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item">
+                            <strong>Install MetaMask:</strong>
+                            <p class="mb-2">First, you need to install the MetaMask browser extension.</p>
+                            <a href="https://metamask.io/download/" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-box-arrow-up-right"></i> Install MetaMask
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Create or Import an Account:</strong>
+                            <p class="mb-0">After installation, either create a new wallet or import an existing one in MetaMask.</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Connect to our Network:</strong>
+                            <p class="mb-0">In MetaMask, select add our network 127.0.0.1:8545.</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Copy Your Public Address:</strong>
+                            <p class="mb-0">Click on your account in MetaMask to copy your public address.</p>
+                        </li>
+                    </ol>
+                </div>
+                <form id="ethAddressForm" class="mt-4">
+                    <div class="mb-3">
+                        <label for="ethAddress" class="form-label">Your Ethereum Public Address</label>
+                        <input type="text" class="form-control" id="ethAddress" 
+                               placeholder="0x..." required pattern="^0x[a-fA-F0-9]{40}$">
+                        <div class="form-text">Enter your Ethereum public address starting with '0x'</div>
+                        <div class="invalid-feedback">Please enter a valid Ethereum address</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitEthAddress">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    const ethAddressForm = document.getElementById('ethAddressForm');
+    const ethAddressInput = document.getElementById('ethAddress');
+    const submitButton = document.getElementById('submitEthAddress');
+
+    submitButton.addEventListener('click', async function() {
+        const ethAddress = ethAddressInput.value.trim();
+        const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+        const notificationCard = currentNotification;
+
+        if (!addressRegex.test(ethAddress)) {
+            ethAddressInput.classList.add('is-invalid');
+            return;
+        }
+
+        try {
+            const response = await fetch('/submit_eth_address', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    eth_address: ethAddress,
+                    company_id: notificationCard.getAttribute('data-company-id')
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Close modal and show success message
+                const modal = bootstrap.Modal.getInstance(document.getElementById('ethSetupModal'));
+                modal.hide();
+                showAlert('success', 'ETH address successfully registered!');
+                
+                // Remove the setup button from the notification
+                const setupBtn = notificationCard.querySelector('.setup-eth-btn');
+                if (setupBtn) {
+                    setupBtn.parentElement.remove();
+                }
+            } else {
+                showAlert('danger', data.error || 'Failed to register ETH address');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('danger', 'An error occurred while submitting the address');
+        }
+    });
+
+    ethAddressInput.addEventListener('input', function() {
+        this.classList.remove('is-invalid');
+    });
+
+    let currentNotification = null;
+    document.querySelectorAll('.setup-eth-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            currentNotification = this.closest('.notification-card');
+        });
+    });
+});
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.role = 'alert';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    document.querySelector('main').insertBefore(alertDiv, document.querySelector('main').firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 5000);
 }
 </script>
 

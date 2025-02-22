@@ -2,9 +2,14 @@ from supabase import create_client, Client
 from flask import Flask
 from app.config import Config
 from app.utils.date_format import format_date
+import dotenv
+import os
 
-SUPABASE_URL = "https://cjoykzgrtvlghogxzdjq.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqb3lremdydHZsZ2hvZ3h6ZGpxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczNDMwMDY4NiwiZXhwIjoyMDQ5ODc2Njg2fQ.JkShNd00ZSc7QmsthH49aS8fQPqmHuM-Xj3WuSgEsPc"
+
+dotenv.load_dotenv()
+
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 app = Flask(__name__,

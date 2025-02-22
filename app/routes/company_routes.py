@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, session
-from app.controllers import company_controller, user_controller, notifications_controller
+from app.controllers import company_controller, user_controller, notifications_controller, eth_account_controller
 from app.routes.auth_routes import get_user_info
 from werkzeug.utils import secure_filename
 import os
@@ -152,18 +152,28 @@ def information_company(company_id):
     user_id, user, is_admin, is_company_admin, notifications= get_user_info()
     
     company = company_controller.get_company_by_id(company_id)
-    info_of_admin = []
-    info_of_admin=company_controller.get_admin_info_by_company(company_id)
-
     if company is None:
         return "Company not found", 404
+
+    # Get real-time token balance from blockchain
+    token_balance = 0
+    if company.get('eth_address'):
+        token_balance = eth_account_controller.get_token_balance(company['eth_address'])
+    
+    info_of_admin = company_controller.get_admin_info_by_company(company_id)
         
     # Permetti la visualizzazione solo se la company è approvata o l'utente è admin
     if not company['status'] and not is_admin:
         return "Unauthorized", 403
+
+    # Get token balance if ETH address exists
+    token_balance = 0
+    if company.get('eth_address'):
+        token_balance = eth_account_controller.get_token_balance(company['eth_address'])
         
     return render_template('information_company.html', 
                          company=company,
+                         token_balance=token_balance,
                          user_id=user_id,
                          user=user,
                          is_admin=is_admin,
@@ -336,3 +346,226 @@ def delete_company(company_id):
     
     success = company_controller.delete_company_notification(user["email"],company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to delete company'})
+
+@bp.route('/check_eth_address', methods=['GET'])
+def check_eth_address():
+    eth_address = request.args.get('address')
+    company_id = request.args.get('company_id')
+    
+    if not eth_address:
+        return jsonify({'available': False, 'error': 'No address provided'})
+        
+    # Validate format
+    if not re.match(r'^0x[a-fA-F0-9]{40}$', eth_address):
+        return jsonify({'available': False, 'error': 'Invalid address format'})
+        
+    # Check uniqueness
+    is_unique = company_controller.check_eth_address_unique(eth_address, company_id)
+    return jsonify({'available': is_unique})
+
+@bp.route('/manage_tokens', methods=['GET', 'POST'])
+def manage_tokens():
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    
+    # Recupera gli ID delle aziende di cui l'utente è admin
+    company_ids = company_controller.get_companyID_by_owner(user_id)
+    companies = []
+    for cid in company_ids:
+        comp = company_controller.get_company_by_id(cid['company_id'])
+        if comp['eth_address'] != 'no address' and comp['eth_address'] != None:
+            companies.append(comp)
+
+    if len(companies) == 1:
+        return redirect(url_for('company.manage_tokens_detail', company_id=companies[0]['company_id']))
+    
+    if request.method == 'POST':
+        # Quando l'utente seleziona un'azienda dal form
+        selected_company_id = request.form.get('company_id')
+        return redirect(url_for('company.manage_tokens_detail', company_id=selected_company_id))
+    
+    return render_template('select_company_to_manage_tokens.html',
+                           companies=companies,
+                           user_id=user_id,
+                           user=user,
+                           is_admin=is_admin,
+                           is_company_admin=is_company_admin,
+                           notifications=notifications)
+
+@bp.route('/manage_tokens_details/<int:company_id>', methods=['GET', 'POST'])
+def manage_tokens_detail(company_id):
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    
+    company = company_controller.get_company_by_id(company_id)
+    if company is None:
+        return "Company not found", 404
+
+    # Controlla autorizzazioni
+    if not company['status'] and not is_admin:
+        return "Unauthorized", 403
+
+    current_page = request.args.get("page", default=1, type=int)
+    token_balance = 0
+    transactions = []
+    total_pages = 1  # Default value
+    
+    if company.get('eth_address'):
+        token_balance = eth_account_controller.get_token_balance(company['eth_address'])
+        # Use get_paginated_transactions instead of get_transactions_for_company
+        transactions, total_pages = eth_account_controller.get_paginated_transactions(
+            company['eth_address'], 
+            page=current_page
+        )
+
+    # Create a sliding window of page numbers (show max 4 pages)
+    if total_pages <= 4:
+        page_numbers = list(range(1, total_pages + 1))
+    else:
+        if current_page <= 2:
+            page_numbers = list(range(1, 5))
+        elif current_page >= total_pages - 1:
+            page_numbers = list(range(total_pages - 3, total_pages + 1))
+        else:
+            page_numbers = list(range(current_page - 1, current_page + 3))
+
+    return render_template('manage_token.html', 
+                         company=company,
+                         token_balance=token_balance,
+                         transactions=transactions,
+                         user_id=user_id,
+                         user=user,
+                         is_admin=is_admin,
+                         is_company_admin=is_company_admin,
+                         notifications=notifications,
+                         current_page=current_page,
+                         total_pages=total_pages,
+                         page_numbers=page_numbers)
+
+@bp.route('/check_available_companies/<int:company_id>')
+def check_available_companies(company_id):
+    amount = request.args.get('amount', type=float)
+    if not amount:
+        return jsonify({'error': 'Amount is required'}), 400
+        
+    companies = eth_account_controller.find_companies_with_sufficient_tokens(amount)
+    companies = [c for c in companies if c['company_id'] != company_id]
+    
+    return jsonify({'companies': companies})
+
+@bp.route('/submit_token_request', methods=['POST'])
+def submit_token_request():
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    if not user_id or not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'})
+
+    data = request.get_json()
+    amount = data.get('amount')
+    receiver_address = data.get('receiver_address')
+    sender_company_id = data.get('company_id')
+    sender_id = data.get('user_id')
+
+    try:
+        # Get receiver company details
+        receiver_company = company_controller.get_company_by_eth_address(receiver_address)
+        if not receiver_company:
+            return jsonify({'success': False, 'error': 'Receiver company not found'})
+
+        # Get sender company details for notification
+        sender_company = company_controller.get_company_by_id(sender_company_id)
+        if not sender_company:
+            return jsonify({'success': False, 'error': 'Sender company not found'})
+        
+        sender_email = user_controller.get_user_by_id(sender_id)['email']
+        same_request = uuid.uuid4().int & (1<<32)-1
+
+        # Create notification for receiver company admins
+        success = company_controller.create_token_request_notification(
+            sender_email = sender_email,
+            sender_company_id=sender_company_id,
+            receiver_company_id=receiver_company['company_id'],
+            amount=amount,
+            same_request=same_request
+        )
+
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to create token request'})
+
+    except Exception as e:
+        print(f"Error submitting token request: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/approve_token_request/<notification_id>', methods=['POST'])
+def approve_token_request(notification_id):
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    if not user_id or not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'})
+
+    try:
+        # Get notification details
+        notification = notifications_controller.get_notification_by_id(notification_id)
+        if not notification:
+            return jsonify({'success': False, 'error': 'Notification not found'})
+
+        # Get sender and receiver company details
+        
+
+        sender_company = company_controller.get_company_by_id(notification['sender_company_id'])
+        receiver_company = company_controller.get_company_by_id(notification['company_id'])
+        
+        if not sender_company or not receiver_company:
+            return jsonify({'success': False, 'error': 'Company information not found'})
+
+        # Verify sender's ETH address exists
+        if not sender_company.get('eth_address'):
+            return jsonify({'success': False, 'error': 'Sender company has no ETH address'})
+
+        # Verify receiver's ETH address exists and matches connected MetaMask account
+        if not receiver_company.get('eth_address'):
+            return jsonify({'success': False, 'error': 'Your company has no ETH address'})
+
+        # Prepare transaction data
+        transfer_data = eth_account_controller.initiate_token_transfer(
+            receiver_company['eth_address'],
+            sender_company['eth_address'],
+            notification['requested_token']
+        )
+        
+        if not transfer_data['success']:
+            return jsonify({'success': False, 'error': transfer_data.get('error', 'Failed to prepare transaction')})
+
+        # Return transaction data for MetaMask to sign
+        return jsonify({
+            'success': True,
+            'transaction': transfer_data['tx_data'],
+            'notification_id': notification_id
+        })
+
+    except Exception as e:
+        print(f"Error in approve_token_request: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@bp.route('/complete_token_transfer/<notification_id>', methods=['POST'])
+def complete_token_transfer(notification_id):
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    if not user_id or not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'})
+
+    try:
+        data = request.get_json()
+        tx_hash = data.get('transactionHash')
+        
+        if not tx_hash:
+            return jsonify({'success': False, 'error': 'No transaction hash provided'}) 
+
+        # Delete notification for all admins
+        success = notifications_controller.delete_notification_for_all_admin_company(notification_id)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to update notification status'})
+
+    except Exception as e:
+        print(f"Error completing token transfer: {e}")
+        return jsonify({'success': False, 'error': str(e)})
