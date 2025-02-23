@@ -126,7 +126,7 @@
                                             <!-- Prima mostra l'industria corrente -->
                                             <option value="{{ company.company_industry }}" selected>{{ company.company_industry }}</option>
                                             <!-- Poi mostra le altre opzioni -->
-                                            {% set all_industries = ['Manufacturer', 'Transporter', 'Transformer', 'Seller'] %}
+                                            {% set all_industries = ['manufacturer', 'transporter', 'processor', 'seller'] %}
                                             {% for industry in all_industries %}
                                                 {% if industry != company.company_industry %}
                                                     <option value="{{ industry }}">{{ industry }}</option>
