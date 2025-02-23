@@ -132,4 +132,35 @@ def delete_notification_for_all_admin_company(notification_id):
     except Exception as e:
         print(f"Error deleting company notifications: {e}")
         return False
+
+def send_token_notification_to_all_company_admin(type, notificaion_id):
+    try:
+        # Get the notification to find related notifications
+        notification = get_notification_by_id(notificaion_id)
+        if not notification:
+            return False
+        
+        # Get all company admins
+        admins = supabase.table('company_employe') \
+            .select('user_id') \
+            .eq('company_id', notification['sender_company_id']) \
+            .eq('company_admin', True) \
+            .execute()
+        if not admins.data:
+            return False
+        
+        admins_email = supabase.table('user')\
+            .select('email')\
+            .in_('id', [admin['user_id'] for admin in admins.data])\
+            .execute()
+        if not admins_email.data:
+            return False
+        
+        # Send a notification to each admin
+        for admin in admins_email.data:
+            create_notification(type, notification['receiver_email'], admin['email'], notification['sender_company_id'], notification['requested_token'], None, notification['company_id'])
+        return True
+    except Exception as e:
+        print(f"Error sending notification to company admins: {e}")
+        return False
     

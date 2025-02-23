@@ -533,6 +533,10 @@ def approve_token_request(notification_id):
         
         if not transfer_data['success']:
             return jsonify({'success': False, 'error': transfer_data.get('error', 'Failed to prepare transaction')})
+        
+        approve_notification = notifications_controller.send_token_notification_to_all_company_admin('token request approved', notification_id)
+        if not approve_notification:
+            return jsonify({'success': False, 'error': 'Failed to send notification'})
 
         # Return transaction data for MetaMask to sign
         return jsonify({
@@ -543,6 +547,28 @@ def approve_token_request(notification_id):
 
     except Exception as e:
         print(f"Error in approve_token_request: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+    
+
+@bp.route('/reject_token_request/<notification_id>', methods=['POST'])
+def reject_token_request(notification_id):
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    if not user_id or not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'})
+
+    try:
+        # Delete notification
+        reject_notification = notifications_controller.send_token_notification_to_all_company_admin('token request rejected', notification_id)
+        
+        success = notifications_controller.delete_notification_for_all_admin_company(notification_id)
+        
+        if success and reject_notification:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to reject token request'})
+
+    except Exception as e:
+        print(f"Error rejecting token request: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
 @bp.route('/complete_token_transfer/<notification_id>', methods=['POST'])

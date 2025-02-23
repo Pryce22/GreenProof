@@ -125,6 +125,21 @@ body {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
+/* Add to your manage_token.css file */
+.select2-container--bootstrap-5 {
+    width: 100% !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.select2-container--bootstrap-5 .select2-selection:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(35, 86, 212, 0.1);
+}
+
 @media (max-width: 768px) {
     .token-amount {
         font-size: 2rem;

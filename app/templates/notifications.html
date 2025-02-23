@@ -435,6 +435,29 @@ function removeNotification(notificationCard) {
                                     </button>
                                 </div>
                             </div>
+
+                            {% elif notification.type == 'token request rejected' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon danger me-3">
+                                    <i class="bi bi-x-circle"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1">
+                                    <h6 class="notification-title mb-1">Token Request Rejected</h6>
+                                    <p class="notification-text mb-1">Your token request of {{ notification.requested_token }} GTK has been rejected from {{ notification.sender_email}}</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                            </div>
+                            {% elif notification.type == 'token request approved' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon success me-3">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1">
+                                    <h6 class="notification-title mb-1">Token Request Accepted</h6>
+                                    <p class="notification-text mb-1">Your token request of {{ notification.requested_token }} GTK has been accepted from {{ notification.sender_email }}</p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                            </div>
                     </div>
                     {% endif %}
                 </div>
@@ -641,87 +664,85 @@ function removeNotification(notificationCard) {
     });
     // Add handlers for token request buttons
     document.querySelectorAll('.approve-token-request').forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.stopPropagation();
-            const notificationId = this.dataset.notificationId;
-            const notificationCard = this.closest('.notification-card');
+    button.addEventListener('click', async function(e) {
+        e.stopPropagation();
+        
+        // Prevent multiple clicks
+        if (this.disabled) return;
+        
+        const notificationId = this.dataset.notificationId;
+        const notificationCard = this.closest('.notification-card');
+        const rejectButton = notificationCard.querySelector('.reject-token-request');
 
+        // Disable both approve and reject buttons
+        this.disabled = true;
+        rejectButton.disabled = true;
+        
+        // Add loading state
+        this.classList.add('btn-loading');
+        
+        try {
             // Check MetaMask connection first
             const connectedAccount = await checkMetaMaskConnection();
-            if (!connectedAccount) return;
-
-            try {
-                const response = await fetch(`/approve_token_request/${notificationId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Send transaction through MetaMask
-                    try {
-                        const txHash = await window.ethereum.request({
-                            method: 'eth_sendTransaction',
-                            params: [data.transaction],
-                        });
-
-                        // Notify backend of successful transaction
-                        const completionResponse = await fetch(`/complete_token_transfer/${notificationId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ transactionHash: txHash })
-                        });
-
-                        const completionData = await completionResponse.json();
-                        if (completionData.success) {
-                            removeNotification(notificationCard);
-                        } else {
-                            alert(completionData.error || 'Failed to complete token transfer');
-                        }
-                    } catch (error) {
-                        console.error('MetaMask error:', error);
-                        alert('Transaction was rejected or failed');
-                    }
-                } else {
-                    alert(data.error || 'Failed to approve token request');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to approve token request');
+            if (!connectedAccount) {
+                // Re-enable buttons if MetaMask is not connected
+                this.disabled = false;
+                rejectButton.disabled = false;
+                this.classList.remove('btn-loading');
+                return;
             }
-        });
-    });
 
-    document.querySelectorAll('.reject-token-request').forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.stopPropagation();
-            const notificationId = this.dataset.notificationId;
-            const notificationCard = this.closest('.notification-card');
+            const response = await fetch(`/approve_token_request/${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
             
-            try {
-                const response = await fetch(`/reject_token_request/${notificationId}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+            if (data.success) {
+                try {
+                    const txHash = await window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [data.transaction],
+                    });
+
+                    const completionResponse = await fetch(`/complete_token_transfer/${notificationId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ transactionHash: txHash })
+                    });
+
+                    const completionData = await completionResponse.json();
+                    if (completionData.success) {
+                        removeNotification(notificationCard);
+                    } else {
+                        throw new Error(completionData.error || 'Failed to complete token transfer');
                     }
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    removeNotification(notificationCard);
-                } else {
-                    alert(data.error || 'Failed to reject token request');
+                } catch (error) {
+                    console.error('MetaMask error:', error);
+                    alert('Transaction was rejected or failed');
+                    // Re-enable buttons on error
+                    this.disabled = false;
+                    rejectButton.disabled = false;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to reject token request');
+            } else {
+                throw new Error(data.error || 'Failed to approve token request');
             }
-        });
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Failed to approve token request');
+            // Re-enable buttons on error
+            this.disabled = false;
+            rejectButton.disabled = false;
+        } finally {
+            // Remove loading state
+            this.classList.remove('btn-loading');
+        }
     });
+});
 });
 
 // Add this function to check MetaMask connection

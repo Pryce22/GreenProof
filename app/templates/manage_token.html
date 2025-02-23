@@ -6,6 +6,8 @@
     <title>Token Management Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/static/index.css">
     <link rel="stylesheet" href="/static/manage_token.css">
 </head>
@@ -166,7 +168,7 @@
                         <div id="availableCompanies" class="mb-3 d-none">
                             <label class="form-label">Available Companies</label>
                             <select class="form-select" id="companySelect" required>
-                                <option value="">Select a company to request from</option>
+                                <option value="">Search and select a company...</option>
                             </select>
                             <div class="form-text">These companies have sufficient tokens to fulfill your request</div>
                         </div>
@@ -200,11 +202,21 @@
         </div>
     </div>
 
-
+    <!-- Add before your custom script -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Add this script before the closing body tag -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+        $('#companySelect').select2({
+        theme: 'bootstrap-5',
+        placeholder: 'Search and select a company...',
+        allowClear: true,
+        dropdownParent: $('#requestTokenModal')
+        });
+
         const tokenAmountInput = document.getElementById('tokenAmount');
         const tokenRequestForm = document.getElementById('tokenRequestForm');
 
@@ -213,7 +225,7 @@
             if (amount <= 0) return;
 
             const companyId = document.getElementById('tokenRequestForm').dataset.companyId;
-            console.log('Requesting with:', { amount, companyId });
+            
 
             try {
                 const response = await fetch(`/check_available_companies/${companyId}?amount=${amount}`);
@@ -223,7 +235,9 @@
                 const companySelect = document.getElementById('companySelect');
                 const submitButton = document.getElementById('submitRequest');
 
-                companySelect.innerHTML = '<option value="">Select a company to request from</option>';
+                // Clear and update select2
+                $('#companySelect').empty().trigger('change');
+                $('#companySelect').append(new Option('Search and select a company...', '', true, true));
 
                 if (data.companies && data.companies.length > 0) {
                     data.companies.forEach(company => {
@@ -231,7 +245,7 @@
                             `${company.company_name} (Available: ${company.available_balance - 1000} tokens)`,
                             company.eth_address
                         );
-                        companySelect.add(option);
+                        $('#companySelect').append(option); 
                     });
                     availableCompanies.classList.remove('d-none');
                     noCompaniesMessage.classList.add('d-none');
@@ -244,6 +258,7 @@
             } catch (error) {
                 console.error('Fetch error:', error);
                 // Show error to user
+                $('#companySelect').empty().trigger('change');
                 const noCompaniesMessage = document.getElementById('noCompaniesMessage');
                 noCompaniesMessage.textContent = 'Error checking available companies. Please try again.';
                 noCompaniesMessage.classList.remove('d-none');
