@@ -532,6 +532,23 @@ function removeNotification(notificationCard) {
     {% endif %}
 </main>
 
+
+<div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertModalLabel">Notice</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="alertModalMessage">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer class="bg-dark text-light py-4">
     <div class="container">
     <div class="row">
@@ -582,6 +599,14 @@ function removeNotification(notificationCard) {
                 observer.observe(card);
             });
         });
+
+        function showModalAlert(message) {
+        const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+        const messageElement = document.getElementById('alertModalMessage');
+        messageElement.textContent = message;
+        alertModal.show();
+        }
+
     
         // Funzione per marcare una notifica come letta
         async function markNotificationAsRead(notificationId) {
@@ -674,6 +699,11 @@ function removeNotification(notificationCard) {
         const notificationCard = this.closest('.notification-card');
         const rejectButton = notificationCard.querySelector('.reject-token-request');
 
+        if (typeof window.ethereum === 'undefined') {
+                showModalAlert('Please install MetaMask to process token transfers');
+                return;
+            }
+
         // Disable both approve and reject buttons
         this.disabled = true;
         rejectButton.disabled = true;
@@ -742,7 +772,43 @@ function removeNotification(notificationCard) {
             this.classList.remove('btn-loading');
         }
     });
-});
+}); 
+    document.querySelectorAll('.reject-token-request').forEach(button => {
+        button.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            
+            if (this.disabled) return;
+            
+            const notificationId = this.dataset.notificationId;
+            const notificationCard = this.closest('.notification-card');
+            const approveButton = notificationCard.querySelector('.approve-token-request');
+
+            // Disable buttons
+            this.disabled = true;
+            approveButton.disabled = true;
+
+            try {
+                const response = await fetch(`/reject_token_request/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    removeNotification(notificationCard);
+                } else {
+                    throw new Error(data.error || 'Failed to reject token request');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showModalAlert(error.message || 'Failed to reject token request');
+                this.disabled = false;
+                approveButton.disabled = false;
+            }
+        });
+    });
 });
 
 // Add this function to check MetaMask connection
@@ -831,6 +897,7 @@ function removeNotification(notificationCard) {
     </div>
   </div>
 </div>
+
 
 <script>
 // Funzione per mostrare la modale di conferma
