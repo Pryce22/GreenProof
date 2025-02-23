@@ -99,7 +99,7 @@
                                             </button>
                                         </div>
                                     </div>
-                                {% endif %}
+                                {% endif %}                            
                             </div>
                         </div>
                     </div>
@@ -417,8 +417,126 @@ function removeNotification(notificationCard) {
                                     <small class="text-muted">{{ notification.created_at|format_date }}</small>
                                 </div>
                             </div>
+
+                        
+                            {% elif notification.type == 'order_request' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon info me-3">
+                                    <i class="bi bi-cart"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                    <h6 class="notification-title mb-1">New Order Request</h6>
+                                    <p class="notification-text mb-1">
+                                        A new order has been placed by: <strong>{{ notification.sender_email }}</strong>
+                                    </p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="btn btn-primary btn-sm me-2 view-order-btn"
+                                    data-company="{{ notification.company_name }}"
+                                    data-sender="{{ notification.sender_email }}"
+                                    data-product="{{ notification.product_name }}"
+                                    data-approve_supplier="{{ notification.product_supplier_approve }}"
+                                    data-approve_transporter="{{ notification.product_transporter_approve }}"
+                                    data-request="{{ notification.request_id }}"
+                                    data-quantity="{{ notification.product_request_quantity }}">
+                                    <i class="bi bi-eye"></i> View Order
+                                     </button>
+                                </div>
+                            </div>
+                        {% elif notification.type == 'transport_request' %}
+                            <div class="d-flex align-items-center">
+                                <div class="notification-icon info me-3">
+                                    <i class="bi bi-truck"></i>
+                                </div>
+                                <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                    <h6 class="notification-title mb-1">New Transport Request</h6>
+                                    <p class="notification-text mb-1">
+                                        A new transport request has been made by: <strong>{{ notification.sender_email }}</strong>
+                                    </p>
+                                    <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                                </div>
+                                <div class="d-flex">
+                                    <button class="btn btn-primary btn-sm me-2 view-transport-btn"
+                                            data-company="{{ notification.company_name }}"
+                                            data-sender="{{ notification.sender_email }}"
+                                            data-date_request="{{ notification.product_request_date }}"
+                                            data-approve_supplier="{{ notification.product_supplier_approve }}"
+                                            data-approve_transporter="{{ notification.product_transporter_approve }}"
+                                            data-request="{{ notification.request_id }}"
+                                            data-distance="{{ notification.product_request_km }}">
+                                        
+                                        <i class="bi bi-eye"></i> View Transport
+                                    </button>
+                                </div>
+                            </div>
+
+                        {% elif notification.type == 'supplier confirmation' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-cart"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                <h6 class="notification-title mb-1">Supplier Confirmation</h6>
+                                <p class="notification-text mb-1">
+                                    A supplier has been assigned: <strong>{{ notification.receiver_email }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Product: <strong>{{ notification.product_name }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Quantity of the product: <strong>{{ notification.product_request_quantity }}</strong>
+                                </p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+                        
+                        {% elif notification.type == 'transport assignment' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                <h6 class="notification-title mb-1">Transport Assignment</h6>
+                                <p class="notification-text mb-1">
+                                    A transporter has been assigned: <strong>{{ notification.receiver_email }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Product to delivery: <strong>{{ notification.product_name }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Distance to travel: <strong>{{ notification.product_request_km }} km</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Delivery Date: <strong>{{ notification.product_request_date }}</strong>
+                                </p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+
+                        
+                        {% elif notification.type == 'buyer confirmation' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon success me-3">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                <h6 class="notification-title mb-1">Buyer Confirmation</h6>
+                                <p class="notification-text mb-1">
+                                    Your request for <strong>{{ notification.product_name }}</strong> in quantity <strong>{{ notification.product_request_quantity }}</strong> has been accepted.
+                                </p>
+                                <p class="notification-text mb-1">
+                                    The transport will take place on <strong>{{ notification.product_request_date }}</strong> with a distance of <strong>{{ notification.product_request_km }} km</strong>.
+                                </p>
+                                
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+                            
+                                            
                     </div>
                     {% endif %}
+
                 </div>
             </div>
             {% endfor %}
@@ -429,6 +547,7 @@ function removeNotification(notificationCard) {
         {% endif %}
         </div>
     </div>
+    
     
     {% else %}
     <div class="notification-wrapper p-3">
@@ -489,6 +608,82 @@ function removeNotification(notificationCard) {
         </div>
     </div>
     {% endif %}
+
+
+    <!-- Modal per l'Ordine -->
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderModalLabel">Order Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Company:</strong> <span id="orderCompany"></span></p>
+                <p><strong>Requested By:</strong> <span id="orderSender"></span></p>
+                <p><strong>Product Name:</strong> <span id="orderProduct"></span></p>
+                <p><strong>Quantity:</strong> <span id="orderQuantity"></span></p>
+            </div>
+            <div class="modal-footer">
+                <!-- Bottoni che verranno mostrati o nascosti in base a "approve_supplier" -->
+                <button type="button" class="btn btn-success accept-button" 
+                id="acceptButton" data-type="order" 
+                style="display: none; font-size: 14px; padding: 5px 10px;">
+            Accept
+        </button>
+        <button type="button" class="btn btn-danger reject-button" 
+                id="rejectButton" data-type="order"
+                style="display: none; font-size: 14px; padding: 5px 10px;">
+            Reject
+        </button>
+             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per la Richiesta di Trasporto -->
+<div class="modal fade" id="transportModal" tabindex="-1" aria-labelledby="transportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="transportModalLabel">Transport Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Company:</strong> <span id="transportCompany"></span></p>
+                <p><strong>Requested By:</strong> <span id="transportSender"></span></p>
+                <p><strong>Date:</strong> <span id="transportDate"></span></p>
+                <p><strong>Distance to Travel:</strong> <span id="transportDistance"></span> km</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success accept-button" 
+            id="acceptButtonT" data-type="transporter"
+            style="display: none; font-size: 14px; padding: 5px 10px;">
+        Accept
+    </button>
+    <button type="button" class="btn btn-danger reject-button" 
+            id="rejectButtonT" data-type="transporter"
+            style="display: none; font-size: 14px; padding: 5px 10px;">
+        Reject
+    </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast per il successo -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1050; margin-top: 70px;" >
+    <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                 Request approved successfully!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+
 </main>
 
 <footer class="bg-dark text-light py-4">
@@ -517,6 +712,157 @@ function removeNotification(notificationCard) {
     </div>
     </div>
 </footer>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+        const transportModal = new bootstrap.Modal(document.getElementById('transportModal'));
+
+        document.querySelectorAll(".view-order-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                // Imposta i valori nel modal
+                document.getElementById("orderCompany").innerText = this.getAttribute("data-company");
+                document.getElementById("orderSender").innerText = this.getAttribute("data-sender");
+                document.getElementById("orderProduct").innerText = this.getAttribute("data-product");
+                document.getElementById("orderQuantity").innerText = this.getAttribute("data-quantity");
+                const requestId = this.getAttribute("data-request");
+                document.getElementById("acceptButton").setAttribute("data-id", requestId);
+                document.getElementById("rejectButton").setAttribute("data-id", requestId);
+                
+                // Verifica il valore di "data-approve_supplier" per decidere se nascondere o mostrare i bottoni
+                const approveSupplier = this.getAttribute("data-approve_supplier");
+                const approveTransporter = this.getAttribute("data-approve_transporter");
+                console.log(approveSupplier)
+                console.log(approveTransporter)
+
+                if (approveSupplier == "False" || approveTransporter == "False") {
+                     // Se approve_supplier è true, nascondi i bottoni "Accept" e "Reject"
+                     document.getElementById("acceptButton").style.display = "none";
+                    document.getElementById("rejectButton").style.display = "none";
+                } else if(approveSupplier == "True"){
+                    // Se approve_supplier è true, nascondi i bottoni "Accept" e "Reject"
+                    document.getElementById("acceptButton").style.display = "none";
+                    document.getElementById("rejectButton").style.display = "none";
+                }else {
+                    // Se approve_supplier è false, mostra i bottoni "Accept" e "Reject"
+                    document.getElementById("acceptButton").style.display = "inline-block";
+                    document.getElementById("rejectButton").style.display = "inline-block";  
+                }
+
+                orderModal.show(); // Apri il modal manualmente
+            });
+        });
+
+        document.querySelectorAll(".view-transport-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                // Imposta i valori nel modal del trasporto
+                document.getElementById("transportCompany").innerText = this.getAttribute("data-company");
+                document.getElementById("transportSender").innerText = this.getAttribute("data-sender");
+                document.getElementById("transportDistance").innerText = this.getAttribute("data-distance");
+                document.getElementById("transportDate").innerText = this.getAttribute("data-date_request");
+       
+                const requestId = this.getAttribute("data-request");
+                document.getElementById("acceptButtonT").setAttribute("data-id", requestId);
+                document.getElementById("rejectButtonT").setAttribute("data-id", requestId);
+
+                const approveTransporter = this.getAttribute("data-approve_transporter");
+                const approveSupplier = this.getAttribute("data-approve_supplier");
+
+                if (approveSupplier == "False" || approveTransporter == "False") {
+                     // Se approve_supplier è true, nascondi i bottoni "Accept" e "Reject"
+                     document.getElementById("acceptButtonT").style.display = "none";
+                    document.getElementById("rejectButtonT").style.display = "none";
+                } else if(approveTransporter == "True"){
+                    // Se approve_supplier è true, nascondi i bottoni "Accept" e "Reject"
+                    document.getElementById("acceptButtonT").style.display = "none";
+                    document.getElementById("rejectButtonT").style.display = "none";
+                }else {
+                    // Se approve_supplier è false, mostra i bottoni "Accept" e "Reject"
+                    document.getElementById("acceptButtonT").style.display = "inline-block";
+                    document.getElementById("rejectButtonT").style.display = "inline-block";  
+                }
+                
+                transportModal.show(); // Apri modal manualmente
+            });
+        });
+    });
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".accept-button").forEach(button => {
+        button.addEventListener("click", function () {
+            const requestType = this.getAttribute("data-type"); // "order" o "transporter"
+            const requestId = this.getAttribute("data-id"); // ID della richiesta
+            
+            if (!requestId) {
+                console.error("ID richiesta non trovato.");
+                return;
+            }
+
+            let endpoint = requestType === "order" ? `/approve_supplier/${requestId}` : `/approve_transporter/${requestId}`;
+
+            fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostra il toast di successo
+                    let toast = new bootstrap.Toast(document.getElementById("successToast"));
+                    toast.show();
+                    location.reload(); // Ricarica dopo 2s
+                } else {
+                    alert("Failed to approve request.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+});
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".reject-button").forEach(button => {
+            button.addEventListener("click", function () {
+                const requestType = this.getAttribute("data-type"); // "order" o "transporter"
+                const requestId = this.getAttribute("data-id"); // ID della richiesta
+                
+                if (!requestId) {
+                    console.error("ID richiesta non trovato.");
+                    return;
+                }
+    
+                let endpoint = requestType === "order" ? `/reject_supplier/${requestId}` : `/reject_transporter/${requestId}`;
+    
+                fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostra un toast di successo o esegui un'azione
+                        alert("Request rejected successfully!");
+                        location.reload(); // Ricarica la pagina
+                    } else {
+                        alert("Failed to reject request.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+    </script>
+    
+
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

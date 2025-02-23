@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Catalog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/products_views.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <!-- Left section -->
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                    </a>
+                    <a class="navbar-brand mb-0" href="/">
+                        GreenProof
+                    </a>
+                </div>
+        
+    
+                <!-- Right section -->
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                        {% include 'includes/user_menu.html' %}
+                    {% else %}
+                        <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                        <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main class="flex-grow-1">
+        <div class="container py-5 min-vh-100">
+            <h1 class="text-center mb-5">Prroducts Catalog</h1>
+            <div class="row justify-content-center mb-4">
+                <div class="col-md-6">
+                    <form class="input-group" id="searchForm">
+                        <input type="text" class="form-control" placeholder="Search product by name" 
+                               id="searchInput" name="query" value="{{ search_query }}">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </form>
+                </div>
+            </div>
+            <div class="row g-4" id="companyGrid">
+                {% for company in companies %}
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <a href="/information_company/{{ company.company_id}}" class="card company-card text-decoration-none ">
+                        <div class="card-img-container">
+                            <img src="{{ company.company_image or 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab' }}" 
+                                 class="card-img-top company-logo" 
+                                 alt="{{ company.company_name }}"
+                                 height="300">
+                        </div>
+                        <div class="card-body border-top">
+                            <h5 class="card-title text-truncate text-center">{{ company.company_name }}</h5>
+                            <p class="card-text text-center">{{ company.company_description[:100] }}</p>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+            {% if not companies %}
+            <div id="initialNoResults" class="text-center">
+                <p class="h4">No companies found.</p>
+            </div>
+            {% endif %}
+            <div id="noResults" class="text-center d-none">
+                <p class="h4">No companies found matching your search.</p>
+            </div>
+            <div id="loading" class="text-center d-none">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+        <div class="row">
+        <div class="col-md-4">
+        <h5>GreenProof</h5>
+        <p>Empowering a greener future from farm to table</p>
+        </div>
+        <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <ul class="list-unstyled">
+        <li><a href="/#about" class="text-light">About Us</a></li>
+        <li><a href="/#products" class="text-light">Greener Companies</a></li>
+        <li><a href="/#contact" class="text-light">Contact</a></li>
+        </ul>
+        </div>
+        <div class="col-md-4">
+        <h5>Follow Us</h5>
+        <div class="social-icons">
+        <i class="bi bi-facebook me-2"></i>
+        <i class="bi bi-twitter-x me-2"></i>
+        <i class="bi bi-instagram"></i>
+        </div>
+        </div>
+        </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const companyGrid = document.getElementById('companyGrid');
+        const loadingIndicator = document.getElementById('loading');
+        const noResults = document.getElementById('noResults');
+        const initialNoResults = document.getElementById('initialNoResults');
+
+        function performSearch(e) {
+            if (e) e.preventDefault();
+            
+            const searchTerm = searchInput.value.trim();
+            loadingIndicator.classList.remove('d-none');
+            companyGrid.classList.add('d-none');
+            noResults.classList.add('d-none');
+            if (initialNoResults) {
+                initialNoResults.classList.add('d-none');
+            }
+
+            fetch(`/search_companies?query=${encodeURIComponent(searchTerm)}`, {  
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                companyGrid.innerHTML = '';
+                if (data.companies && data.companies.length > 0) {
+                    data.companies.forEach(company => {
+                        const companyHtml = `
+                            <div class="col-lg-4 col-md-12 mb-4">
+                                <a href="/information_company/${company.company_id}" class="card company-card text-decoration-none">
+                                    <div class="card-img-container">
+                                        <img src="${company.company_image || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab'}" 
+                                             class="card-img-top company-logo" 
+                                             alt="${company.company_name}"
+                                             height="300">
+                                    </div>
+                                    <div class="card-body border-top">
+                                        <h5 class="card-title text-truncate text-center">${company.company_name}</h5>
+                                        <p class="card-text text-center">${company.company_description?.substring(0, 100) || ''}...</p>
+                                    </div>
+                                </a>
+                            </div>
+                        `;
+                        companyGrid.innerHTML += companyHtml;
+                    });
+                    companyGrid.classList.remove('d-none');
+                    noResults.classList.add('d-none');
+                } else {
+                    companyGrid.classList.add('d-none');
+                    noResults.classList.remove('d-none');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                companyGrid.classList.add('d-none');
+                noResults.classList.remove('d-none');
+            })
+            .finally(() => {
+                loadingIndicator.classList.add('d-none');
+            });
+        }
+
+        searchForm.addEventListener('submit', performSearch);
+    });
+    </script>
+</body>
+</html>

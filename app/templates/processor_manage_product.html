@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Management Interface</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='manage_product.css') }}">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+            <div class="container-fluid px-4">
+                <div class="d-flex align-items-center">
+                    <a href="/" class="nav-link p-0 me-2">
+                        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
+                    </a>
+                    <a class="navbar-brand mb-0" href="/">GreenProof</a>
+                </div>
+                <div class="d-flex align-items-center">
+                    {% if user_id %}
+                        {% include 'includes/user_menu.html' %}
+                    {% else %}
+                        <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
+                        <a class="btn btn-primary ms-2" href="/register">Sign in</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+<main>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Processor Product Management</h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <i class="bi bi-plus-lg me-2"></i>Add New Product
+            </button>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th class="col-3">Product Name</th>
+                                <th class="col-6">Description</th> <!-- Maggiore spazio -->
+                                <th class="col-2 text-center">Quantity</th> <!-- Ridotta -->
+                                <th class="col-1 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if products %}
+                                {% for product in products %}
+                                <tr>
+                                    <form method="POST" action="/manage_product_by_processor/{{ company_id }}">
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <td><input type="text" class="form-control" name="product_name" value="{{ product.name }}" disabled /></td>
+                                        <td><textarea class="form-control" name="product_description" style="height: 80px;" disabled>{{ product.description }}</textarea></td>
+                                        <td class="text-center">
+                                            <input type="number" class="form-control w-50 mx-auto" name="product_quantity" value="{{ product.quantity }}" min="0" max="{{ product.quantity }}" disabled />
+                                        </td>
+                                        
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" onclick="editProduct(this)">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="submit" class="btn btn-outline-success btn-sm save-btn" style="display: none;">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteProduct(this)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-info btn-sm" value="{{ product.id }}" onclick="redirectToRequestPage(this)">
+                                                    <i class="bi bi-box"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </form>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">
+                                        No products available.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Request Product and Delivery Modal -->
+<div class="modal fade" id="requestProductModal" tabindex="-1" aria-labelledby="requestProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestProductModalLabel">Request Product and Delivery</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="requestProductForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="requestQuantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="requestQuantity" required min="1">
+                        <div class="invalid-feedback">Please enter a valid quantity</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="requestDeliveryAddress" class="form-label">Delivery Address</label>
+                        <input type="text" class="form-control" id="requestDeliveryAddress" required>
+                        <div class="invalid-feedback">Please enter a delivery address</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="requestProductForm" class="btn btn-primary">Submit Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProductForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Product Name*</label>
+                            <input type="text" class="form-control" id="productName" required>
+                            <div class="invalid-feedback">Please enter a product name</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productDescription" class="form-label ">Description</label>
+                            <textarea class="form-control" id="productDescription" rows="3"></textarea>
+                        </div>
+                        
+                        
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addProductForm" class="btn btn-primary">Add Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="successToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header bg-success text-white">
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">Operation completed successfully!</div>
+        </div>
+    </div>
+    <!-- Modal di successo -->
+<div class="modal fade" id="successPopup" tabindex="-1" aria-labelledby="successPopupLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success">
+                <h5 class="modal-title" id="successPopupLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Product updated successfully!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="okButton" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+   <!-- Modal di conferma eliminazione -->
+   <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteConfirmLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this product? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+
+<footer class="bg-dark text-light py-4 mt-auto">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>GreenProof</h5>
+                <p>Empowering a greener future from farm to table</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="/#about" class="text-light">About Us</a></li>
+                    <li><a href="/#products" class="text-light">Greener Companies</a></li>
+                    <li><a href="/#contact" class="text-light">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5>Follow Us</h5>
+                <div class="social-icons">
+                    <i class="bi bi-facebook me-2"></i>
+                    <i class="bi bi-twitter-x me-2"></i>
+                    <i class="bi bi-instagram"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to enable editing of the product row
+
+    function editProduct(button) {
+    var row = button.closest("tr");
+    var inputs = row.querySelectorAll("input, textarea");
+    var saveBtn = row.querySelector(".save-btn");
+    var editBtn = row.querySelector(".edit-btn");
+    var productQuantityInput = row.querySelector("input[name='product_quantity']");
+    var currentQuantity = parseInt(productQuantityInput.value);
+
+    // Enable fields for editing
+    inputs.forEach(function(input) {
+        input.disabled = false;
+    });
+
+    // Show save button, hide edit button
+    saveBtn.style.display = "inline-block";
+    editBtn.style.display = "none";
+
+    // Set max quantity to current quantity (to prevent increase)
+    productQuantityInput.setAttribute("max", currentQuantity);
+    
+    // Add an event listener to prevent increasing quantity
+    productQuantityInput.addEventListener('input', function () {
+        if (parseInt(productQuantityInput.value) > currentQuantity) {
+            productQuantityInput.setCustomValidity("Quantity cannot be increased.");
+        } else {
+            productQuantityInput.setCustomValidity("");
+        }
+    });
+}
+
+// Funzione per gestire l'aggiornamento del prodotto
+function updateProduct(button) {
+    var row = button.closest("tr");
+    var form = row.querySelector("form");
+    var product_id = form.querySelector("input[name='product_id']").value;
+    var product_name = form.querySelector("input[name='product_name']").value;
+    var product_description = form.querySelector("textarea[name='product_description']").value;
+    var product_quantity = form.querySelector("input[name='product_quantity']").value;
+
+    // Aggiungi il loading overlay
+    document.getElementById("loadingOverlay").style.display = "block";
+
+    // Esegui la richiesta AJAX per aggiornare il prodotto
+    fetch(`/manage_product_by_processor/${company_id}`, {
+        method: 'POST',
+        body: new URLSearchParams({
+            'product_id': product_id,
+            'product_name': product_name,
+            'product_description': product_description,
+            'product_quantity': product_quantity
+        }),
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json()) // Converti la risposta in JSON
+    .then(data => {
+        if (data.success) {
+            // Se il prodotto è aggiornato con successo
+            $('#successPopup').modal('show'); // Mostra il popup di successo
+            document.getElementById('okButton').onclick = function() {
+                // Redirige alla stessa pagina per ricaricarla e aggiornare i dati
+                window.location.href = '/manage_product/' + company_id;
+            };
+        } else {
+            // Se c'è un errore
+            showToast("Error", data.error || "An error occurred while updating the product", "bg-danger");
+        }
+    })
+    .catch(error => {
+        // Gestisci errori nella richiesta
+        console.error("Error updating product:", error);
+        showToast("Error", "Something went wrong!", "bg-danger");
+    })
+    .finally(() => {
+        // Nascondi il loading overlay e riabilita il bottone
+        document.getElementById("loadingOverlay").style.display = "none";
+        button.disabled = false;
+    });
+}
+
+// Funzione per mostrare il messaggio di successo/errore tramite il toast
+function showToast(title, message, bgClass) {
+    var toast = document.getElementById('successToast');
+    toast.querySelector('.toast-header').classList.remove('bg-success', 'bg-danger');
+    toast.querySelector('.toast-header').classList.add(bgClass);
+    toast.querySelector('.toast-header strong').textContent = title;
+    toast.querySelector('.toast-body').textContent = message;
+    
+    var bsToast = new bootstrap.Toast(toast, { delay: 3000 }); // 3000ms = 3 secondi
+    bsToast.show();
+}
+
+// Funzione per abilitare l'editing di un prodotto
+function editProduct(button) {
+    var row = button.closest("tr");
+    var inputs = row.querySelectorAll("input, textarea");
+    var saveBtn = row.querySelector(".save-btn");
+    var editBtn = row.querySelector(".edit-btn");
+
+    // Abilita i campi per l'editing
+    inputs.forEach(function(input) {
+        input.disabled = false;
+    });
+
+    // Mostra il pulsante di salvataggio, nascondi quello di modifica
+    saveBtn.style.display = "inline-block";
+    editBtn.style.display = "none";
+}
+
+
+let productToDelete = null; // Variabile globale per memorizzare il prodotto da eliminare
+
+function deleteProduct(button) {
+    var row = button.closest("tr");
+    productToDelete = row; // Memorizza la riga del prodotto selezionato
+
+    // Mostra il modal di conferma
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+    deleteModal.show();
+}
+
+// Gestisce la conferma dell'eliminazione
+document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+    if (productToDelete) {
+        var productId = productToDelete.querySelector("input[name='product_id']").value;
+
+        fetch(`/delete_product/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                productToDelete.remove();
+                showToast("Success", "Product deleted successfully!", "bg-success");
+            } else {
+                showToast("Error", "Failed to delete product", "bg-danger");
+            }
+        })
+        .catch(error => {
+            console.error("Error deleting product:", error);
+            showToast("Error", "Something went wrong while deleting the product", "bg-danger");
+        });
+
+        // Nasconde il modal dopo la conferma
+        var deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
+        deleteModal.hide();
+    }
+});
+
+
+</script>
+
+
+
+<script>
+
+document.getElementById('addProductForm').addEventListener('submit', function (event) {
+    event.preventDefault();  // Impedisce il comportamento predefinito del form
+
+    // Recupera i dati del nuovo prodotto
+    const productName = document.getElementById('productName').value;
+    const productDescription = document.getElementById('productDescription').value;
+    const companyId = "{{ company_id }}"; // Passa il company_id dal template Jinja (se è presente)
+    const typeComp = "{{ type_of_company }}";
+
+    console.log(typeComp)
+
+    // Verifica che tutti i campi siano compilati
+    if (!productName) {
+        alert("Please fill in all required fields.");
+        return;
+    }
+
+    // Crea l'oggetto da inviare al server, incluso il company_id
+    const productData = {
+        name: productName,
+        description: productDescription,
+        quantity: 0,
+        company_id: companyId,
+        type_of_company: typeComp  // Aggiungi company_id
+    };
+
+    // Esegui la richiesta al server per aggiungere il prodotto
+    fetch('/add_product', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(productData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostra il toast di successo
+            showToast("Success", "Product added successfully!", "bg-success");
+            // Chiudi la modale
+            $('#addProductModal').modal('hide');
+            // Redirige alla stessa pagina per aggiornare la lista dei prodotti
+            window.location.href = '/manage_product_by_processor/' + companyId;
+        } else {
+            // Mostra il toast di errore
+            showToast("Error", data.error || "An error occurred while adding the product. Please do not add a product that already exists.", "bg-danger");
+        }
+    })
+    .catch(error => {
+        console.error("Error adding product:", error);
+        showToast("Error", "Something went wrong!", "bg-danger");
+    });
+});
+function redirectToRequestPage(button, company_id) {
+    // Ottieni il nome del prodotto dal valore del bottone
+    var productName = button.value;
+    const companyId = "{{ company_id }}";
+    // Codifica il nome del prodotto per gestire eventuali caratteri speciali
+    var encodedProductName = encodeURIComponent(productName);
+
+    // Codifica anche il company_id per gestire eventuali caratteri speciali
+    var encodedCompanyId = companyId;
+
+    // Crea l'URL di reindirizzamento includendo sia il nome del prodotto che l'ID della compagnia
+    var url = "/request_creation_product/" + encodedProductName + "/" + encodedCompanyId;
+
+    // Reindirizza l'utente alla nuova pagina
+    window.location.href = url;
+}
+
+
+
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

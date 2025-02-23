@@ -131,6 +131,44 @@ body {
     white-space: nowrap;
 }
 
+/* Disabilita l'animazione fade delle modali */
+.modal.fade {
+    opacity: 1 !important;
+    transition: none !important; /* Disabilita l'animazione */
+}
+
+/* Mantieni la modale sempre visibile */
+.modal.show {
+    display: block !important;
+}
+
+/* Rimuove l'overlay che diventa scuro */
+.modal-backdrop {
+    display: none !important; /* Disabilita l'overlay scuro */
+}
+
+/* Opzionale: aggiungi uno sfondo chiaro alla modale per evitare oscuramenti indesiderati */
+.modal-content {
+    background-color: #ffffff !important; /* Imposta un colore di sfondo chiaro */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Aggiungi ombre se necessario */
+}
+
+/* Prevenire l'overlay di background di diventare scuro */
+.modal-content, .modal-header, .modal-footer {
+    background-color: var(--background) !important; /* Aggiungi il background bianco */
+}
+
+/* Aggiungi margine superiore per il modal, separandolo dalla navbar */
+.modal-dialog {
+    margin-top: 70px; /* Puoi regolare questo valore in base all'altezza della navbar */
+}
+
+/* Gestire lo z-index per far apparire il modal sopra la navbar */
+.modal {
+    z-index: 2000 !important; /* Imposta un valore di z-index più alto per sovrascrivere la navbar */
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .notification-wrapper {

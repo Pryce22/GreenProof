@@ -27,6 +27,7 @@
                     <input class="form-control me-2" type="search" placeholder="Search companies..." name="query">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
+                
 
                 <!-- Right section -->
                 <div class="d-flex align-items-center">
@@ -78,10 +79,12 @@
                 <img src="static/images/home5.jpg" class="d-block w-100" alt="Fresh Produce">
                 <div class="carousel-caption">
                   <h1>Sustainable Food Supply Chain</h1>
-                  <p></p> 
+                  <p></p>                  
                   {% if not is_admin %}
                   <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
                   {% endif %}
+                  <p></p>
+                  <a class="btn btn-success btn-lg" href="/search_product">View Products</a>
                 </div>
               </div>
           </div>

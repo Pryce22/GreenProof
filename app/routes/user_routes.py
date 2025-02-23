@@ -79,7 +79,8 @@ def notifications():
                     'sender_email': notification[3],
                     'receiver_email': notification[4],
                     'status': notification[5],
-                    'company_id': notification[6]
+                    'company_id': notification[6],
+                    'product_request_id' : notification[7]
                 }
             else:
                 notification_dict = notification
@@ -89,11 +90,33 @@ def notifications():
                 company = company_controller.get_company_by_id(notification_dict['company_id'])
                 notification_dict['company_name'] = company['company_name'] if company else 'Unknown Company'
                 notification_dict['company'] = company  # Add the entire company object
-            
+
+            if notification_dict.get('product_request_id'):
+                product_request = company_controller.get_product_request_by_id(notification_dict['product_request_id'])
+                if product_request:
+                    notification_dict['product_request_quantity'] = product_request['quantity_of_raw_material'] # Aggiungi le informazioni sulla product_request
+                    notification_dict['product_request_km'] = product_request['distance_to_travel']
+                    notification_dict['product_request_date'] = product_request['transport_date']
+                    notification_dict['product_supplier_approve'] = product_request['supplier_approve']
+                    notification_dict['product_transporter_approve'] = product_request['transporter_approve']
+                    notification_dict['request_id']= product_request['id']
+
+                    # Ottieni il prodotto associato al product_request
+                    product_id = product_request['id_raw_material']
+                    product_info = company_controller.get_products_by_id(product_id)
+                    if product_info:
+                        notification_dict['product_name']=product_info['name']
+                        #notification_dict['product'] = product_info  # Aggiungi i dettagli del prodotto
+                    else:
+                        notification_dict['product'] = None  # Se non c'è un prodotto associato
+                else:
+                    notification_dict['product_request'] = None  # Se non c'è una product_requestne
+            #print(processed_notifications)
             processed_notifications.append(notification_dict)
     else:
         processed_notifications = []
 
+    
     return render_template('notifications.html',
                          user_id=user_id,
                          user=user,
@@ -102,7 +125,63 @@ def notifications():
                          notifications=notifications,
                          notifications_info=processed_notifications)
 
+@bp.route("/approve_supplier/<int:product_request_id>", methods=["POST"])
+def approve_supplier_route(product_request_id):
+    try:
+        response = company_controller.approve_supplier(product_request_id)
 
+        if company_controller.check_approval_status(product_request_id):
+            company_controller.update_product_quantity_after_approval(product_request_id)
+            company_controller.update_quantity_of_processed_product(product_request_id)
+            company_controller.add_transport_record_from_product_request(product_request_id)
+            company_controller.update_or_insert_chain_product(product_request_id)
+            notifications_controller.create_notifications_for_product_request(product_request_id)
+        
+        if response:
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Update failed"}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@bp.route("/approve_transporter/<int:transport_request_id>", methods=["POST"])
+def approve_transporter_route(transport_request_id):
+    try:
+        response = company_controller.approve_transporter(transport_request_id)
+
+        if company_controller.check_approval_status(transport_request_id):
+            company_controller.update_product_quantity_after_approval(transport_request_id)
+            company_controller.update_quantity_of_processed_product(transport_request_id)
+            company_controller.add_transport_record_from_product_request(transport_request_id)
+            company_controller.update_or_insert_chain_product(transport_request_id)
+
+        if response:
+            return jsonify({"success": True})
+        else:
+            return jsonify({"success": False, "error": "Update failed"}), 400
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@bp.route('/reject_supplier/<int:request_id>', methods=['POST'])
+def reject_supplier(request_id):
+    try:
+        success = company_controller.reject_supplier(request_id)
+        
+        return jsonify({"success": success})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@bp.route('/reject_transporter/<int:request_id>', methods=['POST'])
+def reject_transporter(request_id):
+    try:
+    # Simula il rifiuto nel database
+        success = company_controller.reject_transporter(request_id)
+        return jsonify({"success": success})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    
 @bp.route('/update_user', methods=['POST'])
 def update_user():
     if not session.get('id'):
@@ -324,3 +403,40 @@ def promote_to_admin():
     except Exception as e:
         print(f"Error in route: {e}")
         return jsonify({"error": "Internal server error"}), 500
+    
+
+
+
+@bp.route('/search_product', methods=['GET'])
+def search_product():
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    search_query = request.args.get('query', '').strip()
+    
+    try:
+        if search_query != "":
+            companies = company_controller.search_companies(search_query)
+        else:
+            companies = company_controller.get_all_companies_sorted()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'companies': companies})
+        
+        return render_template('products_views.html', 
+                             companies=companies, 
+                             user_id=user_id, 
+                             user=user, 
+                             is_admin=is_admin, 
+                             is_company_admin=is_company_admin,
+                             search_query=search_query,
+                             notifications = notifications,)
+    except Exception as e:
+        print(f"Error in search: {e}")
+        return render_template('products_views.html', 
+                             companies=[], 
+                             user_id=user_id, 
+                             user=user, 
+                             is_admin=is_admin, 
+                             is_company_admin=is_company_admin,
+                             notifications = notifications)
+    
+

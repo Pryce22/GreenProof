@@ -73,13 +73,33 @@
                                  height="300">
                         </div>
                         <div class="card-body border-top">
-                            <h5 class="card-title text-truncate text-center">{{ company.company_name }}</h5>
+                            <h5 class="card-title text-truncate text-center mt-3">{{ company.company_name }}</h5>
                             <p class="card-text text-center">{{ company.company_description[:100] }}</p>
                         </div>
                         <div class="position-absolute top-0 end-0 m-2 d-flex">
                             <a href="/modify_company/{{ company.company_id}}" class="text-primary me-2" title="Modify">
                                 <i class="bi bi-pencil-square fs-5"></i>
                             </a>
+                            
+                            {% if company.company_industry == "manufacturer" %}
+                                <a href="/manage_product/{{ company.company_id }}" class="text-success me-2" title="Products">
+                                    <i class="bi bi-basket fs-5 "></i>
+                                </a>
+                            {% elif company.company_industry == "Processor" %}
+                            <a href="/manage_product_by_processor/{{ company.company_id }}" class="text-success me-2" title="Products of Processor">
+                                <i class="bi bi-box-seam fs-5"></i>
+
+                            </a>
+                            {% elif company.company_industry == "seller" %}
+                                <a href="/manage_product_by_seller/{{ company.company_id }}" class="text-success me-2" title="Products for the seller">
+                                    <i class="bi bi-shop fs-5"></i>
+                                </a>
+                            {% elif company.company_industry == "transporter" %}
+                            <a href="/manage_product_by_transporter/{{ company.company_id }}" class="text-success me-2" title="Products to delivery">
+                                <i class="bi bi-truck fs-5"></i>
+                            </a>
+                            {% endif %}
+                            
                             <a href="#" class="text-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal" data-company-id="{{ company.company_id }}">
                                 <i class="bi bi-trash fs-5"></i>
                             </a>

@@ -15,6 +15,7 @@ from app.controllers import notifications_controller
 email_service = EmailService()
 
 def create_user(id, email, name, surname, password, phone_number, birthday):
+    email=email.lower()
     if check_email_exists(email):
         return False
     
@@ -141,6 +142,19 @@ def get_user_by_email(email):
 def get_user_by_id(user_id):
     try:
         response = supabase.table('user').select('*').eq('id', user_id).execute()
+        if len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"Error getting user by id: {e}")
+        return None
+    
+
+# Funzione di supporto per ottenere email da un ID utente
+def get_user_email(user_id):
+    try:
+        response = supabase.table('user').select('email').eq('id', user_id).execute()
+        print(response.data[0])
         if len(response.data) > 0:
             return response.data[0]
         return None
@@ -785,3 +799,19 @@ def check_user_by_email_if_is_admin(email):
         print(f"Error checking admin status: {e}")
         return False
 
+
+
+def view_products(user_id):
+    try:
+        response = supabase.table('products') \
+            .select('*') \
+            .execute()
+        
+        if response.data:
+            return response
+        else:
+            print(f"Failed to view product")
+            return False
+    except Exception as e:
+        print(f"Error setting to view product: {e}")
+        return False
