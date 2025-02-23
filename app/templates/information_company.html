@@ -61,14 +61,27 @@
             <div class="card border-0 shadow">
                 <div class="card-body">
                     <h2 class="h3 mb-4">CO2 Token Status</h2>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Total Tokens</span>
-                        <span class="fw-bold">10,000</span>
-                    </div>
-                    <div class="progress mb-4" style="height: 25px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">75%</div>
-                    </div>
-                    <p class="text-muted">Each token represents 1 metric ton of CO2 offset through our green initiatives.</p>
+                    {% if company.eth_address %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Tokens</span>
+                            <span class="fw-bold">{{ token_balance | round(2) }}</span>
+                        </div>
+                        <div class="progress mb-4" style="height: 25px;">
+                            {% set percentage = ((token_balance / 1000) * 100) | round(2) %}
+                            <!-- Imposta la proprietà custom --progress inline -->
+                            <div class="progress-bar bg-success progress-bar-dynamic" 
+                                 role="progressbar" 
+                                 style="--progress: {{ percentage }}%;" 
+                                 aria-valuenow="{{ percentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                 {{ percentage }}%
+                            </div>
+                        </div>
+                        <p class="text-muted">Each token represents 1 metric ton of CO2 offset through our green initiatives.</p>
+                    {% else %}
+                        <p class="text-muted">This company is not yet integrated into the blockchain system.</p>
+                    {% endif %}
                 </div>
             </div>
         </section>

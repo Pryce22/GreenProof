@@ -1,0 +1,146 @@
+:root {
+    --primary: #0070f3;
+    --primary-foreground: #ffffff;
+    --secondary: #f5f5f5;
+    --secondary-foreground: #111111;
+    --accent: #0070f3;
+    --accent-foreground: #ffffff;
+    --background: #ffffff;
+    --foreground: #111111;
+    --card: #ffffff;
+    --card-foreground: #111111;
+    --border: #e5e5e5;
+    --input: #f5f5f5;
+    --ring: #0070f3;
+    --radius: 0.5rem;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+[data-theme="dark"] {
+    --primary: #0070f3;
+    --primary-foreground: #ffffff;
+    --secondary: #1a1a1a;
+    --secondary-foreground: #ffffff;
+    --accent: #0070f3;
+    --accent-foreground: #ffffff;
+    --background: #111111;
+    --foreground: #ffffff;
+    --card: #1a1a1a;
+    --card-foreground: #ffffff;
+    --border: #2a2a2a;
+    --input: #1a1a1a;
+    --ring: #0070f3;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+/* Disable all transitions and animations */
+*, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+}
+
+.card,
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.btn,
+.btn:hover,
+.form-control,
+.form-control:focus,
+.modal-content,
+.table tr:hover,
+.pagination .page-link,
+.pagination .page-link:hover {
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Override Bootstrap's hover effects */
+.table-hover tbody tr:hover {
+    transition: none !important;
+    background-color: inherit !important;
+}
+
+/* Override any Bootstrap transitions */
+.fade {
+    transition: none !important;
+}
+
+.collapsing {
+    transition: none !important;
+}
+
+.card {
+    background-color: var(--card);
+    border-color: var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.company-select {
+    background-color: var(--input);
+    border-color: var(--border);
+    color: var(--foreground);
+}
+
+.company-select:hover {
+    border-color: var(--ring);
+}
+
+.company-select:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px var(--ring);
+}
+
+.company-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius);
+    object-fit: cover;
+}
+
+.selected-company .company-logo {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.125rem;
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.selected-company {
+    padding: 1rem;
+    border-radius: var(--radius);
+    background-color: var(--secondary);
+    border: 1px solid var(--border);
+}
+
+.company-select-wrapper {
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+}

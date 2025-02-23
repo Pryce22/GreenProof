@@ -1,0 +1,156 @@
+:root {
+    --primary: #c7cede;
+    --primary-foreground: #ffffff;
+    --secondary: #64748b;
+    --secondary-foreground: #ffffff;
+    --background: #ffffff;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #2356d4;
+    --radius: 0.5rem;
+}
+
+/* Disable all transitions and animations */
+*, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+}
+
+.card,
+.card:hover {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.btn,
+.btn:hover,
+.form-control,
+.form-control:focus,
+.modal-content,
+.table tr:hover,
+.pagination .page-link,
+.pagination .page-link:hover {
+    transition: none !important;
+    transform: none !important;
+}
+
+/* Override Bootstrap's hover effects */
+.table-hover tbody tr:hover {
+    transition: none !important;
+    background-color: inherit !important;
+}
+
+/* Override any Bootstrap transitions */
+.fade {
+    transition: none !important;
+}
+
+.collapsing {
+    transition: none !important;
+}
+body {
+    background-color: var(--background);
+    color: var(--foreground);
+}
+
+.card {
+    border-radius: var(--radius);
+    border-color: var(--border);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.token-balance {
+    background: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.token-logo {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 0.125rem; /* Adjusted for rectangular styling */
+}
+
+.token-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.token-value {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.transactions-card {
+    background-color: var(--card);
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--secondary);
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn-primary {
+    background-color: var(--ring);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.modal-content {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.form-control {
+    border-color: var(--input);
+    border-radius: var(--radius);
+}
+
+.form-control:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* Add to your manage_token.css file */
+.select2-container--bootstrap-5 {
+    width: 100% !important;
+}
+
+.select2-container--bootstrap-5 .select2-selection {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.select2-container--bootstrap-5 .select2-selection:focus {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 2px rgba(35, 86, 212, 0.1);
+}
+
+@media (max-width: 768px) {
+    .token-amount {
+        font-size: 2rem;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        align-items: start !important;
+    }
+    
+    .btn-group {
+        margin-top: 1rem;
+    }
+}

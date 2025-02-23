@@ -403,6 +403,40 @@ def promote_to_admin():
     except Exception as e:
         print(f"Error in route: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+@bp.route('/submit_eth_address', methods=['POST'])
+def submit_eth_address():
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    if not user_id or not is_company_admin:
+        return jsonify({'success': False, 'error': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        eth_address = data.get('eth_address')
+        company_id = data.get('company_id')
+        
+        if not eth_address or not company_id:
+            return jsonify({'success': False, 'error': 'Missing required data'})
+        
+        # Validate ETH address format
+        if not re.match(r'^0x[a-fA-F0-9]{40}$', eth_address):
+            return jsonify({'success': False, 'error': 'Invalid Ethereum address format'})
+        
+        # Check uniqueness
+        if not company_controller.check_eth_address_unique(eth_address, company_id):
+            return jsonify({'success': False, 'error': 'ETH address already in use'})
+        
+        # Update company ETH address
+        success = company_controller.update_company_eth_address(company_id, eth_address)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to update ETH address'})
+            
+    except Exception as e:
+        print(f"Error submitting ETH address: {e}")
+        return jsonify({'success': False, 'error': 'An error occurred'})
     
 
 

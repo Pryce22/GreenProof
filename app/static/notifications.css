@@ -349,3 +349,69 @@ footer {
 .reject-invite:hover {
     background-color: #bb2d3b; /* rosso leggermente scuro al passaggio del mouse */
 }
+
+/* Add to your CSS */
+.notification-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification-card {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.notification-card.removing {
+    transform: translateX(20px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.notification-card {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.notification-card.removing {
+    opacity: 0;
+    transform: translateX(20px);
+    pointer-events: none;
+}
+
+/* Previeni l'animazione su altre cards */
+.notification-card:not(.removing) {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin: -8px 0 0 -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-right-color: transparent;
+    animation: button-loading-spinner 0.75s linear infinite;
+}
+
+@keyframes button-loading-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}

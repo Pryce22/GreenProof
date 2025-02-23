@@ -142,6 +142,24 @@
                                 </div>
                             </div>  
 
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">ETH Public Address</label>
+                                    <div class="input-group has-validation">
+                                        <input type="text" name="eth_address" class="form-control" 
+                                               value="{{ company.eth_address }}" 
+                                               id="companyEthAddressInput" 
+                                               pattern="^0x[a-fA-F0-9]{40}$"
+                                               placeholder="0x..." 
+                                               disabled>
+                                        <button class="btn btn-outline-secondary" type="button" id="editEthAddressBtn">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <div class="invalid-feedback">Please enter a valid Ethereum address (0x followed by 40 hexadecimal characters)</div>
+                                    </div>
+                                </div>
+                            </div>
+
                 <div class="mb-3">
                     <label class="form-label">Company Description</label>
                     <div class="input-group">
@@ -160,7 +178,8 @@
                 
                 <div class="text-end mt-4">
                     <a type="button" class="btn btn-outline-secondary me-2" href="/companies_of_administrator">Cancel</a>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmModal">Save Changes</button>
+                    <!-- Remove data-bs-toggle and data-bs-target from Save Changes button -->
+                    <button type="button" class="btn btn-primary" id="saveChangesBtn">Save Changes</button>
                 </div>
             </div>
         </div> 
@@ -384,9 +403,54 @@
   }
 
   // Listener sul pulsante "Save Changes"
-  document.querySelector('.btn-primary[data-bs-toggle="modal"]').addEventListener('click', function(e) {
+  document.getElementById('saveChangesBtn').addEventListener('click', function(e) {
       e.preventDefault();
       submitForm();
+  });
+
+  // Helper function to check all fields for errors; returns boolean
+  function isFormValid() {
+      let valid = true;
+      const nameInput = document.getElementById('companyNameInput');
+      const phoneInput = document.getElementById('companyPhoneInput');
+      const emailInput = document.getElementById('companyEmailInput');
+      const descriptionInput = document.getElementById('companyDescriptionInput');
+      const websiteInput = document.getElementById('companyWebsiteInput');
+      const ethInput = document.getElementById('companyEthAddressInput');
+      
+      // Check name, email, phone using existing validateField function
+      if (!validateField(nameInput, value => value.length >= 2)) valid = false;
+      if (!validateField(emailInput, value => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value))) valid = false;
+      if (!validateField(phoneInput, value => /^\+?\d{10,15}$/.test(value))) valid = false;
+      if (descriptionInput.value.length > 1500) {
+          descriptionInput.classList.add('is-invalid');
+          valid = false;
+      }
+      // Website simple check
+      if (websiteInput.value && !websiteInput.value.startsWith('https://')) {
+          websiteInput.value = 'https://' + websiteInput.value;
+      }
+      // If ETH field is enabled, validate its format
+      if (!ethInput.disabled) {
+          const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+          if (!addressRegex.test(ethInput.value.trim())) {
+              ethInput.classList.add('is-invalid');
+              valid = false;
+          }
+      }
+      return valid;
+  }
+  
+  // Update the "Save Changes" button listener
+  document.getElementById('saveChangesBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      // Execute full validation check
+      if (!isFormValid()) {
+          toastr.error('Please correct the errors before saving');
+          return; // Do not open the confirmation modal
+      }
+      // If valid, then show confirmation modal manually
+      $('#confirmModal').modal('show');
   });
 
   // Handler per il pulsante di conferma del modal (invio finale)
@@ -444,6 +508,43 @@
   document.getElementById('editDescriptionBtn').addEventListener('click', function() {
       toggleEdit('companyDescriptionInput');
   });
+
+
+  // Add revised ETH address validation
+  document.getElementById('companyEthAddressInput').addEventListener('input', async function() {
+      const input = this;
+      // get the invalid-feedback div within the same input-group
+      const feedback = input.parentElement.querySelector('.invalid-feedback');
+      const ethAddress = input.value.trim();
+      const addressRegex = /^0x[a-fA-F0-9]{40}$/;
+
+      if (!addressRegex.test(ethAddress)) {
+          input.classList.add('is-invalid');
+          feedback.textContent = 'Invalid ETH address format';
+          return;
+      }
+      // Format is valid; check uniqueness with backend
+      try {
+          const response = await fetch(`/check_eth_address?address=${ethAddress}&company_id={{ company.company_id }}`);
+          const data = await response.json();
+          
+          if (!data.available) {
+              input.classList.add('is-invalid');
+              feedback.textContent = 'This ETH address is already in use';
+          } else {
+              input.classList.remove('is-invalid');
+              feedback.textContent = '';
+          }
+      } catch (error) {
+          console.error('Error checking ETH address:', error);
+      }
+  });
+
+  // The edit pencil button remains attached via toggleEdit
+  document.getElementById('editEthAddressBtn').addEventListener('click', function() {
+      toggleEdit('companyEthAddressInput');
+  });
+
 </script>
 
 <!-- Consolidated Validation & Submission Scripts -->
