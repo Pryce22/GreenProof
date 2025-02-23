@@ -243,60 +243,51 @@
 });
 
 function updateNotificationCount() {
-    // Aggiorna il contatore principale
+    // Aggiorna solo i contatori
     const badge = document.querySelector('.badge');
-    const currentCount = parseInt(badge.textContent);
-    const newCount = Math.max(0, currentCount - 1); // Previene numeri negativi
-    badge.textContent = newCount;
-    
-    // Aggiorna il contatore nel menu utente
-    const userMenuBadge = document.querySelector('.user-menu-notifications');
-    if (userMenuBadge) {
-        userMenuBadge.textContent = newCount;
-        if (newCount === 0) {
-            userMenuBadge.style.display = 'none';
-        }
-    }
-
-    // Aggiorna il contenuto della pagina
-    if (newCount === 0) {
-        const container = document.querySelector('.notification-container');
-        // Animazione di dissolvenza
-        container.style.transition = 'opacity 0.3s ease';
-        container.style.opacity = '0';
+    if (badge) {
+        const currentCount = parseInt(badge.textContent);
+        const newCount = Math.max(0, currentCount - 1);
         
-        setTimeout(() => {
+        // Aggiorna il badge principale
+        badge.textContent = newCount;
+        
+        // Aggiorna il badge nel menu utente
+        const userMenuBadge = document.querySelector('.user-menu-notifications');
+        if (userMenuBadge) {
+            userMenuBadge.textContent = newCount;
+            if (newCount === 0) {
+                userMenuBadge.style.display = 'none';
+            }
+        }
+
+        // Aggiorna il titolo della sezione
+        const notificationHeader = document.querySelector('.notification-header h4');
+        if (notificationHeader) {
+            notificationHeader.innerHTML = `Notifications <span class="badge bg-primary">${newCount}</span>`;
+        }
+
+        // Mostra il messaggio "no notifications" solo se non ci sono più notifiche visibili
+        if (newCount === 0 && document.querySelectorAll('.notification-card').length === 0) {
+            const container = document.querySelector('.notification-container');
             container.innerHTML = `
                 <div class="alert alert-info" role="alert">
                     You have no notifications at this time.
                 </div>
             `;
-            container.style.opacity = '1';
-        }, 300);
-    }
-
-    // Aggiorna il titolo della sezione
-    const notificationHeader = document.querySelector('.notification-header h4');
-    if (notificationHeader) {
-        notificationHeader.innerHTML = `Notifications <span class="badge bg-primary">${newCount}</span>`;
+        }
     }
 }
 
 // Funzione per rimuovere una notifica con animazione
 function removeNotification(notificationCard) {
-    notificationCard.style.transition = 'all 0.3s ease';
-    notificationCard.style.opacity = '0';
-    notificationCard.style.transform = 'translateX(20px)';
+    // Add removing class to trigger animation
+    notificationCard.classList.add('removing');
     
+    // Remove after animation
     setTimeout(() => {
-        notificationCard.style.maxHeight = '0';
-        notificationCard.style.margin = '0';
-        notificationCard.style.padding = '0';
-        
-        setTimeout(() => {
-            notificationCard.remove();
-            updateNotificationCount();
-        }, 300);
+        notificationCard.remove();
+        updateNotificationCount();
     }, 300);
 }
 
@@ -752,60 +743,51 @@ async function checkMetaMaskConnection() {
             
 
 function updateNotificationCount() {
-    // Aggiorna il contatore principale
+    // Aggiorna solo i contatori
     const badge = document.querySelector('.badge');
-    const currentCount = parseInt(badge.textContent);
-    const newCount = Math.max(0, currentCount - 1); // Previene numeri negativi
-    badge.textContent = newCount;
-    
-    // Aggiorna il contatore nel menu utente
-    const userMenuBadge = document.querySelector('.user-menu-notifications');
-    if (userMenuBadge) {
-        userMenuBadge.textContent = newCount;
-        if (newCount === 0) {
-            userMenuBadge.style.display = 'none';
-        }
-    }
-
-    // Aggiorna il contenuto della pagina
-    if (newCount === 0) {
-        const container = document.querySelector('.notification-container');
-        // Animazione di dissolvenza
-        container.style.transition = 'opacity 0.3s ease';
-        container.style.opacity = '0';
+    if (badge) {
+        const currentCount = parseInt(badge.textContent);
+        const newCount = Math.max(0, currentCount - 1);
         
-        setTimeout(() => {
+        // Aggiorna il badge principale
+        badge.textContent = newCount;
+        
+        // Aggiorna il badge nel menu utente
+        const userMenuBadge = document.querySelector('.user-menu-notifications');
+        if (userMenuBadge) {
+            userMenuBadge.textContent = newCount;
+            if (newCount === 0) {
+                userMenuBadge.style.display = 'none';
+            }
+        }
+
+        // Aggiorna il titolo della sezione
+        const notificationHeader = document.querySelector('.notification-header h4');
+        if (notificationHeader) {
+            notificationHeader.innerHTML = `Notifications <span class="badge bg-primary">${newCount}</span>`;
+        }
+
+        // Mostra il messaggio "no notifications" solo se non ci sono più notifiche visibili
+        if (newCount === 0 && document.querySelectorAll('.notification-card').length === 0) {
+            const container = document.querySelector('.notification-container');
             container.innerHTML = `
                 <div class="alert alert-info" role="alert">
                     You have no notifications at this time.
                 </div>
             `;
-            container.style.opacity = '1';
-        }, 300);
-    }
-
-    // Aggiorna il titolo della sezione
-    const notificationHeader = document.querySelector('.notification-header h4');
-    if (notificationHeader) {
-        notificationHeader.innerHTML = `Notifications <span class="badge bg-primary">${newCount}</span>`;
+        }
     }
 }
 
-// Funzione per rimuovere una notifica con animazione
+// Modify the removeNotification function to handle only the specific notification
 function removeNotification(notificationCard) {
-    notificationCard.style.transition = 'all 0.3s ease';
-    notificationCard.style.opacity = '0';
-    notificationCard.style.transform = 'translateX(20px)';
+    // Add removing class to trigger animation
+    notificationCard.classList.add('removing');
     
+    // Remove after animation
     setTimeout(() => {
-        notificationCard.style.maxHeight = '0';
-        notificationCard.style.margin = '0';
-        notificationCard.style.padding = '0';
-        
-        setTimeout(() => {
-            notificationCard.remove();
-            updateNotificationCount();
-        }, 300);
+        notificationCard.remove();
+        updateNotificationCount();
     }, 300);
 }
 </script>

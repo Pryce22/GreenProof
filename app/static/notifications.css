@@ -311,3 +311,20 @@ footer {
 .reject-invite:hover {
     background-color: #bb2d3b; /* rosso leggermente scuro al passaggio del mouse */
 }
+
+/* Add to your CSS */
+.notification-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification-card {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.notification-card.removing {
+    transform: translateX(20px);
+    opacity: 0;
+    pointer-events: none;
+}

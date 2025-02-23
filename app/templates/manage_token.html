@@ -183,6 +183,25 @@
         </div>
     </div>
 
+    <!-- Add this modal after your request token modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationModalLabel">Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="notificationMessage">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
     <!-- Add this script before the closing body tag -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -255,19 +274,45 @@
                 });
 
                 const data = await response.json();
+
+                const requestModal = bootstrap.Modal.getInstance(document.getElementById('requestTokenModal'));
+                requestModal.hide();
+
+                const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                const messageElement = document.getElementById('notificationMessage');
+
                 if (data.success) {
-                    // Close modal
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestTokenModal'));
-                    modal.hide();
-                    // Show success message
-                    alert('Token request submitted successfully');
-                } else {
-                    alert(data.error || 'Failed to submit request');
+                    messageElement.innerHTML = `
+                        <div class="text-center">
+                            <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Token request submitted successfully!</p>
+                        </div>`;
+                    } else {
+                        messageElement.innerHTML = `
+                            <div class="text-center">
+                                <i class="bi bi-x-circle text-danger" style="font-size: 3rem;"></i>
+                                <p class="mt-3">${data.error || 'Failed to submit request'}</p>
+                            </div>`;
+                    }
+        
+                notificationModal.show();
+                
+                // Optional: Refresh the page after modal is closed
+                document.getElementById('notificationModal').addEventListener('hidden.bs.modal', function () {
+                    window.location.reload();
+                });
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    const notificationModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                    const messageElement = document.getElementById('notificationMessage');
+                    messageElement.innerHTML = `
+                        <div class="text-center">
+                            <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                            <p class="mt-3">An error occurred while processing your request. Please try again.</p>
+                        </div>`;
+                    notificationModal.show();
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Failed to submit request');
-            }
         });
     });
     </script>
