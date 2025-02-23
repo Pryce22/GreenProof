@@ -118,12 +118,20 @@
     
                             <!-- Nuova riga con Industry e Website sotto Email e Phone -->
                             <div class="row">
+                                <!-- Replace the existing industry select with this -->
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Industry</label>
                                     <div class="input-group">
                                         <select name="company_industry" class="form-select" id="companyIndustrySelect" disabled>
-                                            <option selected>{{ company.company_industry }}</option>
-                                            <!-- Opzioni dinamiche -->
+                                            <!-- Prima mostra l'industria corrente -->
+                                            <option value="{{ company.company_industry }}" selected>{{ company.company_industry }}</option>
+                                            <!-- Poi mostra le altre opzioni -->
+                                            {% set all_industries = ['Manufacturer', 'Transporter', 'Transformer', 'Seller'] %}
+                                            {% for industry in all_industries %}
+                                                {% if industry != company.company_industry %}
+                                                    <option value="{{ industry }}">{{ industry }}</option>
+                                                {% endif %}
+                                            {% endfor %}
                                         </select>
                                         <button class="btn btn-outline-secondary" type="button" id="editIndustryBtn">
                                             <i class="bi bi-pencil"></i>
@@ -346,6 +354,15 @@
           this.classList.remove('is-invalid');
       }
   });
+  document.getElementById('companyIndustrySelect').addEventListener('change', function() {
+    const selectedIndustry = this.value;
+    const currentIndustry = "{{ company.company_industry }}";
+    
+    if (selectedIndustry === currentIndustry) {
+        console.log("Industry unchanged");
+        return;
+    }
+  });
   document.getElementById('logoInput').addEventListener('change', function(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -377,6 +394,8 @@
       const websiteInput = document.getElementById('companyWebsiteInput');
       const logoInput = document.getElementById('logoInput');
       const descriptionInput = document.getElementById('companyDescriptionInput');
+      const industrySelect = document.getElementById('companyIndustrySelect');
+
 
       let isValid = true;
       if (!validateField(nameInput, value => value.length >= 2, 'Company name must be at least 2 characters long')) isValid = false;
