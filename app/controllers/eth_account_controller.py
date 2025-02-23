@@ -10,12 +10,27 @@ with open('app/token/build/contracts/GreenToken.json', 'r') as f:
     contract_abi = contract_data['abi']
 
 # Set the deployed contract address (convert to checksum)
-contract_address = Web3.to_checksum_address('0x9a3DBCa554e9f6b9257aAa24010DA8377C57c17e')
+def get_contract_addresses():
+    try:
+        with open('app/token/contract_addresses.json', 'r') as f:
+                        content = f.read().strip()
+                        if not content:  # If file is empty
+                            return {}
+                        addresses = json.loads(content)
+                        # Verify contracts only if addresses exist
+                        if addresses:
+                            return addresses
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
+    
+contract_address_green_token = Web3.to_checksum_address(get_contract_addresses()['green_token'])
 
 w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
 # Get contract instance
-token_contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+token_contract = w3.eth.contract(address=contract_address_green_token , abi=contract_abi)
 
 
 def get_token_balance(address):
@@ -156,7 +171,7 @@ def initiate_token_transfer(from_address, to_address, amount):
         return {
             'success': True,
             'tx_data': {
-                'to': contract_address,
+                'to': contract_address_green_token,
                 'from': gas_sponsor,  # Use gas sponsor as sender
                 'data': tx_data['data'],
                 'value': '0x0',

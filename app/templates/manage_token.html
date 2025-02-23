@@ -44,7 +44,8 @@
             <div class="card token-summary mb-4">
                 <div class="card-body text-center">
                     <img src="{{ company.company_image }}" alt="Token Logo" class="token-logo mb-3" style="width:180px; height:120px; object-fit: cover;">
-                    <h3 class="token-amount">{{ token_balance }}</h3>
+                    <h4 class="token-name">Green Token Balance</h4>
+                    <h3 class="token-amount">{{ token_balance | float | round }} GTK</h3>
                     <button class="btn btn-primary mt-3 d-block mx-auto" data-bs-toggle="modal" data-bs-target="#requestTokenModal">
                         <i class="bi bi-plus-circle me-2"></i>Request Tokens
                     </button>
@@ -72,7 +73,7 @@
                                 <tr>
                                     <td>{{ tx.date }}</td>
                                     <td>{{ tx.type }}</td>
-                                    <td>{{ tx.amount }} GTK</td>
+                                    <td>{{ tx.amount | float | round  }} GTK</td>
                                     <td>{{ tx.transactionHash }}</td>
                                     <td>
                                         {% if tx.status == 'Completed' %}
