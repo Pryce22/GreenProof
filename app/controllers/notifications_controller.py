@@ -3,8 +3,6 @@ import uuid
 
 from app.controllers import company_controller, user_controller
 
-from app.controllers import company_controller, user_controller
-
 def create_notification(type, sender, receiver, company_id = None, amount = None, same_request = None, sender_company_id = None):
 
     try:
@@ -245,6 +243,72 @@ def create_notifications_for_product_request(product_request_id):
             for admin in transporter_admins:
                 success = create_notification_with_product(
                     type="buyer confirmation",
+                    sender=sender_email,
+                    receiver=admin['email'],
+                    product=product_request_id,
+                    company_id=id_transporter
+                )
+                notifications_created.append(success)
+
+        return all(notifications_created)  # Restituisce True solo se tutte le notifiche sono state create con successo
+
+    except Exception as e:
+        print(f"Errore nella creazione delle notifiche: {e}")
+        return False
+
+
+
+def create_notifications_for_reject_request(product_request_id):
+    try:
+        # Recupera i dati da 'product_request'
+        response = supabase.table('product_request') \
+                            .select('id_transporter', 'id_buyer', 'id_supplier') \
+                            .eq('id', product_request_id) \
+                            .execute()
+
+        if not response or not response.data:
+            print("Errore: product_request non trovato")
+            return False
+        
+        product_data = response.data[0]
+        id_transporter = product_data['id_transporter']
+        id_buyer = product_data['id_buyer']
+        id_supplier = product_data['id_supplier']  
+
+
+        buyer_admins = company_controller.get_owners_by_company(id_buyer)
+        supplier_admins = company_controller.get_owners_by_company(id_supplier)
+        transporter_admins = company_controller.get_owners_by_company(id_transporter)
+
+        sender_email = buyer_admins[0]['email'] if buyer_admins else None
+        
+        notifications_created = []
+        if sender_email:
+            # Notifica ai supplier
+            for admin in supplier_admins:
+                success = create_notification_with_product(
+                    type="supplier rejection",
+                    sender=sender_email,
+                    receiver=admin['email'],
+                    product=product_request_id,
+                    company_id=id_supplier
+                )
+                notifications_created.append(success)
+
+            # Notifica ai transporter
+            for admin in transporter_admins:
+                success = create_notification_with_product(
+                    type="transport rejection",
+                    sender=sender_email,
+                    receiver=admin['email'],
+                    product=product_request_id,
+                    company_id=id_transporter
+                )
+                notifications_created.append(success)
+
+            for admin in transporter_admins:
+                success = create_notification_with_product(
+                    type="buyer rejection",
                     sender=sender_email,
                     receiver=admin['email'],
                     product=product_request_id,

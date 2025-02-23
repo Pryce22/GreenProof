@@ -713,6 +713,7 @@ def get_companies_by_industry(company_industry):
         response = supabase.table('companies') \
             .select('*')\
             .eq('company_industry', company_industry) \
+            .eq('status', True)\
             .execute()
         
         return response.data
@@ -846,6 +847,36 @@ def reject_transporter(product_request_id):
     else:
         return False  # Qualcosa è andato storto
     
+
+def check_supplier_approve(product_request_id):
+    response = supabase.table('product_request').select('quantity_of_raw_material').eq('supplier_approve', True).eq('id', product_request_id).execute()
+    
+    return response  
+
+def id_product_from_request(product_request_id):
+    try:
+        response = supabase.table('product_request').select('id_product').eq('id', product_request_id).execute()
+        return response
+  
+    except Exception as e:
+        print(f"Error getting products: {e}")
+        return []
+    
+def update_quantity_after_reject(product_id, new_quantity):
+    try:
+        response = supabase.table('products').select('quantity').eq('id', product_id).execute()
+        quantity=response.data[0]['quantity'] + new_quantity
+        update=supabase.table('products').update({'quantity': quantity}).eq('id', product_id).execute()
+
+        if update:
+            return True  # Successo nell'aggiornamento
+        else:
+            return False 
+        
+    except Exception as e:
+        print(f"Error getting products: {e}")
+        return []
+    
 def check_approval_status(product_request_id):
     # Esegui la query per ottenere i valori dei campi 'supplier_approve' e 'transporter_approve'
     response = supabase.table('product_request').select('supplier_approve', 'transporter_approve').eq('id', product_request_id).execute()
@@ -864,6 +895,23 @@ def check_approval_status(product_request_id):
             return False  # Almeno uno dei due non è approvato
     else:
         return False  # La query non ha restituito risultati validi
+    
+   
+def check_equal_status_of_request_product(product_request_id):
+    
+    response = supabase.table('product_request').select('id_raw_material', 'id_product').eq('id', product_request_id).execute()
+    # Verifica se la risposta contiene i dati
+    if response:
+        approval_data = response.data[0]
+        id_raw_material = approval_data['id_raw_material']
+        id_product = approval_data['id_product']
+
+        if id_product == id_raw_material:
+            return True  
+        else:
+            return False  
+    else:
+        return False  
     
 def update_product_quantity_after_approval(product_request_id):
     # Esegui la query per ottenere i dati di 'product_request' e 'products'
@@ -1050,3 +1098,101 @@ def update_or_insert_chain_product(product_request_id):
             return bool(insert_response)  # Restituisce True se l'inserimento è riuscito
     else:
         return False  # Il 'product_request' con l'ID specificato non esiste
+
+ 
+def update_or_insert_chain_product_for_seller(product_request_id):
+    # Recupera i dati dalla tabella 'product_request'
+    response = supabase.table('product_request') \
+                        .select('id_product', 'id_transporter', 'id_supplier', 'id_buyer') \
+                        .eq('id', product_request_id) \
+                        .execute()
+    # Verifica se la risposta contiene dati validi
+    if response:
+        product_request_data = response.data[0]
+        id_product = product_request_data['id_product']
+        id_transporter = product_request_data['id_transporter']
+        #id_supplier = product_request_data['id_supplier']
+        id_buyer = product_request_data['id_buyer']
+
+        # Recupera tutti i record di 'chain_product' che corrispondono a 'id_product'
+        chain_product_response = supabase.table('chain_products') \
+                                         .select('id', 'farmer', 'transporter2', 'transporter1','transformer', 'seller') \
+                                         .eq('id', id_product) \
+                                         .execute()
+
+        for chain_product in chain_product_response.data:
+            farmer = chain_product['farmer']
+            transporter2 = chain_product['transporter2']
+            transformer = chain_product['transformer']
+            transporter1 = chain_product['transporter1']
+            seller = chain_product['seller']
+
+             # Se i valori coincidono, non fare nulla
+            if seller == id_buyer and transporter2 == id_transporter:
+                return True  # Nessuna azione necessaria
+            
+            # Se entrambi i campi sono NULL, sovrascrivi con i nuovi valori
+            if seller is None and transporter2 is None:
+                update_response = supabase.table('chain_products') \
+                                    .insert({
+                                        'id': id_product,
+                                        'farmer': farmer,
+                                        'transporter2': id_transporter,
+                                        'seller': id_buyer,
+                                        'transformer' : transformer,
+                                        'transporter1' : transporter1
+                                    }) \
+                                    .execute()
+            
+                return bool(update_response)  # Restituisce True se l'aggiornamento è riuscito
+    
+    else:
+        return False  # Il 'product_request' con l'ID specificato non esiste
+
+
+def insert_product_seller(product_request_id):
+    response = supabase.table('product_request') \
+                        .select('id_product', 'id_buyer', 'quantity') \
+                        .eq('id', product_request_id) \
+                        .execute()
+    # Verifica se la risposta contiene dati validi
+    if response:
+        product_request_data = response.data[0]
+        id_product = product_request_data['id_product']
+        id_buyer = product_request_data['id_buyer']
+        quantity =  product_request_data['quantity']
+
+        update_response = supabase.table('seller_products') \
+                                    .insert({
+                                        'id_product': id_product,
+                                        'id_seller' : id_buyer,
+                                        'quantity' : quantity
+                                    }) \
+                                    .execute()
+            
+        return bool(update_response)
+    else:
+        return False
+    
+
+def get_products_by_seller(company_id):
+    try:
+        response = supabase.table('seller_products') \
+                            .select('*') \
+                            .eq('id_seller', company_id) \
+                            .execute()
+        return response
+    except Exception as e:
+        print(f"Error getting products: {e}")
+        return []
+    
+def get_information_by_id_product(product_id):
+    try:
+        response = supabase.table('products') \
+                            .select('id, name, description') \
+                            .eq('id', product_id) \
+                            .execute()
+        return response
+    except Exception as e:
+        print(f"Error getting products: {e}")
+        return []

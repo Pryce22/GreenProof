@@ -101,6 +101,14 @@ def notifications():
                     notification_dict['product_transporter_approve'] = product_request['transporter_approve']
                     notification_dict['request_id']= product_request['id']
 
+                    id_buyer= product_request['id_buyer']
+                    id_supplier= product_request['id_supplier']
+                    buyer=company_controller.get_company_by_id(id_buyer)
+                    supplier= company_controller.get_company_by_id(id_supplier)
+                    notification_dict['buyer']=buyer['company_name']
+                    notification_dict['supplier']=supplier['company_name']
+
+
                     # Ottieni il prodotto associato al product_request
                     product_id = product_request['id_raw_material']
                     product_info = company_controller.get_products_by_id(product_id)
@@ -115,7 +123,7 @@ def notifications():
             processed_notifications.append(notification_dict)
     else:
         processed_notifications = []
-
+   
     
     return render_template('notifications.html',
                          user_id=user_id,
@@ -129,13 +137,19 @@ def notifications():
 def approve_supplier_route(product_request_id):
     try:
         response = company_controller.approve_supplier(product_request_id)
-
+        company_controller.update_product_quantity_after_approval(product_request_id)
+       
         if company_controller.check_approval_status(product_request_id):
-            company_controller.update_product_quantity_after_approval(product_request_id)
-            company_controller.update_quantity_of_processed_product(product_request_id)
             company_controller.add_transport_record_from_product_request(product_request_id)
-            company_controller.update_or_insert_chain_product(product_request_id)
             notifications_controller.create_notifications_for_product_request(product_request_id)
+
+            if company_controller.check_equal_status_of_request_product(product_request_id):
+                company_controller.update_or_insert_chain_product_for_seller(product_request_id)
+                company_controller.insert_product_seller(product_request_id)
+            else:
+                company_controller.update_quantity_of_processed_product(product_request_id)
+                company_controller.update_or_insert_chain_product(product_request_id)
+                
         
         if response:
             return jsonify({"success": True})
@@ -150,10 +164,16 @@ def approve_transporter_route(transport_request_id):
         response = company_controller.approve_transporter(transport_request_id)
 
         if company_controller.check_approval_status(transport_request_id):
-            company_controller.update_product_quantity_after_approval(transport_request_id)
-            company_controller.update_quantity_of_processed_product(transport_request_id)
             company_controller.add_transport_record_from_product_request(transport_request_id)
-            company_controller.update_or_insert_chain_product(transport_request_id)
+            notifications_controller.create_notifications_for_product_request(transport_request_id)
+
+            if company_controller.check_equal_status_of_request_product(transport_request_id):
+                company_controller.update_or_insert_chain_product_for_seller(transport_request_id)
+                company_controller.insert_product_seller(transport_request_id)
+            else:
+                company_controller.update_quantity_of_processed_product(transport_request_id)
+                company_controller.update_or_insert_chain_product(transport_request_id)
+   
 
         if response:
             return jsonify({"success": True})
@@ -167,7 +187,7 @@ def approve_transporter_route(transport_request_id):
 def reject_supplier(request_id):
     try:
         success = company_controller.reject_supplier(request_id)
-        
+        notifications_controller.create_notifications_for_reject_request(request_id)
         return jsonify({"success": success})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
@@ -176,7 +196,16 @@ def reject_supplier(request_id):
 def reject_transporter(request_id):
     try:
     # Simula il rifiuto nel database
+
         success = company_controller.reject_transporter(request_id)
+        notifications_controller.create_notifications_for_reject_request(request_id)
+        check= company_controller.check_supplier_approve(request_id)
+        check= check.data[0]['quantity_of_raw_material']
+        if check or check == 0:
+            id_product=company_controller.id_product_from_request(request_id)
+            id_product=id_product.data[0]['id_product']
+            company_controller.update_quantity_after_reject(id_product, check)
+            
         return jsonify({"success": success})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500

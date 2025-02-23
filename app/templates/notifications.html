@@ -543,6 +543,12 @@ function removeNotification(notificationCard) {
                                     A transporter has been assigned: <strong>{{ notification.receiver_email }}</strong>
                                 </p>
                                 <p class="notification-text mb-1">
+                                    Sender: <strong>{{ notification.supplier }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Receiver: <strong>{{ notification.buyer }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
                                     Product to delivery: <strong>{{ notification.product_name }}</strong>
                                 </p>
                                 <p class="notification-text mb-1">
@@ -574,6 +580,68 @@ function removeNotification(notificationCard) {
                             </div>
                         </div>
                             
+                        {% elif notification.type == 'supplier rejection' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon error me-3">
+                                <i class="bi bi-cart"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                <h6 class="notification-title mb-1">Supplier Rejection</h6>
+                                <p class="notification-text mb-1">
+                                    The supplier request has been rejected.
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Product: <strong>{{ notification.product_name }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Quantity of the product: <strong>{{ notification.product_request_quantity }}</strong>
+                                </p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+
+                        {% elif notification.type == 'transport rejection' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon error me-3">
+                                <i class="bi bi-truck"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                <h6 class="notification-title mb-1">Transport Rejection</h6>
+                                <p class="notification-text mb-1">
+                                    The transport request has been rejected.
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Sender: <strong>{{ notification.supplier }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Receiver: <strong>{{ notification.buyer }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Product to delivery: <strong>{{ notification.product_name }}</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Distance to travel: <strong>{{ notification.product_request_km }} km</strong>
+                                </p>
+                                <p class="notification-text mb-1">
+                                    Delivery Date: <strong>{{ notification.product_request_date }}</strong>
+                                </p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
+
+                        {% elif notification.type == 'buyer rejection' %}
+                        <div class="d-flex align-items-center">
+                            <div class="notification-icon error me-3">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <div class="notification-content flex-grow-1" style="cursor: pointer;">
+                                <h6 class="notification-title mb-1">Buyer Rejection</h6>
+                                <p class="notification-text mb-1">
+                                    Your request for <strong>{{ notification.product_name }}</strong> in quantity <strong>{{ notification.product_request_quantity }}</strong> has been rejected.
+                                </p>
+                                <small class="text-muted">{{ notification.created_at|format_date }}</small>
+                            </div>
+                        </div>
                                             
                     </div>
                     {% endif %}
@@ -718,6 +786,18 @@ function removeNotification(notificationCard) {
         <div class="d-flex">
             <div class="toast-body">
                  Request approved successfully!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast per il successo -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1050; margin-top: 70px;" >
+    <div id="successRejectToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                 Request rejected successfully!
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
@@ -890,8 +970,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(data => {
                     if (data.success) {
                         // Mostra un toast di successo o esegui un'azione
-                        alert("Request rejected successfully!");
-                        location.reload(); // Ricarica la pagina
+                        let toast = new bootstrap.Toast(document.getElementById("successRejectToast"));
+                        toast.show();
+                        location.reload();
                     } else {
                         alert("Failed to reject request.");
                     }

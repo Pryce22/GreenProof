@@ -10,7 +10,7 @@ with open('app/token/build/contracts/GreenToken.json', 'r') as f:
     contract_abi = contract_data['abi']
 
 # Set the deployed contract address (convert to checksum)
-contract_address = Web3.to_checksum_address('0x9a3DBCa554e9f6b9257aAa24010DA8377C57c17e')
+contract_address = Web3.to_checksum_address('0xfeae27388A65eE984F452f86efFEd42AaBD438FD')
 
 w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
