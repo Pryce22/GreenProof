@@ -86,7 +86,12 @@ def create_company(
         return {'success': False, 'error': str(e)}
 
 def send_admin_notification(user_info, company_data):
-    EmailService.send_admin_notification(user_info, company_data)
+    email_service = EmailService()
+    email_service.send_admin_notification(user_info, company_data)
+    if email_service:
+        return True
+    else:
+        return False
 
 def upload_company_image(company_id, image_file):
     try:

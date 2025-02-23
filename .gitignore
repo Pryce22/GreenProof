@@ -1,3 +1,5 @@
 node_modules/
 .env
 build/
+app/token/.blockchain_initialized
+app/token/contract_addresses.json

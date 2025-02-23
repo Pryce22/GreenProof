@@ -94,7 +94,12 @@ def company_register():
                 # Get user info for notification
                 user = user_controller.get_user_by_id(user_id)
                 if user:
-                    company_controller.send_admin_notification(user, company_data)
+                    success = company_controller.send_admin_notification(user, company_data)
+                    if not success:
+                        return jsonify({
+                            'success': False,
+                            'error': 'Failed to send notification to admin'
+                        })
                     notifications_controller.send_notification_to_admin('company registration', user['email'], company_id)
                 return jsonify({
                     'success': True,

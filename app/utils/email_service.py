@@ -256,7 +256,7 @@ class EmailService:
         html_content = self._get_admin_notification_template(user_info, company_data)
         return self.send_email(to_email=self.from_email, subject=subject, html_content=html_content)
     
-    def _get_admin_notification_template(user_info, company_data):
+    def _get_admin_notification_template(self, user_info, company_data):
         # Create HTML email content
         return f"""
         <html>

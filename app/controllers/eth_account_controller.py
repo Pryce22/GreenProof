@@ -1,7 +1,44 @@
 import json
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
+import time
+from app.token.deploy_contracts import ContractDeployer
+import os
 
+
+BLOCKCHAIN_INIT_FLAG = 'app/token/.blockchain_initialized'
+
+def is_blockchain_initialized():
+    return os.path.exists(BLOCKCHAIN_INIT_FLAG)
+
+def set_blockchain_initialized():
+    with open(BLOCKCHAIN_INIT_FLAG, 'w') as f:
+        f.write('1')
+
+def init_blockchain():
+    # Wait for Ganache to be ready
+    time.sleep(5)  # Wait for Docker containers
+    
+    deployer = ContractDeployer()
+    
+    try:
+        # This will compile and deploy only if necessary
+        if deployer.deploy_contracts():
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Error during blockchain initialization: {e}")
+        return False
+
+if not is_blockchain_initialized():
+        print("Initializing blockchain...")
+        if init_blockchain():
+            print("Blockchain initialization completed")
+            set_blockchain_initialized()
+        else:
+            print("Blockchain initialization failed")
+            exit(1)
 
 w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 
@@ -10,12 +47,33 @@ with open('app/token/build/contracts/GreenToken.json', 'r') as f:
     contract_abi = contract_data['abi']
 
 # Set the deployed contract address (convert to checksum)
-contract_address = Web3.to_checksum_address('0xfeae27388A65eE984F452f86efFEd42AaBD438FD')
+def get_contract_addresses():
+    try: 
+        with open('app/token/contract_addresses.json', 'r') as f:
+                        content = f.read().strip()
+                        if not content:  # If file is empty
+                            content = f.read().strip()
+                            addresses = json.loads(content)
+                            # Verify contracts only if addresses exist
+                            if addresses:
+                                return addresses
+                            else:
+                                return {}
+                        addresses = json.loads(content)
+                        # Verify contracts only if addresses exist
+                        if addresses:
+                            return addresses
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        return {}
+    
+contract_address_green_token = Web3.to_checksum_address(get_contract_addresses()['green_token'])
 
 w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 
 # Get contract instance
-token_contract = w3.eth.contract(address=contract_address, abi=contract_abi)
+token_contract = w3.eth.contract(address=contract_address_green_token , abi=contract_abi)
 
 
 def get_token_balance(address):
@@ -156,7 +214,7 @@ def initiate_token_transfer(from_address, to_address, amount):
         return {
             'success': True,
             'tx_data': {
-                'to': contract_address,
+                'to': contract_address_green_token,
                 'from': gas_sponsor,  # Use gas sponsor as sender
                 'data': tx_data['data'],
                 'value': '0x0',
