@@ -1,12 +1,12 @@
 {
-  "config" : {
-    "chainId" : 1338,
-    "berlinBlock" : 0,
+  "config": {
+    "chainId": 1338,
+    "berlinBlock": 0,
     "contractSizeLimit": 2147483647,
-    "qbft" : {
-      "blockperiodseconds" : 20,
-      "epochlength" : 60,
-      "requesttimeoutseconds" : 4,
+    "qbft": {
+      "blockperiodseconds": 20,
+      "epochlength": 60,
+      "requesttimeoutseconds": 4,
       "blockRewardWei": "0x0",
       "validatorselectionmode": "blockheader",
       "validators": [
@@ -17,28 +17,53 @@
       ]
     }
   },
-  "nonce" : "0x0",
-  "timestamp" : "0x58ee40ba",
-  "gasLimit" : "0x1fffffffffffff",
-  "difficulty" : "0x1",
-  "mixHash" : "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
-  "coinbase" : "0x0000000000000000000000000000000000000000",
-  "alloc" : {
-    "fe3b557e8fb62b89f4916b721be55ceb828dbd73" : {
-      "privateKey" : "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
-      "comment" : "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
-      "balance" : "0xad78ebc5ac6200000"
+  "nonce": "0x0",
+  "timestamp": "0x58ee40ba",
+  "gasLimit": "0x1fffffffffffff",
+  "difficulty": "0x1",
+  "mixHash": "0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "alloc": {
+    "fe3b557e8fb62b89f4916b721be55ceb828dbd73": {
+      "privateKey": "8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63",
+      "comment": "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
+      "balance": "0xad78ebc5ac6200000"
     },
-    "627306090abaB3A6e1400e9345bC60c78a8BEf57" : {
-      "privateKey" : "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
-      "comment" : "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
-      "balance" : "90000000000000000000000"
+    "627306090abaB3A6e1400e9345bC60c78a8BEf57": {
+      "privateKey": "c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3",
+      "comment": "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
+      "balance": "90000000000000000000000"
     },
-    "f17f52151EbEF6C7334FAD080c5704D77216b732" : {
-      "privateKey" : "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f",
-      "comment" : "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
-      "balance" : "90000000000000000000000"
+    "f17f52151EbEF6C7334FAD080c5704D77216b732": {
+      "privateKey": "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f",
+      "comment": "private key and this comment are ignored.  In a real chain, the private key should NOT be stored",
+      "balance": "90000000000000000000000"
+    },
+    "020633cb03Dc0FAe39c48cce9DeE031E4d1C4884": {
+      "privateKey": "eb29a3961ac3ef5afe086fad9e8b394930a47c5d35a5db16a3f7bdf66e88171b",
+      "comment": "Test Account 1",
+      "balance": "90000000000000000000000"
+    },
+    "f1f58A53A8219bDE2c35ECB6fd18ED55A301f320": {
+      "privateKey": "468478794ee9d317470630358f33ec1e5bf051220d6a3576a6c43469209ab8f1",
+      "comment": "Test Account 2",
+      "balance": "90000000000000000000000"
+    },
+    "Bbd68F6a027780C7D2f79D87fdeb310eDDc7Aee3": {
+      "privateKey": "f4e0504315ec5154124b58d91f36e275483785d0073b2ead444f0575a80c7d91",
+      "comment": "Test Account 3",
+      "balance": "90000000000000000000000"
+    },
+    "945708bD2FF4Fa234dBeFc5aDc25E9e05266D888": {
+      "privateKey": "ef6a34754f8e0f49102c80dc747dd138628f25f3a2a85bfca4c17359be55d309",
+      "comment": "Test Account 4",
+      "balance": "90000000000000000000000"
+    },
+    "3898b9b3D53CdD811ED320D9Cffc905cdF33662B": {
+      "privateKey": "de647d38c5ecc11a6affaa75849b7d437e6512051dfb8b2ca5848543f3dc6b9f",
+      "comment": "Test Account 5",
+      "balance": "90000000000000000000000"
     }
   },
-  "extraData" : "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f854942d4e045a52bcf751469f13b50edf7a62bae3490c944f50611e368b3f19ac1f67acaac0b201c75ef4639435b81b5c1eef16940d72077ba5e8cd075ae5609e943a7d8b2c365bf3653005e05ed5ccf04bb6c5249ec080c0"
+  "extraData": "0xf87aa00000000000000000000000000000000000000000000000000000000000000000f854942d4e045a52bcf751469f13b50edf7a62bae3490c944f50611e368b3f19ac1f67acaac0b201c75ef4639435b81b5c1eef16940d72077ba5e8cd075ae5609e943a7d8b2c365bf3653005e05ed5ccf04bb6c5249ec080c0"
 }

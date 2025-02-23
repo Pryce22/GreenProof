@@ -1,7 +1,44 @@
 import json
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
+import time
+from app.token.deploy_contracts import ContractDeployer
+import os
 
+
+BLOCKCHAIN_INIT_FLAG = 'app/token/.blockchain_initialized'
+
+def is_blockchain_initialized():
+    return os.path.exists(BLOCKCHAIN_INIT_FLAG)
+
+def set_blockchain_initialized():
+    with open(BLOCKCHAIN_INIT_FLAG, 'w') as f:
+        f.write('1')
+
+def init_blockchain():
+    # Wait for Ganache to be ready
+    time.sleep(5)  # Wait for Docker containers
+    
+    deployer = ContractDeployer()
+    
+    try:
+        # This will compile and deploy only if necessary
+        if deployer.deploy_contracts():
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f"Error during blockchain initialization: {e}")
+        return False
+
+if not is_blockchain_initialized():
+        print("Initializing blockchain...")
+        if init_blockchain():
+            print("Blockchain initialization completed")
+            set_blockchain_initialized()
+        else:
+            print("Blockchain initialization failed")
+            exit(1)
 
 w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
 
@@ -11,11 +48,17 @@ with open('app/token/build/contracts/GreenToken.json', 'r') as f:
 
 # Set the deployed contract address (convert to checksum)
 def get_contract_addresses():
-    try:
+    try: 
         with open('app/token/contract_addresses.json', 'r') as f:
                         content = f.read().strip()
                         if not content:  # If file is empty
-                            return {}
+                            content = f.read().strip()
+                            addresses = json.loads(content)
+                            # Verify contracts only if addresses exist
+                            if addresses:
+                                return addresses
+                            else:
+                                return {}
                         addresses = json.loads(content)
                         # Verify contracts only if addresses exist
                         if addresses:
