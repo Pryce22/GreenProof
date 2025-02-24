@@ -17,7 +17,8 @@ def set_blockchain_initialized():
 
 def init_blockchain():
     # Wait for Ganache to be ready
-    time.sleep(5)  # Wait for Docker containers
+    print("Waiting for Docker containers to be ready...")
+    time.sleep(60)  # Wait for Docker containers
     
     deployer = ContractDeployer()
     
