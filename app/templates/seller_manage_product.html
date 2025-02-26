@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Product Management Interface</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='manage_product.css') }}">
+
 </head>
 
 <body class="d-flex flex-column min-vh-100">
@@ -14,12 +15,17 @@
     <header class="sticky-top">
         <nav class="navbar navbar-expand-lg bg-light navbar-light">
             <div class="container-fluid px-4">
+                <!-- Left section -->
                 <div class="d-flex align-items-center">
                     <a href="/" class="nav-link p-0 me-2">
                         <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Home" height="40">
                     </a>
-                    <a class="navbar-brand mb-0" href="/">GreenProof</a>
+                    <a class="navbar-brand mb-0" href="/">
+                        GreenProof
+                    </a>
                 </div>
+
+                <!-- Right section -->
                 <div class="d-flex align-items-center">
                     {% if user_id %}
                         {% include 'includes/user_menu.html' %}
@@ -60,10 +66,11 @@
                             {% if products %}
                                 {% for product in products %}
                                 <tr>
-                                    <form method="POST" action="/manage_product_by_processor/{{ company_id }}">
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                                        <td><input type="text" class="form-control" name="product_name" value="{{ product.name }}" disabled /></td>
-                                        <td><textarea class="form-control" name="product_description" style="height: 80px;" disabled>{{ product.description }}</textarea></td>
+                                    <form method="POST" action="/manage_product_by_seller/{{ company_id }}">
+
+                                        <input type="hidden" name="product_id" value="{{ product.id_product }}">
+                                        <td><input type="text" class="form-control" name="product_name" value="{{ product.name }}" readonly /></td>
+                                        <td><textarea class="form-control" name="product_description" style="height: 80px;" readonly>{{ product.description }}</textarea></td>
                                         <td class="text-center">
                                             <input type="number" class="form-control w-50 mx-auto" name="product_quantity" value="{{ product.quantity }}" min="0" max="{{ product.quantity }}" disabled />
                                         </td>
@@ -235,7 +242,10 @@
 
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
     // Function to enable editing of the product row
 
@@ -268,57 +278,57 @@
         }
     });
 }
-
-// Funzione per gestire l'aggiornamento del prodotto
 function updateProduct(button) {
     var row = button.closest("tr");
     var form = row.querySelector("form");
     var product_id = form.querySelector("input[name='product_id']").value;
-    var product_name = form.querySelector("input[name='product_name']").value;
-    var product_description = form.querySelector("textarea[name='product_description']").value;
+    console.log(product_id)
     var product_quantity = form.querySelector("input[name='product_quantity']").value;
+
+    // Check if the quantity is a valid number
+    if (isNaN(product_quantity) || product_quantity === "" || product_quantity < 0) {
+        alert("Please enter a valid quantity.");
+        return; // Don't continue with the submission if the quantity is invalid
+    }
+
+    var company_id = form.querySelector("input[name='company_id']").value; // Ensure company_id is retrieved
 
     // Aggiungi il loading overlay
     document.getElementById("loadingOverlay").style.display = "block";
 
     // Esegui la richiesta AJAX per aggiornare il prodotto
-    fetch(`/manage_product_by_processor/${company_id}`, {
+    fetch(`/manage_product_by_seller/${company_id}`, {
         method: 'POST',
         body: new URLSearchParams({
             'product_id': product_id,
-            'product_name': product_name,
-            'product_description': product_description,
             'product_quantity': product_quantity
         }),
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
     })
-    .then(response => response.json()) // Converti la risposta in JSON
+    .then(response => response.json()) 
     .then(data => {
         if (data.success) {
-            // Se il prodotto è aggiornato con successo
-            $('#successPopup').modal('show'); // Mostra il popup di successo
+            $('#successPopup').modal('show');
             document.getElementById('okButton').onclick = function() {
-                // Redirige alla stessa pagina per ricaricarla e aggiornare i dati
-                window.location.href = '/manage_product/' + company_id;
+                window.location.href = '/manage_product_by_seller/' + company_id;
             };
         } else {
-            // Se c'è un errore
             showToast("Error", data.error || "An error occurred while updating the product", "bg-danger");
         }
     })
     .catch(error => {
-        // Gestisci errori nella richiesta
         console.error("Error updating product:", error);
         showToast("Error", "Something went wrong!", "bg-danger");
     })
     .finally(() => {
-        // Nascondi il loading overlay e riabilita il bottone
         document.getElementById("loadingOverlay").style.display = "none";
         button.disabled = false;
     });
 }
+
+
 
 // Funzione per mostrare il messaggio di successo/errore tramite il toast
 function showToast(title, message, bgClass) {
@@ -365,8 +375,8 @@ function deleteProduct(button) {
 document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
     if (productToDelete) {
         var productId = productToDelete.querySelector("input[name='product_id']").value;
-
-        fetch(`/delete_product/${productId}`, {
+        console.log(productId)
+        fetch(`/delete_product_by_seller/${productId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -399,59 +409,6 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', function (
 
 <script>
 
-document.getElementById('addProductForm').addEventListener('submit', function (event) {
-    event.preventDefault();  // Impedisce il comportamento predefinito del form
-
-    // Recupera i dati del nuovo prodotto
-    const productName = document.getElementById('productName').value;
-    const productDescription = document.getElementById('productDescription').value;
-    const companyId = "{{ company_id }}"; // Passa il company_id dal template Jinja (se è presente)
-    const typeComp = "{{ type_of_company }}";
-
-    console.log(typeComp)
-
-    // Verifica che tutti i campi siano compilati
-    if (!productName) {
-        alert("Please fill in all required fields.");
-        return;
-    }
-
-    // Crea l'oggetto da inviare al server, incluso il company_id
-    const productData = {
-        name: productName,
-        description: productDescription,
-        quantity: 0,
-        company_id: companyId,
-        type_of_company: typeComp  // Aggiungi company_id
-    };
-
-    // Esegui la richiesta al server per aggiungere il prodotto
-    fetch('/add_product', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(productData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Mostra il toast di successo
-            showToast("Success", "Product added successfully!", "bg-success");
-            // Chiudi la modale
-            $('#addProductModal').modal('hide');
-            // Redirige alla stessa pagina per aggiornare la lista dei prodotti
-            window.location.href = '/manage_product_by_processor/' + companyId;
-        } else {
-            // Mostra il toast di errore
-            showToast("Error", data.error || "An error occurred while adding the product. Please do not add a product that already exists.", "bg-danger");
-        }
-    })
-    .catch(error => {
-        console.error("Error adding product:", error);
-        showToast("Error", "Something went wrong!", "bg-danger");
-    });
-});
 function redirectToRequestPage(button, company_id) {
     // Ottieni il nome del prodotto dal valore del bottone
     const companyId = "{{ company_id }}";
@@ -470,8 +427,6 @@ function redirectToRequestPage(button, company_id) {
 
 </script>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

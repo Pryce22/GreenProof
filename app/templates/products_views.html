@@ -37,20 +37,12 @@
     </header>
     <main class="flex-grow-1">
         <div class="container py-5 min-vh-100">
-            <h1 class="text-center mb-5">Prroducts Catalog</h1>
-            <div class="row justify-content-center mb-4">
-                <div class="col-md-6">
-                    <form class="input-group" id="searchForm">
-                        <input type="text" class="form-control" placeholder="Search product by name" 
-                               id="searchInput" name="query" value="{{ search_query }}">
-                        <button class="btn btn-primary" type="submit">Search</button>
-                    </form>
-                </div>
-            </div>
+            <h1 class="text-center mb-5">Seller Catalog</h1>
+            
             <div class="row g-4" id="companyGrid">
                 {% for company in companies %}
                 <div class="col-lg-4 col-md-12 mb-4">
-                    <a href="/information_company/{{ company.company_id}}" class="card company-card text-decoration-none ">
+                    <a href="/product_of_seller/{{ company.company_id}}" class="card company-card text-decoration-none ">
                         <div class="card-img-container">
                             <img src="{{ company.company_image or 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab' }}" 
                                  class="card-img-top company-logo" 

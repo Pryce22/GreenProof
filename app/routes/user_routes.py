@@ -142,6 +142,7 @@ def approve_supplier_route(product_request_id):
         if company_controller.check_approval_status(product_request_id):
             company_controller.add_transport_record_from_product_request(product_request_id)
             notifications_controller.create_notifications_for_product_request(product_request_id)
+            company_controller.update_total_quantity_co2_emission_processor(product_request_id)
 
             if company_controller.check_equal_status_of_request_product(product_request_id):
                 company_controller.update_or_insert_chain_product_for_seller(product_request_id)
@@ -166,7 +167,8 @@ def approve_transporter_route(transport_request_id):
         if company_controller.check_approval_status(transport_request_id):
             company_controller.add_transport_record_from_product_request(transport_request_id)
             notifications_controller.create_notifications_for_product_request(transport_request_id)
-
+            company_controller.update_total_quantity_co2_emission_processor(transport_request_id)
+        
             if company_controller.check_equal_status_of_request_product(transport_request_id):
                 company_controller.update_or_insert_chain_product_for_seller(transport_request_id)
                 company_controller.insert_product_seller(transport_request_id)
@@ -476,10 +478,8 @@ def search_product():
     search_query = request.args.get('query', '').strip()
     
     try:
-        if search_query != "":
-            companies = company_controller.search_companies(search_query)
-        else:
-            companies = company_controller.get_all_companies_sorted()
+        
+        companies = company_controller.get_companies_by_industry("seller")
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'companies': companies})
@@ -502,4 +502,70 @@ def search_product():
                              is_company_admin=is_company_admin,
                              notifications = notifications)
     
+@bp.route('/product_of_seller/<int:company_id>', methods=['GET'])
+def product_of_seller(company_id):
+    # Retrieve user and company details
+    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+   
+    info_company = company_controller.get_company_by_id(company_id)
+    products = company_controller.get_products_by_seller(company_id)
+    
+    # Dizionario per raggruppare i prodotti
+    grouped_products = {}
 
+    for product in products.data:
+        # Ottenere le informazioni del prodotto
+        info_product = company_controller.get_information_by_id_product(product['id_product'])
+        companies_of_production = company_controller.get_companies_of_chain_product(product['id_product'], company_id)
+        
+        product_name = info_product.data[0]['name'].lower()
+        
+        if product_name not in grouped_products:
+            grouped_products[product_name] = {
+                'company_id': info_company['company_id'],
+                'company_name': info_company['company_name'],
+                'company_email': info_company['company_email'],
+                'company_phone_number': info_company['company_phone_number'],
+                'company_country': info_company['company_country'],
+                'company_city': info_company['company_city'],
+                'company_address': info_company['company_address'],
+                'company_image': info_company['company_image'],
+                'product_id': product['id_product'],
+                'product_quantity': product['quantity'],
+                'product_name': info_product.data[0]['name'],
+                'product_description': info_product.data[0]['description'],
+                'farmer_names': set(),
+                'transformer_names': set(),
+                'transporter1_names': set(),
+                'transporter2_names': set(),
+                'serial_ids': set()
+            }
+        
+        for comp in companies_of_production.data:
+            if comp['farmer']:
+                grouped_products[product_name]['farmer_names'].add(company_controller.get_company_by_id(comp['farmer'])['company_name'])
+            if comp['transformer']:
+                grouped_products[product_name]['transformer_names'].add(company_controller.get_company_by_id(comp['transformer'])['company_name'])
+            if comp['transporter1']:
+                grouped_products[product_name]['transporter1_names'].add(company_controller.get_company_by_id(comp['transporter1'])['company_name'])
+            if comp['transporter2']:
+                grouped_products[product_name]['transporter2_names'].add(company_controller.get_company_by_id(comp['transporter2'])['company_name'])
+            
+            grouped_products[product_name]['serial_ids'].add(comp['serial_id'])
+
+    # Convertire i set in liste per il template
+    for product in grouped_products.values():
+        product['farmer_names'] = list(product['farmer_names'])
+        product['transformer_names'] = list(product['transformer_names'])
+        product['transporter1_names'] = list(product['transporter1_names'])
+        product['transporter2_names'] = list(product['transporter2_names'])
+        product['serial_ids'] = list(product['serial_ids'])
+    
+    return render_template('product_of_seller.html', 
+                             user_id=user_id, 
+                             user=user, 
+                             is_admin=is_admin,
+                             product_info_list=list(grouped_products.values()), 
+                             company_id=company_id,
+                             is_company_admin=is_company_admin,
+                             notifications=notifications)
