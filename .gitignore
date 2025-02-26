@@ -3,3 +3,4 @@ node_modules/
 build/
 app/token/.blockchain_initialized
 app/token/contract_addresses.json
+app/token/package-lock.json

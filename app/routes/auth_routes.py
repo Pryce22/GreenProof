@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify
-from app.controllers import user_controller, company_controller, notifications_controller
+from app.controllers import user_controller, notifications_controller
 import re
 import uuid
 import time
