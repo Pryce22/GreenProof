@@ -407,8 +407,6 @@ def add_product():
     product_quantity = data.get('quantity')
     company_id = data.get('company_id')  # Estrai company_id
     type_of_company=data.get('type_of_company') 
-    print(type_of_company) 
-    print("ciaoo")  
     type_of_company=type_of_company.lower()
    
     response=False
