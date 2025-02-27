@@ -801,7 +801,7 @@ def check_user_by_email_if_is_admin(email):
 
 
 
-def view_products(user_id):
+def view_products():
     try:
         response = supabase.table('products') \
             .select('*') \
