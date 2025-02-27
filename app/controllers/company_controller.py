@@ -1287,7 +1287,7 @@ def update_or_insert_chain_product_for_seller(product_request_id):
 
 
 def insert_product_seller(product_request_id):
-    print("hello")
+   
     response = supabase.table('product_request') \
                         .select('id_product', 'id_buyer', 'quantity') \
                         .eq('id', product_request_id) \
@@ -1300,7 +1300,6 @@ def insert_product_seller(product_request_id):
         quantity =  product_request_data['quantity']
         co2=seller_emission(quantity)
 
-        print("quorum")
 
         response2 = supabase.table('seller_products') \
                             .select('id','id_seller', 'quantity', 'co2_emission', 'total_quantity') \

@@ -23,6 +23,8 @@
         color: var(--primary-foreground);
     }
     
+    
+
     .product-card {
         transition: transform 0.2s, box-shadow 0.2s;
         cursor: pointer;
