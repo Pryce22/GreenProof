@@ -33,71 +33,56 @@
     </header>
 
 <main>
-    <div class="container-fluid py-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">Delivery Product Management</h2>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                <i class="bi bi-plus-lg me-2"></i>Deliver New Product
-            </button>
-        </div>
-
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-
-                        <thead class="table-light">
-                            <tr>
-                                <th class="col-3">Product Name</th>
-                                <th class="col-6">Description</th> <!-- Maggiore spazio -->
-                                <th class="col-2 text-center">Quantity</th> <!-- Ridotta -->
-                                <th class="col-1 text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% if products %}
-                                {% for product in products %}
+        <!-- Updated: Changed container structure to table layout -->
+        <div class="container py-4">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-truck me-2"></i>Transport List</h5>
+                    <span class="badge bg-primary">Active Transports</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
                                 <tr>
-                                    <form method="POST" action="/manage_product_by_processor/{{ company_id }}">
-                                        <input type="hidden" name="product_id" value="{{ product.id }}">
-                                        <td><input type="text" class="form-control" name="product_name" value="{{ product.name }}" disabled /></td>
-                                        <td><textarea class="form-control" name="product_description" style="height: 80px;" disabled>{{ product.description }}</textarea></td>
-                                        <td class="text-center">
-                                            <input type="number" class="form-control w-50 mx-auto" name="product_quantity" value="{{ product.quantity }}" min="0" max="{{ product.quantity }}" disabled />
-                                        </td>
-                                        
-                                        <td class="text-center">
-                                            <div class="btn-group">
-                                                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" onclick="editProduct(this)">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                <button type="submit" class="btn btn-outline-success btn-sm save-btn" style="display: none;">
-                                                    <i class="bi bi-check"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteProduct(this)">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                <button type="button" class="btn btn-outline-info btn-sm" value="{{ product.id }}" onclick="redirectToRequestPage(this)">
-                                                    <i class="bi bi-box"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </form>
+                                    <th>Tracking </th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
+                                    <th>Product</th>
+                                    <th>Est. Delivery</th>
+                                    <th>Distance</th>
                                 </tr>
-                                {% endfor %}
+                            </thead>
+                            {% if transports_list %}
+                                <tbody>
+                                    {% for transport in transports_list %}
+                                    <tr>
+                                        <td><strong>TRK-{{ transport.id }}</strong></td>
+                                        <td>{{ transport.seller }}</td>
+                                        <td>{{ transport.buyer }}</td>
+                                        <td>
+                                            {% if transport.delivered %}
+                                            <span class="badge bg-success">Delivered</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">To Delivery</span>
+                                        {% endif %}
+                                        <td>{{ transport.date_delivery }}</td>
+                                        <td>{{ transport.distance }} km</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
                             {% else %}
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">
-                                        No products available.
-                                    </td>
+                                    <td colspan="6">No transports available</td>
                                 </tr>
                             {% endif %}
-                        </tbody>
-                    </table>
+
+                                                        
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <!-- Request Product and Delivery Modal -->
 <div class="modal fade" id="requestProductModal" tabindex="-1" aria-labelledby="requestProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -236,245 +221,9 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    // Function to enable editing of the product row
-
-    function editProduct(button) {
-    var row = button.closest("tr");
-    var inputs = row.querySelectorAll("input, textarea");
-    var saveBtn = row.querySelector(".save-btn");
-    var editBtn = row.querySelector(".edit-btn");
-    var productQuantityInput = row.querySelector("input[name='product_quantity']");
-    var currentQuantity = parseInt(productQuantityInput.value);
-
-    // Enable fields for editing
-    inputs.forEach(function(input) {
-        input.disabled = false;
-    });
-
-    // Show save button, hide edit button
-    saveBtn.style.display = "inline-block";
-    editBtn.style.display = "none";
-
-    // Set max quantity to current quantity (to prevent increase)
-    productQuantityInput.setAttribute("max", currentQuantity);
-    
-    // Add an event listener to prevent increasing quantity
-    productQuantityInput.addEventListener('input', function () {
-        if (parseInt(productQuantityInput.value) > currentQuantity) {
-            productQuantityInput.setCustomValidity("Quantity cannot be increased.");
-        } else {
-            productQuantityInput.setCustomValidity("");
-        }
-    });
-}
-
-// Funzione per gestire l'aggiornamento del prodotto
-function updateProduct(button) {
-    var row = button.closest("tr");
-    var form = row.querySelector("form");
-    var product_id = form.querySelector("input[name='product_id']").value;
-    var product_name = form.querySelector("input[name='product_name']").value;
-    var product_description = form.querySelector("textarea[name='product_description']").value;
-    var product_quantity = form.querySelector("input[name='product_quantity']").value;
-
-    // Aggiungi il loading overlay
-    document.getElementById("loadingOverlay").style.display = "block";
-
-    // Esegui la richiesta AJAX per aggiornare il prodotto
-    fetch(`/manage_product_by_processor/${company_id}`, {
-        method: 'POST',
-        body: new URLSearchParams({
-            'product_id': product_id,
-            'product_name': product_name,
-            'product_description': product_description,
-            'product_quantity': product_quantity
-        }),
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-    })
-    .then(response => response.json()) // Converti la risposta in JSON
-    .then(data => {
-        if (data.success) {
-            // Se il prodotto è aggiornato con successo
-            $('#successPopup').modal('show'); // Mostra il popup di successo
-            document.getElementById('okButton').onclick = function() {
-                // Redirige alla stessa pagina per ricaricarla e aggiornare i dati
-                window.location.href = '/manage_product/' + company_id;
-            };
-        } else {
-            // Se c'è un errore
-            showToast("Error", data.error || "An error occurred while updating the product", "bg-danger");
-        }
-    })
-    .catch(error => {
-        // Gestisci errori nella richiesta
-        console.error("Error updating product:", error);
-        showToast("Error", "Something went wrong!", "bg-danger");
-    })
-    .finally(() => {
-        // Nascondi il loading overlay e riabilita il bottone
-        document.getElementById("loadingOverlay").style.display = "none";
-        button.disabled = false;
-    });
-}
-
-// Funzione per mostrare il messaggio di successo/errore tramite il toast
-function showToast(title, message, bgClass) {
-    var toast = document.getElementById('successToast');
-    toast.querySelector('.toast-header').classList.remove('bg-success', 'bg-danger');
-    toast.querySelector('.toast-header').classList.add(bgClass);
-    toast.querySelector('.toast-header strong').textContent = title;
-    toast.querySelector('.toast-body').textContent = message;
-    
-    var bsToast = new bootstrap.Toast(toast, { delay: 3000 }); // 3000ms = 3 secondi
-    bsToast.show();
-}
-
-// Funzione per abilitare l'editing di un prodotto
-function editProduct(button) {
-    var row = button.closest("tr");
-    var inputs = row.querySelectorAll("input, textarea");
-    var saveBtn = row.querySelector(".save-btn");
-    var editBtn = row.querySelector(".edit-btn");
-
-    // Abilita i campi per l'editing
-    inputs.forEach(function(input) {
-        input.disabled = false;
-    });
-
-    // Mostra il pulsante di salvataggio, nascondi quello di modifica
-    saveBtn.style.display = "inline-block";
-    editBtn.style.display = "none";
-}
-
-
-let productToDelete = null; // Variabile globale per memorizzare il prodotto da eliminare
-
-function deleteProduct(button) {
-    var row = button.closest("tr");
-    productToDelete = row; // Memorizza la riga del prodotto selezionato
-
-    // Mostra il modal di conferma
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-    deleteModal.show();
-}
-
-// Gestisce la conferma dell'eliminazione
-document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-    if (productToDelete) {
-        var productId = productToDelete.querySelector("input[name='product_id']").value;
-
-        fetch(`/delete_product/${productId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                productToDelete.remove();
-                showToast("Success", "Product deleted successfully!", "bg-success");
-            } else {
-                showToast("Error", "Failed to delete product", "bg-danger");
-            }
-        })
-        .catch(error => {
-            console.error("Error deleting product:", error);
-            showToast("Error", "Something went wrong while deleting the product", "bg-danger");
-        });
-
-        // Nasconde il modal dopo la conferma
-        var deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteConfirmModal'));
-        deleteModal.hide();
-    }
-});
-
-
-</script>
-
-
-
-<script>
-
-document.getElementById('addProductForm').addEventListener('submit', function (event) {
-    event.preventDefault();  // Impedisce il comportamento predefinito del form
-
-    // Recupera i dati del nuovo prodotto
-    const productName = document.getElementById('productName').value;
-    const productDescription = document.getElementById('productDescription').value;
-    const companyId = "{{ company_id }}"; // Passa il company_id dal template Jinja (se è presente)
-    const typeComp = "{{ type_of_company }}";
-
-    console.log(typeComp)
-
-    // Verifica che tutti i campi siano compilati
-    if (!productName) {
-        alert("Please fill in all required fields.");
-        return;
-    }
-
-    // Crea l'oggetto da inviare al server, incluso il company_id
-    const productData = {
-        name: productName,
-        description: productDescription,
-        quantity: 0,
-        company_id: companyId,
-        type_of_company: typeComp  // Aggiungi company_id
-    };
-
-    // Esegui la richiesta al server per aggiungere il prodotto
-    fetch('/add_product', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(productData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Mostra il toast di successo
-            showToast("Success", "Product added successfully!", "bg-success");
-            // Chiudi la modale
-            $('#addProductModal').modal('hide');
-            // Redirige alla stessa pagina per aggiornare la lista dei prodotti
-            window.location.href = '/manage_product_by_processor/' + companyId;
-        } else {
-            // Mostra il toast di errore
-            showToast("Error", data.error || "An error occurred while adding the product. Please do not add a product that already exists.", "bg-danger");
-        }
-    })
-    .catch(error => {
-        console.error("Error adding product:", error);
-        showToast("Error", "Something went wrong!", "bg-danger");
-    });
-});
-function redirectToRequestPage(button, company_id) {
-    // Ottieni il nome del prodotto dal valore del bottone
-    var productName = button.value;
-    const companyId = "{{ company_id }}";
-    // Codifica il nome del prodotto per gestire eventuali caratteri speciali
-    var encodedProductName = encodeURIComponent(productName);
-
-    // Codifica anche il company_id per gestire eventuali caratteri speciali
-    var encodedCompanyId = companyId;
-
-    // Crea l'URL di reindirizzamento includendo sia il nome del prodotto che l'ID della compagnia
-    var url = "/request_creation_product/" + encodedProductName + "/" + encodedCompanyId;
-
-    // Reindirizza l'utente alla nuova pagina
-    window.location.href = url;
-}
-
-
-
-</script>
-
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>

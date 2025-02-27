@@ -32,6 +32,7 @@
                 <!-- Right section -->
                 <div class="d-flex align-items-center">
                     {% if user_id %}
+                    
                         {% include 'includes/user_menu.html' %}
                     {% else %}
                         <a class="btn btn-outline-primary ms-2" href="/login">Login</a>
@@ -52,6 +53,8 @@
                 <p></p>
                 {% if not is_admin %}
                 <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                <p></p>
+                  <a class="btn btn-success btn-lg" href="/search_product">View Products</a>
                 {% endif %}
               </div>
             </div>
@@ -62,6 +65,8 @@
                 <p></p>
                 {% if not is_admin %}
                 <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                <p></p>
+                  <a class="btn btn-success btn-lg" href="/search_product">View Products</a>
                 {% endif %}
               </div>
             </div>
@@ -72,6 +77,8 @@
                 <p></p>
                 {% if not is_admin %}
                 <a class="btn btn-success btn-lg" href="/company_register">Register Your Company</a>
+                <p></p>
+                  <a class="btn btn-success btn-lg" href="/search_product">View Products</a>
                 {% endif %}
               </div>
             </div>
