@@ -345,7 +345,7 @@ def modify_company(company_id):
 
 @bp.route('/delete_company/<int:company_id>', methods=['POST'])
 def delete_company(company_id):
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    _, user, _, is_company_admin, _ = get_user_info()
     if not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'}), 403
     
@@ -869,21 +869,6 @@ def select_company_to_manage_product():
                            notifications=notifications)
 
 
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-
 @bp.route('/check_eth_address', methods=['GET'])
 def check_eth_address():
     eth_address = request.args.get('address')
@@ -990,7 +975,7 @@ def check_available_companies(company_id):
 
 @bp.route('/submit_token_request', methods=['POST'])
 def submit_token_request():
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, _, _, is_company_admin, _ = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
 
@@ -1034,7 +1019,7 @@ def submit_token_request():
 
 @bp.route('/approve_token_request/<notification_id>', methods=['POST'])
 def approve_token_request(notification_id):
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, _, _, is_company_admin, _ = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
 
@@ -1089,7 +1074,7 @@ def approve_token_request(notification_id):
 
 @bp.route('/reject_token_request/<notification_id>', methods=['POST'])
 def reject_token_request(notification_id):
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, _, _, is_company_admin, _ = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
 
@@ -1110,7 +1095,7 @@ def reject_token_request(notification_id):
 
 @bp.route('/complete_token_transfer/<notification_id>', methods=['POST'])
 def complete_token_transfer(notification_id):
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, _, _, is_company_admin, _ = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
 

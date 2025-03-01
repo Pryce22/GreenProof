@@ -54,11 +54,10 @@
 
     <main class="container mb-5">
 
-        <div class="row g-4">
+        <div class="row g-4 justify-content-center">
             {% for product in product_info_list %}
-                    <div class="col"></div>
+                <div class="col-md-4 mb-4">
                     <div class="card h-100 product-card d-flex align-items-center justify-content-center text-center" data-bs-toggle="modal" data-bs-target="#product{{ product['serial_ids'][0] }}Modal">
-
                         <div class="card-body d-flex flex-column align-items-center justify-content-center">
                             <h5 class="card-title fs-4 fw-bold text-center text-uppercase" style="color: #2c3e50;">{{ product['product_name'] }}</h5>
                             <p class="card-text text-truncate">{{ product['product_description'] }}</p>
@@ -76,8 +75,10 @@
                         </div>
                     </div>
                 </div>
+            {% endfor %}
+        </div>
                 <!-- Modal per il prodotto -->
-                
+                {% for product in product_info_list %}
                     <div class="modal fade" id="product{{ product['serial_ids'][0] }}Modal" tabindex="-1" aria-labelledby="product{{ product['serial_ids'][0] }}ModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
@@ -98,16 +99,47 @@
                                     {% if all_transporters %}
                                         <p><strong>Transporters:</strong> {{ all_transporters | join(', ') }}</p>
                                     {% endif %}
-
-
+                                    <hr>
+                                        <h6 class="mt-3 mb-2">CO₂ Emissions by Company</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-striped">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Company</th>
+                                                        <th class="text-end">CO₂ (kg)</th>
+                                                        <th class="text-end">% of Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% if product.company_emissions %}
+                                                        {% for company_name, emission in product.company_emissions.items() %}
+                                                        <tr>
+                                                            <td>{{ company_name }}</td>
+                                                            <td class="text-end">{{ emission|round(2) }}</td>
+                                                            <td class="text-end">{{ ((emission / product.co2_emission) * 100)|round(1) }}%</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                        <tr class="table-info fw-bold">
+                                                            <td>Total</td>
+                                                            <td class="text-end">{{ product.co2_emission|round(2) }}</td>
+                                                            <td class="text-end">100%</td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="3" class="text-center">No emission data available</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </hr>
                                 </div>
                             </div>
                         </div>
                     </div>
-                
+                {% endfor %}
             </div>
 
-            {% endfor %}
         </main>
 
     <footer class="bg-dark text-light py-4 mt-auto">

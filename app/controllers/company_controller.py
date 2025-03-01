@@ -528,7 +528,6 @@ def get_product_by_company_id(company_id):
             .select('*') \
             .eq('company_id', company_id)\
             .execute()
-        print(response2)
         if response2.data:
             merged_data = []
 
@@ -1389,3 +1388,52 @@ def get_companies_of_chain_product(product_id, company_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
+    
+def get_company_co2_contribution(company_id, product_id):
+    """
+    Calcola il contributo di CO2 di una specifica compagnia per un prodotto
+    """
+    try:
+        company_info = get_company_by_id(company_id)
+        company_type = company_info['company_industry']
+        
+        # Ottieni la quantità di prodotto coinvolta
+        if company_type == 'farmer':
+            # Per un farmer, usa la quantità totale del prodotto
+            product_info = get_products_by_id(product_id)
+            quantity = product_info['total_quantity'] if product_info else 0
+            emission = farmer_emission(quantity)
+        elif company_type == 'processor':
+            # Per un processor, calcola in base alla quantità processata
+            product_info = get_products_by_id(product_id)
+            quantity = product_info['total_quantity'] if product_info else 0
+            emission = processor_emission(quantity)
+        elif company_type in ['transporter', 'logistics']:
+            # Per un transporter, ottieni i dati dalla tabella transport
+            transport_data = supabase.table('transport')\
+                .select('co2_emission')\
+                .eq('id_product', product_id)\
+                .eq('id_transporter', company_id)\
+                .execute()
+            
+            if transport_data.data:
+                emission = sum(t['co2_emission'] for t in transport_data.data)
+            else:
+                emission = 0
+        elif company_type == 'seller':
+            # Per un seller, usa la quantità venduta
+            seller_product = supabase.table('seller_products')\
+                .select('co2_emission')\
+                .eq('id_product', product_id)\
+                .eq('id_seller', company_id)\
+                .execute()
+            
+            emission = seller_product.data[0]['co2_emission'] if seller_product.data else 0
+        else:
+            emission = 0
+            
+        return emission
+        
+    except Exception as e:
+        print(f"Error calculating company CO2 contribution: {e}")
+        return 0

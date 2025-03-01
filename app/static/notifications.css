@@ -50,11 +50,6 @@ body {
     gap: 1rem;             /* Add spacing between items */
 }
 
-/* REMOVE THIS: */
-/* .notification-container > .notification-card {
-    clear: both;
-} */
-
 .notification-card:hover,
 .notification-card:active { /* Added active state */
     z-index: 1; /* Bring to front on hover/active */
@@ -350,34 +345,20 @@ footer {
     background-color: #bb2d3b; /* rosso leggermente scuro al passaggio del mouse */
 }
 
-/* Add to your CSS */
-.notification-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
 
 .notification-card {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.notification-card.removing {
-    transform: translateX(20px);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.notification-card {
+    position: relative; /* Added to contain the absolute positioned pseudo-element */
     opacity: 1;
     transform: translateX(0);
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .notification-card.removing {
-    opacity: 0;
     transform: translateX(20px);
+    opacity: 0;
     pointer-events: none;
 }
+
 
 /* Previeni l'animazione su altre cards */
 .notification-card:not(.removing) {

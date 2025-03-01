@@ -1010,11 +1010,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (notificationId && notificationCard.getAttribute('data-status') === 'unread') {
                             markNotificationAsRead(notificationId);
                             notificationCard.setAttribute('data-status', 'read');
+                            notificationCard.setAttribute('data-initial-status', 'read'); // update to remove unread styling
                         }
                     }
                 });
             }, {
-                threshold: 0.6 // La notifica deve essere visibile almeno al 50%
+                threshold: 0.3 // La notifica deve essere visibile almeno al 50%
             });
     
             // Osserva tutte le notification cards

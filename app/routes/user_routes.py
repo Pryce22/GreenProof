@@ -250,7 +250,7 @@ def update_user():
 
 @bp.route('/handle_invitation/<notification_id>/<action>', methods=['POST'])
 def handle_invitation(notification_id, action):
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, _, _, _, _ = get_user_info()
     if not user_id:
         return jsonify({'success': False, 'error': 'Not authenticated'})
     
@@ -350,7 +350,7 @@ def manage_employee():
 
 @bp.route('/send_company_invitation', methods=['POST'])
 def send_company_invitation():
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, user, _, is_company_admin, _ = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
     
@@ -438,7 +438,7 @@ def promote_to_admin():
 
 @bp.route('/submit_eth_address', methods=['POST'])
 def submit_eth_address():
-    user_id, user, is_admin, is_company_admin, notifications = get_user_info()
+    user_id, _, _, is_company_admin, _ = get_user_info()
     if not user_id or not is_company_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
     
@@ -518,7 +518,7 @@ def product_of_seller(company_id):
         # Ottenere le informazioni del prodotto
         info_product = company_controller.get_information_by_id_product(product['id_product'])
         companies_of_production = company_controller.get_companies_of_chain_product(product['id_product'], company_id)
-        
+
         product_name = info_product.data[0]['name'].lower()
         
         if product_name not in grouped_products:
@@ -539,23 +539,59 @@ def product_of_seller(company_id):
                 'transformer_names': set(),
                 'transporter1_names': set(),
                 'transporter2_names': set(),
-                'serial_ids': set()
+                'serial_ids': set(),
+                'co2_emission': 0,
+                'company_emissions': {}  # Nuovo dizionario per le emissioni specifiche per compagnia
             }
         
+        # Aggiungi informazioni sulle compagnie e le loro emissioni
         for comp in companies_of_production.data:
             if comp['farmer']:
-                grouped_products[product_name]['farmer_names'].add(company_controller.get_company_by_id(comp['farmer'])['company_name'])
+                farmer_id = comp['farmer']
+                farmer_name = company_controller.get_company_by_id(farmer_id)['company_name']
+                grouped_products[product_name]['farmer_names'].add(farmer_name)
+                
+                # Calcola le emissioni per questa compagnia
+                farmer_emission = company_controller.get_company_co2_contribution(farmer_id, product['id_product'])
+                grouped_products[product_name]['company_emissions'][farmer_name] = farmer_emission
+                
             if comp['transformer']:
-                grouped_products[product_name]['transformer_names'].add(company_controller.get_company_by_id(comp['transformer'])['company_name'])
+                transformer_id = comp['transformer']
+                transformer_name = company_controller.get_company_by_id(transformer_id)['company_name']
+                grouped_products[product_name]['transformer_names'].add(transformer_name)
+                
+                # Calcola le emissioni per questa compagnia
+                transformer_emission = company_controller.get_company_co2_contribution(transformer_id, product['id_product'])
+                grouped_products[product_name]['company_emissions'][transformer_name] = transformer_emission
+                
+            # Simile per transporter1, transporter2...
             if comp['transporter1']:
-                grouped_products[product_name]['transporter1_names'].add(company_controller.get_company_by_id(comp['transporter1'])['company_name'])
+                transporter1_id = comp['transporter1']
+                transporter1_name = company_controller.get_company_by_id(transporter1_id)['company_name']
+                grouped_products[product_name]['transporter1_names'].add(transporter1_name)
+                
+                transporter1_emission = company_controller.get_company_co2_contribution(transporter1_id, product['id_product'])
+                grouped_products[product_name]['company_emissions'][transporter1_name] = transporter1_emission
+                
             if comp['transporter2']:
-                grouped_products[product_name]['transporter2_names'].add(company_controller.get_company_by_id(comp['transporter2'])['company_name'])
+                transporter2_id = comp['transporter2']
+                transporter2_name = company_controller.get_company_by_id(transporter2_id)['company_name']
+                grouped_products[product_name]['transporter2_names'].add(transporter2_name)
+                
+                transporter2_emission = company_controller.get_company_co2_contribution(transporter2_id, product['id_product'])
+                grouped_products[product_name]['company_emissions'][transporter2_name] = transporter2_emission
+            
+            # Aggiungi emissioni del seller stesso
+            seller_emission = company_controller.get_company_co2_contribution(company_id, product['id_product'])
+            grouped_products[product_name]['company_emissions'][info_company['company_name']] = seller_emission
             
             grouped_products[product_name]['serial_ids'].add(comp['serial_id'])
 
     # Convertire i set in liste per il template
     for product in grouped_products.values():
+        total_co2 = sum(product['company_emissions'].values())
+        product['co2_emission'] = total_co2
+        
         product['farmer_names'] = list(product['farmer_names'])
         product['transformer_names'] = list(product['transformer_names'])
         product['transporter1_names'] = list(product['transporter1_names'])

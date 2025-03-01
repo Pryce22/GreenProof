@@ -1,5 +1,4 @@
 
-
 services:
   besu-validator1:
     image: hyperledger/besu:24.12.2
