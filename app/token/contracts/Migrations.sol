@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 contract Migrations {
   address public owner;
@@ -15,6 +15,8 @@ contract Migrations {
   }
 
   function setCompleted(uint _completed) public restricted {
+    require(_completed > lastCompletedMigration, "New migration must be higher than last completed");
     lastCompletedMigration = _completed;
+    assert(lastCompletedMigration >= _completed);
   }
 }

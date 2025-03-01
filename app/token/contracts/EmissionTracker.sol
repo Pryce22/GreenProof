@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./GreenToken.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {GreenToken} from "./GreenToken.sol";
 
 contract EmissionTracker is Ownable {
     GreenToken public greenToken;
