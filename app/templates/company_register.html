@@ -121,7 +121,7 @@
                                 <div class="invalid-feedback">You must agree before submitting</div>
                             </div>
                             <button type="submit" class="btn btn-primary w-100" id="submitBtn">
-                                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                <output class="spinner-border spinner-border-sm d-none" aria-hidden="true"></output>
                                 Register Company
                             </button>
                         </form>
@@ -469,7 +469,6 @@
     
             if (!validateImage(file)) {
                 event.target.value = ''; // Reset input
-                return;
             }
         });</script>
         

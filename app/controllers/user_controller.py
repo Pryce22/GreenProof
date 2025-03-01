@@ -60,8 +60,8 @@ def create_user(id, email, name, surname, password, phone_number, birthday):
         # In caso di errore, prova a fare rollback eliminando l'utente se esiste
         try:
             supabase.table('user').delete().eq('id', id).execute()
-        except:
-            pass
+        except Exception as e:
+            print(f"Error rolling back user creation: {e}")
         return False
 
 def login_user(email, password):
@@ -473,7 +473,7 @@ def store_reset_token(email, token):
             .execute()
             
         # Inserisci il nuovo token
-        response = supabase.table('recover_password_token') \
+        supabase.table('recover_password_token') \
             .insert({
                 'email': email,
                 'token': token, 
@@ -493,15 +493,7 @@ def validate_reset_token(token):
         #print(f"Validating token: {token}")
         ten_minutes_ago = time.time() - (10 * 60) 
         ten_minutes_ago = datetime.fromtimestamp(ten_minutes_ago, tz=timezone.utc)
-        # Recupera il token dal database e verifica che non sia scaduto e non sia già stato usato
-        '''
-        response = supabase.table('recover_password_token') \
-            .select('*') \
-            .eq('token', token) \
-            .eq('is_used', False) \
-            .lt('created_at', ten_minutes_ago) \
-            .execute()
-        '''
+       
         response = supabase.table('recover_password_token') \
             .select('*') \
             .eq('token', token) \
@@ -512,7 +504,7 @@ def validate_reset_token(token):
         if response.data and len(response.data) > 0:
             token_data = response.data[0]  # Supponiamo che ci sia solo un token valido
             created_at = datetime.fromisoformat(token_data['created_at'])  # Converti la stringa in datetime
-            #created_at = created_at.replace(tzinfo=None)
+            
             expiration_time = created_at + timedelta(minutes=1)
             #print(expiration_time)
 

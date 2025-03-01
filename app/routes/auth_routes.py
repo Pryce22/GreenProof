@@ -46,7 +46,7 @@ def login():
             # Send verification email
             if user_controller.send_verification_email(email):
                 return jsonify({'success': True, 'redirect': url_for('auth.mfa')})
-            return jsonify({'success': False, 'error': 'Failed to send verification email'})
+            return jsonify({'success': False, 'error': 'Failed to send verification email.'})
             
         return jsonify({
             'success': False, 
@@ -68,7 +68,7 @@ def register():
         confirm_password = request.form['confirmPassword']
         phone_number = request.form['phone']
         birth_date = request.form['birthDate']
-        id = uuid.uuid4().int & (1<<32)-1
+        id_company = uuid.uuid4().int & (1<<32)-1
         
         # Check if passwords match and pattern
         if password != confirm_password:
@@ -100,7 +100,7 @@ def register():
         
         # Store registration data in session
         session['pending_registration'] = {
-            'id': id,
+            'id': id_company,
             'email': email,
             'name': first_name,
             'surname': surname,
@@ -273,7 +273,7 @@ def password_recover():
             })
             
         except Exception as e:
-            #print(f"Error in password reset: {e}")  # Debug print
+            print(f"Error in password reset: {e}")  # Debug print
             return jsonify({
                 'success': False,
                 'error': 'An error occurred during password reset.'

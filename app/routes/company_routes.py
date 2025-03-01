@@ -34,11 +34,12 @@ def validate_phone(phone):
     return re.match(pattern, phone) is not None
 
 def validate_website(website):
+    http = website.startswith('http://')
     if not website:
         return True
-    if not website.startswith('https://'):
+    if not http:
         website = 'https://' + website
-    return website.startswith('https://')
+    return http 
 
 @bp.route('/company_register', methods=['GET', 'POST'])
 def company_register():
@@ -159,13 +160,8 @@ def information_company(company_id):
     
     company = company_controller.get_company_by_id(company_id)
     if company is None:
-        return "Company not found", 404
+        return "Company not found.", 404
 
-    # Get real-time token balance from blockchain
-    token_balance = 0
-    if company.get('eth_address'):
-        token_balance = eth_account_controller.get_token_balance(company['eth_address'])
-    
     info_of_admin = company_controller.get_admin_info_by_company(company_id)
         
     # Permetti la visualizzazione solo se la company è approvata o l'utente è admin
@@ -685,7 +681,7 @@ def manage_product_by_seller(company_id):
 
     if request.method == 'POST':
         try:
-            print("ciao")
+            
             # Retrieve product data from the form
             product_id = request.form.get('product_id')
             quantity = request.form.get('product_quantity')

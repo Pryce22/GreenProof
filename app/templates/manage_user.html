@@ -196,7 +196,7 @@ document.getElementById('confirmDeleteButton').addEventListener('click', async f
             console.log("Server response:", data); // Aggiungi il log della risposta
 
             if (data.success) {
-                //alert('User deleted successfully!');
+                
                 location.reload(); // Ricarica la pagina per vedere l'utente rimosso
             } else {
                 alert('Failed to delete user.');

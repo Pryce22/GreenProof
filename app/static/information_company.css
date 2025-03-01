@@ -81,9 +81,6 @@ img {
         font-size: 2rem;
     }
 
-    .hero-section {
-        height: 400px;
-    }
 
     .hero-section .carousel-item {
         height: 400px;
@@ -95,6 +92,7 @@ img {
 
     .hero-section {
         min-height: 300px;
+        height: 400px;
     }
 
     .card {
@@ -231,10 +229,6 @@ img {
         overflow: visible;
     }
 
-    .card-text {
-        display: block;
-        position: relative;
-    }
     
     .card-text:after {
         content: '';
@@ -253,6 +247,7 @@ img {
         margin-left: 0;
         display: inline;
         text-align: justify;
+        position: relative;
     }
 }
 
