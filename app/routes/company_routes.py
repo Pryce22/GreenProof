@@ -171,7 +171,10 @@ def information_company(company_id):
     # Get token balance if ETH address exists
     token_balance = 0
     if company.get('eth_address'):
-        token_balance = eth_account_controller.get_token_balance(company['eth_address'])
+        if company['eth_address'] == None:
+            token_balance=0
+        else:
+            token_balance = eth_account_controller.get_token_balance(company['eth_address'])
         
     return render_template('information_company.html', 
                          company=company,
@@ -548,13 +551,15 @@ def request_creation_product(product, company_id_buyer):
 
     for company in companies:
         company_id = company['company_id']
-        manufacturers.append({'id': company_id, 'name': company['company_name']})
+        if company['eth_address']:
+            manufacturers.append({'id': company_id, 'name': company['company_name']})
         
-        products = company_controller.get_products_by_company_id(company_id)
-        products_by_manufacturer[company_id] = products  # Salva i prodotti per ogni azienda
+            products = company_controller.get_product_by_company_id(company_id)
+            products_by_manufacturer[company_id] = products  # Salva i prodotti per ogni azienda
 
     for carrier in carriers:
-        transporters.append({'id': carrier['company_id'], 'name': carrier['company_name']})
+        if carrier['eth_address']:
+            transporters.append({'id': carrier['company_id'], 'name': carrier['company_name']})
 
 
     return render_template(
@@ -794,20 +799,23 @@ def seller_request(company_id_buyer):
     # Loop through manufacturers to collect data
     for company in manufacturers:
         company_id = company['company_id']
-        manufacturer_list.append({'id': company_id, 'name': company['company_name']})
+        if company['eth_address']:
+            manufacturer_list.append({'id': company_id, 'name': company['company_name']})
         
-        # Get products associated with each manufacturer
-        products_by_manufacturer[company_id] = company_controller.get_product_by_company_id(company_id)
+            # Get products associated with each manufacturer
+            products_by_manufacturer[company_id] = company_controller.get_product_by_company_id(company_id)
 
     # Loop through transporters to collect transporter data
     for carrier in transporters:
-        transporter_list.append({'id': carrier['company_id'], 'name': carrier['company_name']})
+        if carrier['eth_address']:
+            transporter_list.append({'id': carrier['company_id'], 'name': carrier['company_name']})
     
     # Loop through processors to collect processor data
     for processor in processors:
         company_id_processor = processor['company_id']
-        processor_list.append({'id': company_id_processor, 'name': processor['company_name']})
-        products_by_processors[company_id_processor] = company_controller.get_product_by_company_id(company_id_processor)
+        if processor['eth_address']:
+            processor_list.append({'id': company_id_processor, 'name': processor['company_name']})
+            products_by_processors[company_id_processor] = company_controller.get_product_by_company_id(company_id_processor)
   
     # Render template with necessary data
     return render_template(
@@ -835,7 +843,8 @@ def select_company_to_manage_product():
     companies = []
     for cid in company_ids:
         comp = company_controller.get_company_by_id(cid['company_id'])
-        companies.append(comp)
+        if comp['eth_address'] != None:
+            companies.append(comp)
 
     if request.method == 'POST':
         # Quando l'utente seleziona un'azienda dal form

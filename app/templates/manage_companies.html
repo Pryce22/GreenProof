@@ -83,25 +83,26 @@
                                 <i class="bi bi-pencil-square fs-5"></i>
                             </a>
                             
-                            {% if company.company_industry == "manufacturer" %}
-                                <a href="/manage_product/{{ company.company_id }}" class="text-success me-2" title="Products">
-                                    <i class="bi bi-basket fs-5 "></i>
-                                </a>
-                            {% elif company.company_industry == "processor" %}
-                            <a href="/manage_product_by_processor/{{ company.company_id }}" class="text-success me-2" title="Products of Processor">
-                                <i class="bi bi-box-seam fs-5"></i>
+                            {% if company.eth_address %}
+                                {% if company.company_industry == "manufacturer" %}
+                                    <a href="/manage_product/{{ company.company_id }}" class="text-success me-2" title="Products">
+                                        <i class="bi bi-basket fs-5 "></i>
+                                    </a>
+                                {% elif company.company_industry == "processor" %}
+                                <a href="/manage_product_by_processor/{{ company.company_id }}" class="text-success me-2" title="Products of Processor">
+                                    <i class="bi bi-box-seam fs-5"></i>
 
-                            </a>
-                            {% elif company.company_industry == "seller" %}
-                                <a href="/manage_product_by_seller/{{ company.company_id }}" class="text-success me-2" title="Products for the seller">
-                                    <i class="bi bi-shop fs-5"></i>
                                 </a>
-                            {% elif company.company_industry == "transporter" %}
-                            <a href="/manage_product_by_transporter/{{ company.company_id }}" class="text-success me-2" title="Products to delivery">
-                                <i class="bi bi-truck fs-5"></i>
-                            </a>
+                                {% elif company.company_industry == "seller" %}
+                                    <a href="/manage_product_by_seller/{{ company.company_id }}" class="text-success me-2" title="Products for the seller">
+                                        <i class="bi bi-shop fs-5"></i>
+                                    </a>
+                                {% elif company.company_industry == "transporter" %}
+                                <a href="/manage_product_by_transporter/{{ company.company_id }}" class="text-success me-2" title="Products to delivery">
+                                    <i class="bi bi-truck fs-5"></i>
+                                </a>
+                                {% endif %}
                             {% endif %}
-                            
                             <a href="#" class="text-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal" data-company-id="{{ company.company_id }}">
                                 <i class="bi bi-trash fs-5"></i>
                             </a>

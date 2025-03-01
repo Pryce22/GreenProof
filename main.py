@@ -1,9 +1,9 @@
-import threading
+import os
 from app import app
 from app.controllers import scheduler_controller
 
-thread = threading.Thread(target=scheduler_controller.run_scheduler, daemon=True)
-thread.start()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'True':  # Flask avvia 2 processi, solo il secondo è quello "vero"
+        scheduler_controller.start_scheduler()
+    app.run(debug=True, port=5000)
