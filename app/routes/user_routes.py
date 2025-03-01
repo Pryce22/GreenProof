@@ -114,7 +114,7 @@ def notifications():
                     product_info = company_controller.get_products_by_id(product_id)
                     if product_info:
                         notification_dict['product_name']=product_info['name']
-                        #notification_dict['product'] = product_info  # Aggiungi i dettagli del prodotto
+                        
                     else:
                         notification_dict['product'] = None  # Se non c'è un prodotto associato
                 else:
@@ -297,6 +297,8 @@ def manage_employee():
     info_company = user_controller.get_companies_information_by_user_id(user_id)
     
     search_query = request.args.get('search_query', '').strip()
+
+    email = user_controller.get_all_user_emails()
     
     # Se l'utente è un amministratore di una compagnia
     if is_company_admin:
@@ -318,7 +320,6 @@ def manage_employee():
 
         employees_json=json.dumps(employees)
 
-        email = user_controller.get_all_user_emails()
         # Passa tutte le informazioni alla template
         return render_template('manage_employee.html',
                                user_id=user_id,

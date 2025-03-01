@@ -64,11 +64,11 @@
                                         <div class="notification-icon info me-3">
                                             <i class="bi bi-building"></i>
                                         </div>
-                                        <div class="notification-content flex-grow-1" style="cursor: pointer;" onclick="window.location.href='/information_company/{{ notification.company_id }}'">
+                                        <button class="notification-content flex-grow-1 btn btn-link text-start p-0 text-decoration-none" onclick="window.location.href='/information_company/{{ notification.company_id }}'">
                                             <h6 class="notification-title mb-1">New Company Registration Request</h6>
                                             <p class="notification-text mb-1">New company registration for {{ notification.company_name }} has been requested from: {{ notification.sender_email }}</p>
                                             <small class="text-muted">{{ notification.created_at|format_date }}</small>
-                                        </div>
+                                        </button>
                                         <div class="d-flex">
                                             <button class="btn btn-success btn-sm me-2 approve-btn" data-company-id="{{ notification.company_id }}">
                                                 <i class="bi bi-check-lg"></i> Approve
@@ -118,7 +118,6 @@
     document.querySelectorAll('.approve-btn').forEach(button => {
         button.addEventListener('click', async function(e) {
             e.stopPropagation();
-            const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
             const action = 'approve registration';
@@ -148,7 +147,6 @@
     document.querySelectorAll('.reject-btn').forEach(button => {
         button.addEventListener('click', async function(e) {
             e.stopPropagation();
-            const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
             const action = 'reject registration';
@@ -179,7 +177,6 @@
     document.querySelectorAll('.approve-elimination-btn').forEach(button => {
         button.addEventListener('click', async function(e) {
             e.stopPropagation();
-            const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
             const action = 'approve elimination';
@@ -212,7 +209,6 @@
     document.querySelectorAll('.reject-elimination-btn').forEach(button => {
         button.addEventListener('click', async function(e) {
             e.stopPropagation();
-            const companyId = this.getAttribute('data-company-id');
             const notificationId = this.closest('.notification-card').getAttribute('data-notification-id');
             const notificationCard = this.closest('.notification-card');
             const action = 'reject elimination';
@@ -314,7 +310,7 @@ function removeNotification(notificationCard) {
                                 <div class="notification-icon warning me-3">
                                     <i class="bi bi-envelope"></i>
                                 </div>
-                                <div class="notification-content flex-grow-1" style="cursor: pointer;" onclick="window.location.href='/information_company/{{ notification.company_id }}'">
+                                <button class="notification-content flex-grow-1 btn btn-link text-start p-0 text-decoration-none" onclick="window.location.href='/information_company/{{ notification.company_id }}'">
                                     <h6 class="notification-title mb-1">Company Invitation</h6>
                                     <p class="notification-text mb-1">You have been invited to join {{ notification.company_name }}</p>
                                     <small class="text-muted">{{ notification.created_at|format_date }}</small>
@@ -1306,7 +1302,7 @@ function removeNotification(notificationCard) {
 }
 </script>
 
-<!-- Aggiungere il markup della modale prima del tag </body> -->
+
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -1404,7 +1400,6 @@ function showConfirmationModal(message, onConfirm) {
 <script>
 // Add this to your existing JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    const ethAddressForm = document.getElementById('ethAddressForm');
     const ethAddressInput = document.getElementById('ethAddress');
     const submitButton = document.getElementById('submitEthAddress');
 

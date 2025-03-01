@@ -13,7 +13,7 @@
 </head>
 <body style="display: flex; flex-direction: column; min-height: 100vh;">
     <header class="sticky-top">
-        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+        <nav class="navbar navbar-expand-lg bg-light navbar-light" aria-label="Main navigation">
             <div class="container-fluid px-4">
                 <!-- Left section -->
                 <div class="d-flex align-items-center">
@@ -167,7 +167,7 @@
                             <div class="form-text">Enter the number of tokens you want to request</div>
                         </div>
                         <div id="availableCompanies" class="mb-3 d-none">
-                            <label class="form-label">Available Companies</label>
+                            <label for="companySelect" class="form-label">Available Companies</label>
                             <select class="form-select" id="companySelect" required>
                                 <option value="">Search and select a company...</option>
                             </select>
@@ -219,7 +219,7 @@
         });
 
         const tokenAmountInput = document.getElementById('tokenAmount');
-        const tokenRequestForm = document.getElementById('tokenRequestForm');
+        
 
         tokenAmountInput.addEventListener('input', async function() {
             const amount = this.value;
@@ -233,7 +233,6 @@
                 const data = await response.json();
                 const availableCompanies = document.getElementById('availableCompanies');
                 const noCompaniesMessage = document.getElementById('noCompaniesMessage');
-                const companySelect = document.getElementById('companySelect');
                 const submitButton = document.getElementById('submitRequest');
 
                 // Clear and update select2

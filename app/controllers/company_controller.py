@@ -678,40 +678,6 @@ def update_total_quantity_co2_emission_processor(product_request_id):
         return False
     
 
-"""
-def get_products_by_company_id(company_id):
-    try:
-        response = supabase.table('chain_products') \
-            .select('*')\
-            .or_('farmer.eq.' + str(company_id) +',transporter1.eq.' + str(company_id) + ',transporter2.eq.' + str(company_id) + ',transformer.eq.' + str(company_id) + ',seller.eq.' + str(company_id)) \
-            .execute()
-        
-
-        response2 = supabase.table('products') \
-            .select('*') \
-            .execute()
-        if response.data and response2.data:
-            merged_data = []
-
-            # Per ogni prodotto in response (chain_products)
-            for item1 in response.data:
-                for item2 in response2.data:
-                    # Se gli ID corrispondono
-                    if item1['id'] == item2['id']:
-                        # Fai il merge dei dati (aggiungi item2 ai dati di item1)
-                        merged_item = {**item1, **item2}  # Unisce i due dizionari
-                        merged_data.append(merged_item)
-
-            return merged_data
-        else:
-            print("Nessun dato trovato in una delle risposte.")
-            return []
-
-    except Exception as e:
-        print(f"Errore nel recupero dei prodotti: {e}")
-        return []
-"""
-
 def type_of_company_by_id(company_id):
     try:
         
@@ -724,6 +690,7 @@ def type_of_company_by_id(company_id):
     
     except Exception as e:
         # Gestisce eventuali errori
+        print(f"An error occurred: {e}")
         return []
     
 def farmer_emission(product_quantity):
@@ -777,7 +744,7 @@ def new_product_by_farmer(company_id, product_name, product_description, product
             product_id = response.data[0]['id']
 
             # Inserisci nella tabella 'chain_products'
-            chain_response = supabase.table('chain_products').insert([{
+            supabase.table('chain_products').insert([{
                 'id': product_id,
                 'farmer': company_id
             }]).execute()
@@ -826,7 +793,7 @@ def new_product_by_processor(company_id, product_name, product_description, prod
             product_id = response.data[0]['id']
 
             # Inserisci nella tabella 'chain_products'
-            chain_response = supabase.table('chain_products').insert([{
+            supabase.table('chain_products').insert([{
                 'id': product_id,
                 'transformer': company_id
             }]).execute()
@@ -1247,7 +1214,7 @@ def update_or_insert_chain_product_for_seller(product_request_id):
         product_request_data = response.data[0]
         id_product = product_request_data['id_product']
         id_transporter = product_request_data['id_transporter']
-        #id_supplier = product_request_data['id_supplier']
+        
         id_buyer = product_request_data['id_buyer']
 
         # Recupera tutti i record di 'chain_product' che corrispondono a 'id_product'
@@ -1316,7 +1283,7 @@ def insert_product_seller(product_request_id):
             
             old_total_quantity = old_product['total_quantity']
            
-            id=old_product['id']
+            id_old_product=old_product['id']
 
             new_quantity = old_quantity + quantity
             new_co2 = old_co2 + co2
@@ -1327,7 +1294,7 @@ def insert_product_seller(product_request_id):
                                                 'co2_emission': new_co2,
                                                 'total_quantity' : new_total_quantity
                                               }) \
-                                              .eq('id', id) \
+                                              .eq('id', id_old_product) \
                                               .execute()     
         else:
             update_response = supabase.table('seller_products') \

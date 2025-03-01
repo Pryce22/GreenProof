@@ -41,8 +41,6 @@
  * https://trufflesuite.com/docs/truffle/getting-started/using-the-truffle-dashboard/
  */
 
-// require('dotenv').config();
-// const { MNEMONIC, PROJECT_ID } = process.env;
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const privateKeys = [
@@ -51,7 +49,6 @@ const privateKeys = [
   "ae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f"
 
 ]
-//const MNEMONIC = "crush success place number brief offer census mistake cart gym story reopen";
 
 module.exports = {
   /**

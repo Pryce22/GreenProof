@@ -65,7 +65,9 @@
                 {% for company in companies %}
                 <div class="col-lg-4 col-md-12 mb-4">
                     <div class="card company-card position-relative text-decoration-none">
-                        <a href="/information_company/{{ company.company_id }}" class="stretched-link"></a>
+                        <a href="/information_company/{{ company.company_id }}" class="stretched-link">
+                            <span class="visually-hidden">View details about {{ company.company_name }}</span>
+                        </a>
                         <div class="card-img-container">
                             <img src="{{ company.company_image or 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab' }}" 
                                  class="card-img-top company-logo" 

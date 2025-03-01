@@ -4,7 +4,7 @@
     "berlinBlock": 0,
     "contractSizeLimit": 2147483647,
     "qbft": {
-      "blockperiodseconds": 20,
+      "blockperiodseconds": 10,
       "epochlength": 60,
       "requesttimeoutseconds": 4,
       "blockRewardWei": "0x0",

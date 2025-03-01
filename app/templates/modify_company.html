@@ -79,7 +79,7 @@
                         <!-- Colonna con i dettagli -->
                         <div class="col-md-9">
                             <div class="mb-3">
-                                <label class="form-label">Company Name</label>
+                                <label class="form-label" for="companyNameInput">Company Name</label>
                                 <div class="input-group has-validation">
                                     <input type="text" name="company_name" class="form-control" value="{{ company.company_name }}" 
                                            required minlength="2" id="companyNameInput" disabled>
@@ -92,7 +92,7 @@
     
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Phone Number</label>
+                                    <label class="form-label" for="companyPhoneInput">Phone Number</label>
                                     <div class="input-group has-validation">
                                         <input type="tel" name="company_phone_number" class="form-control" value="{{ company.company_phone_number }}" 
                                                required pattern="^\+?\d{10,15}$" id="companyPhoneInput" disabled
@@ -104,7 +104,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Email Address</label>
+                                    <label class="form-label" for="companyEmailInput">Email Address</label>
                                     <div class="input-group has-validation">
                                         <input type="email" name="company_email" class="form-control" value="{{ company.company_email }}" 
                                                required id="companyEmailInput" disabled>
@@ -120,7 +120,7 @@
                             <div class="row">
                                 <!-- Replace the existing industry select with this -->
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Industry</label>
+                                    <label class="form-label" for="companyIndustrySelect">Industry</label>
                                     <div class="input-group">
                                         <select name="company_industry" class="form-select" id="companyIndustrySelect" disabled>
                                             <!-- Prima mostra l'industria corrente -->
@@ -139,7 +139,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">Website</label>
+                                    <label class="form-label" for="companyWebsiteInput">Website</label>
                                     <div class="input-group">
                                         <input type="url" name="company_website" class="form-control" value="{{ company.company_website }}" 
                                                id="companyWebsiteInput" disabled placeholder="https://">
@@ -152,7 +152,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">ETH Public Address</label>
+                                    <label class="form-label" for="companyEthAddressInput">ETH Public Address</label>
                                     <div class="input-group has-validation">
                                         <input type="text" name="eth_address" class="form-control" 
                                                value="{{ company.eth_address }}" 
@@ -169,7 +169,7 @@
                             </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Company Description</label>
+                    <label class="form-label" for="companyDescriptionInput">Company Description</label>
                     <div class="input-group">
                         <textarea name="company_description" class="form-control" rows="4" id="companyDescriptionInput" maxlength="1500" disabled>{{ company.company_description }}</textarea>
                         <button class="btn btn-outline-secondary" type="button" id="editDescriptionBtn">
@@ -233,9 +233,9 @@
 
 <!-- Overlay di caricamento -->
 <div id="loadingOverlay" class="loading-overlay">
-    <div class="spinner-border text-primary" role="status">
+    <output class="spinner-border text-primary">
         <span class="visually-hidden">Loading...</span>
-    </div>
+    </output>
 </div>
 
 <style>
@@ -360,7 +360,7 @@
     
     if (selectedIndustry === currentIndustry) {
         console.log("Industry unchanged");
-        return;
+        
     }
   });
   document.getElementById('logoInput').addEventListener('change', function(event) {
@@ -394,7 +394,7 @@
       const websiteInput = document.getElementById('companyWebsiteInput');
       const logoInput = document.getElementById('logoInput');
       const descriptionInput = document.getElementById('companyDescriptionInput');
-      const industrySelect = document.getElementById('companyIndustrySelect');
+      
 
 
       let isValid = true;
