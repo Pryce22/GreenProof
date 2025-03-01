@@ -215,7 +215,6 @@ def update_blockchain_emissions():
                     
                     signed_dist = w3.eth.account.sign_transaction(distribute_tx, private_key=os.getenv('PRIVATE_KEY'))
                     dist_hash = w3.eth.send_raw_transaction(signed_dist.raw_transaction)
-                    print(f"Distribute transaction hash: {dist_hash.hex()}")
                     dist_receipt = w3.eth.wait_for_transaction_receipt(dist_hash, timeout=120)
                     
                     if dist_receipt.status != 1:
