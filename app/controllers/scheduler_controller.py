@@ -48,21 +48,19 @@ def update_co2_emission_for_farmer_and_processor():
             
             # Crea un dizionario per i vecchi valori di CO2
             old_emissions = {row['company_id']: row['co2_emission'] for row in existing_data.data}
-            old_quantities = {row['company_id']: row['total_quantity'] for row in existing_data.data}
 
             # Aggiorna la tabella "companies" con la nuova emissione, quantità totale e differenza CO2
             for company_id, avg_co2 in avg_emissions.items():
-                total_qty = company_data[company_id]['total_quantity']
                 old_co2 = old_emissions.get(company_id, 0)  # Se non esiste, assume 0
-                old_qty = old_quantities.get(company_id, 0)
+                co2_emission= 0
+                total_qty=0
                 
                 # Update della tabella companies
                 supabase.table('companies') \
                     .update({
-                        'co2_emission': avg_co2,
+                        'co2_emission': co2_emission,
                         'total_quantity': total_qty,
-                        'co2_old': old_co2,
-                        'old_total_quantity' : old_qty
+                        'co2_old': old_co2
                     }) \
                     .eq('company_id', company_id) \
                     .execute()
@@ -119,22 +117,20 @@ def update_co2_emission_for_transporter():
             
             # Crea un dizionario per i vecchi valori di CO2
             old_emissions = {row['company_id']: row['co2_emission'] for row in existing_data.data}
-            old_quantities = {row['company_id']: row['total_quantity'] for row in existing_data.data}
 
 
             # Aggiorna la tabella "companies" con la nuova emissione, distanza totale e co2_old
             for transporter_id, avg_co2 in avg_emissions.items():
-                total_distance = transporter_data[transporter_id]['total_distance']
                 old_co2 = old_emissions.get(transporter_id, 0)  # Se non esiste, assume 0
-                old_qty = old_quantities.get(transporter_id, 0)
+                co2_emission= 0
+                total_qty=0
                 
                 # Update della tabella companies
                 supabase.table('companies') \
                     .update({
-                        'co2_emission': avg_co2,
-                        'total_quantity': total_distance,
-                        'co2_old': old_co2,
-                        'old_total_quantity' : old_qty
+                        'co2_emission': co2_emission,
+                        'total_quantity': total_qty,
+                        'co2_old': old_co2
                     }) \
                     .eq('company_id', transporter_id) \
                     .execute()
@@ -189,21 +185,19 @@ def update_co2_emission_for_seller():
             
             # Crea un dizionario per i vecchi valori di CO2
             old_emissions = {row['company_id']: row['co2_emission'] for row in existing_data.data}
-            old_quantities = {row['company_id']: row['total_quantity'] for row in existing_data.data}
-
+            
             # Aggiorna la tabella "companies" con la nuova emissione, quantità totale e co2_old
             for seller_id, avg_co2 in avg_emissions.items():
-                total_qty = seller_data[seller_id]['total_quantity']
                 old_co2 = old_emissions.get(seller_id, 0)  # Se non esiste, assume 0
-                old_qty = old_quantities.get(seller_id, 0)
+                co2_emission= 0
+                total_qty=0
                 
                 # Update della tabella companies
                 supabase.table('companies') \
                     .update({
-                        'co2_emission': avg_co2,
+                        'co2_emission': co2_emission,
                         'total_quantity': total_qty,
-                        'co2_old': old_co2,
-                        'old_total_quantity' : old_qty
+                        'co2_old': old_co2
                     }) \
                     .eq('company_id', seller_id) \
                     .execute()
@@ -215,6 +209,10 @@ def update_co2_emission_for_seller():
 
 
 def run_scheduler():
+    schedule.every(10).seconds.do(update_co2_emission_for_seller)
+    schedule.every(10).seconds.do(update_co2_emission_for_farmer_and_processor)
+    schedule.every(10).seconds.do(update_co2_emission_for_transporter)
+
     schedule.every(10).minutes.do(update_co2_emission_for_farmer_and_processor)
     schedule.every(10).minutes.do(update_co2_emission_for_transporter)
     schedule.every(10).minutes.do(update_co2_emission_for_seller)
