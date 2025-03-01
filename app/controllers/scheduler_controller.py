@@ -161,11 +161,13 @@ def update_blockchain_emissions():
                 is_seller = company['company_industry'] == 'seller'
                 is_transporter = company['company_industry'] == 'transporter'
 
-                current_emissions = float(company['co2_emission'])
+                current_emissions_total = float(company['co2_emission'])
                 quantity = int(float(company['total_quantity'])) 
-
+                
                 if quantity == 0:
                     continue
+
+                current_emissions = current_emissions_total / quantity if quantity > 0 else 0
                 
                 # Always get a fresh nonce right before the transaction
                 current_nonce = w3.eth.get_transaction_count(gas_sponsor, 'pending')
@@ -213,6 +215,7 @@ def update_blockchain_emissions():
                     
                     signed_dist = w3.eth.account.sign_transaction(distribute_tx, private_key=os.getenv('PRIVATE_KEY'))
                     dist_hash = w3.eth.send_raw_transaction(signed_dist.raw_transaction)
+                    print(f"Distribute transaction hash: {dist_hash.hex()}")
                     dist_receipt = w3.eth.wait_for_transaction_receipt(dist_hash, timeout=120)
                     
                     if dist_receipt.status != 1:
@@ -232,68 +235,7 @@ def update_blockchain_emissions():
     except Exception as e:
         print(f"Error in update_blockchain_emissions: {e}")
 
-    try:
-        # Get company info from database
-        company_db = supabase.table('companies') \
-            .select('*') \
-            .eq('company_id', company_id) \
-            .execute()
-
-        if not company_db.data:
-            return {"error": "Company not found in database"}
-
-        company = company_db.data[0]
-        eth_address = company['eth_address']
-
-        # Get blockchain info if company has eth address
-        if eth_address and eth_address not in ["no address", ""]:
-            eth_address = Web3.to_checksum_address(eth_address)
-            
-            # Get basic stats from blockchain
-            role_data = token_contract.functions.getCompanyBasicStats(eth_address).call()
-            metrics_data = token_contract.functions.getCompanyMetrics(eth_address).call()
-
-            company_info = {
-                "Database Info": {
-                    "company_id": company['company_id'],
-                    "name": company['company_name'],
-                    "industry": company['company_industry'],
-                    "eth_address": company['eth_address'],
-                    "current_emissions": company['co2_emission'],
-                    "previous_emissions": company['co2_old'],
-                    "total_quantity": company['total_quantity']
-                },
-                "Blockchain Info": {
-                    "token_balance": role_data[0] / 10**18,  # Convert from wei
-                    "current_period": {
-                        "products": metrics_data[0],
-                        "emissions": metrics_data[1] / 100  # Convert back from scaled value
-                    },
-                    "previous_period": {
-                        "products": metrics_data[2],
-                        "emissions": metrics_data[3] / 100  # Convert back from scaled value
-                    },
-                    "emission_threshold": metrics_data[4] / 100  # Convert back from scaled value
-                }
-            }
-        else:
-            company_info = {
-                "Database Info": {
-                    "company_id": company['company_id'],
-                    "name": company['company_name'],
-                    "industry": company['company_industry'],
-                    "eth_address": "Not registered on blockchain",
-                    "current_emissions": company['co2_emission'],
-                    "previous_emissions": company['co2_old'],
-                    "total_quantity": company['total_quantity']
-                }
-            }
-
-        return company_info
-
-    except Exception as e:
-        return {"error": f"Error getting company info: {str(e)}"}
-
+   
 def run_scheduler():
     schedule.every(20).seconds.do(register_companies_with_eth)
     schedule.every(20).seconds.do(update_blockchain_emissions)
