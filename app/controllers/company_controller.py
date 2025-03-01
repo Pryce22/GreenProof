@@ -241,7 +241,8 @@ def approve_company(sender_email, receiver_email, company_id):
                 return False
                 
             notifications_controller.create_notification('acception registration company', sender_email, receiver_email, company_id)
-            EmailService.send_company_approved_notification(receiver_email)
+            email_service = EmailService()
+            email_service.send_company_approved_notification(to_email=receiver_email)
             return True
         else:
             return False
@@ -1437,3 +1438,34 @@ def get_company_co2_contribution(company_id, product_id):
     except Exception as e:
         print(f"Error calculating company CO2 contribution: {e}")
         return 0
+    
+def get_sellers_with_products():
+    """
+    Restituisce solo le aziende di tipo seller che hanno prodotti disponibili
+    """
+    try:
+        # Ottieni tutti i seller_id che hanno prodotti con quantità > 0
+        seller_products = supabase.table('seller_products') \
+            .select('id_seller') \
+            .gt('quantity', 0) \
+            .execute()
+        
+        if not seller_products.data:
+            return []
+        
+        # Estrai gli ID univoci dei seller con prodotti
+        seller_ids = set(item['id_seller'] for item in seller_products.data)
+        
+        # Ottieni i dettagli completi solo per i seller che hanno prodotti
+        sellers = supabase.table('companies') \
+            .select('*') \
+            .eq('company_industry', 'seller') \
+            .eq('status', True) \
+            .in_('company_id', list(seller_ids)) \
+            .execute()
+        
+        return sellers.data
+        
+    except Exception as e:
+        print(f"Error getting sellers with products: {e}")
+        return []

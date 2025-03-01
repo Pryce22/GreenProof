@@ -44,7 +44,7 @@ class EmailService:
         return self.send_email(to_email, subject, html_content)
     
     def _get_company_approved_template(self):
-        return f"""
+        return """
         <html>
         <head>
             <style>
@@ -101,30 +101,6 @@ class EmailService:
 
 
 
-
-        
-    '''
-    def send_eth_credentials(self, receiver_email, eth_credentials, company_name):
-        subject = "Your Company's Ethereum Account Credentials"
-        html_content = self._get_eth_credentials_template(eth_credentials, company_name)
-        return self.send_email(receiver_email, subject, html_content)
-
-        
-    def _get_eth_credentials_template(self, eth_credentials, company_name):
-        return f"""
-        <h2>Ethereum Account Created for {company_name}</h2>
-        <p>Your company has been approved and an Ethereum account has been created:</p>
-        <p><strong>Address:</strong> {eth_credentials['address']}</p>
-        <p><strong>Private Key:</strong> {eth_credentials['private_key']}</p>
-        <p><strong>Important:</strong></p>
-        <ul>
-            <li>Save these credentials securely</li>
-            <li>Import this account to MetaMask</li>
-            <li>Never share your private key</li>
-            <li>We don't store your private key</li>
-        </ul>
-        """
-    '''
     def _get_verification_email_template(self, code):
         return f"""
         <html>

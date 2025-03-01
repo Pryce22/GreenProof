@@ -480,7 +480,8 @@ def search_product():
     
     try:
         
-        companies = company_controller.get_companies_by_industry("seller")
+        companies = company_controller.get_sellers_with_products()
+        
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'companies': companies})
@@ -510,6 +511,7 @@ def product_of_seller(company_id):
    
     info_company = company_controller.get_company_by_id(company_id)
     products = company_controller.get_products_by_seller(company_id)
+
     
     # Dizionario per raggruppare i prodotti
     grouped_products = {}
@@ -520,6 +522,8 @@ def product_of_seller(company_id):
         companies_of_production = company_controller.get_companies_of_chain_product(product['id_product'], company_id)
 
         product_name = info_product.data[0]['name'].lower()
+
+
         
         if product_name not in grouped_products:
             grouped_products[product_name] = {
@@ -591,7 +595,7 @@ def product_of_seller(company_id):
     for product in grouped_products.values():
         total_co2 = sum(product['company_emissions'].values())
         product['co2_emission'] = total_co2
-        
+
         product['farmer_names'] = list(product['farmer_names'])
         product['transformer_names'] = list(product['transformer_names'])
         product['transporter1_names'] = list(product['transporter1_names'])
