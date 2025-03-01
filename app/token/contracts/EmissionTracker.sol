@@ -20,8 +20,6 @@ contract EmissionTracker is Ownable {
         uint256 previousPeriodProducts;     // Products from previous period
         uint256 previousPeriodEmissions;    // Emissions from previous period
         uint256 tokenBalance;               // GreenTokens earned
-        uint256 lastReportedEmissions;      // Last emissions value reported
-        uint256 lastUpdateTimestamp;        // Timestamp of last update
     }
     
     // Role-specific emission thresholds (in kg CO2)
@@ -94,48 +92,6 @@ contract EmissionTracker is Ownable {
         emit CompanyEmissionsUpdated(company, averageEmissions);
     }
 
-    function distributeTokensForCompany(address company) internal {
-        CompanyStats storage stats = companyStats[company];
-        uint256 applicableThreshold = getCompanyEmissionThreshold(company);
-        
-        // Calcola emissioni per prodotto del periodo corrente
-        uint256 currentEmissionsPerProduct = stats.currentPeriodProducts > 0 ? 
-            stats.currentPeriodEmissions / stats.currentPeriodProducts : 0;
-        
-        if (currentEmissionsPerProduct < applicableThreshold) {
-            uint256 efficiencyPercent = (applicableThreshold - currentEmissionsPerProduct) * 100 / applicableThreshold;
-            uint256 reward = baseTokenReward * efficiencyPercent / 100;
-            
-            // Volume bonus basato sui prodotti del periodo corrente
-            if (stats.currentPeriodProducts >= volumeBonusThreshold) {
-                reward += volumeBonusAmount;
-                emit TokensRewarded(company, volumeBonusAmount, "Volume Bonus");
-            }
-            
-            // Efficiency bonus se l'efficienza è superiore al 50%
-            if (efficiencyPercent > 50) {
-                uint256 efficiencyBonus = reward * efficiencyBonusPercent / 100;
-                reward += efficiencyBonus;
-                emit TokensRewarded(company, efficiencyBonus, "Efficiency Bonus");
-            }
-            
-            // Improvement bonus se ci sono dati del periodo precedente
-            if (stats.previousPeriodProducts > 0) {
-                uint256 previousEmissionsPerProduct = stats.previousPeriodEmissions / stats.previousPeriodProducts;
-                if (currentEmissionsPerProduct < previousEmissionsPerProduct) {
-                    uint256 improvementBonus = reward * efficiencyBonusPercent / 100;
-                    reward += improvementBonus;
-                    emit TokensRewarded(company, improvementBonus, "Improvement Bonus");
-                }
-            }
-            
-            if (reward > 0) {
-                greenToken.mint(company, reward);
-                stats.tokenBalance += reward;
-                emit TokensRewarded(company, reward, "Emission Efficiency");
-            }
-        }
-    }
 
     // Update threshold values
     function updateThresholds(
@@ -193,23 +149,17 @@ contract EmissionTracker is Ownable {
             
             // Calculate threshold properly - thresholds are NOT scaled by 100, but emissions are
             uint256 threshold = getCompanyEmissionThreshold(company) * 100;
-            
-            // Calculate emissions per product - both values are scaled the same way
-            uint256 emissionsPerProduct = stats.currentPeriodProducts > 0 ? 
-                stats.currentPeriodEmissions / stats.currentPeriodProducts : 0;
+
+
             
             emit CompanyEmissionsUpdated(
                 company,
-                emissionsPerProduct
+                stats.currentPeriodEmissions
             );
 
-            // Debug logs to verify comparison
-            // console.log("Emissions per product:", emissionsPerProduct);
-            // console.log("Threshold:", threshold);
-            
             // Check if emissions are below threshold
-            if (emissionsPerProduct < threshold) {
-                uint256 efficiency = ((threshold - emissionsPerProduct) * 100) / threshold;
+            if (stats.currentPeriodEmissions < threshold) {
+                uint256 efficiency = ((threshold - stats.currentPeriodEmissions) * 100) / threshold;
                 uint256 reward = (baseTokenReward * efficiency) / 100;
                 
                 // Volume bonus for significant production
@@ -220,8 +170,7 @@ contract EmissionTracker is Ownable {
                 
                 // Improvement bonus if emissions decreased
                 if (stats.previousPeriodProducts > 0) {
-                    uint256 previousEmissionsPerProduct = stats.previousPeriodEmissions / stats.previousPeriodProducts;
-                    if (emissionsPerProduct < previousEmissionsPerProduct) {
+                    if (stats.currentPeriodEmissions < stats.previousPeriodEmissions) {
                         uint256 improvementBonus = (reward * efficiencyBonusPercent) / 100;
                         reward += improvementBonus;
                         emit TokensRewarded(company, improvementBonus, "Improvement Bonus");
@@ -235,7 +184,7 @@ contract EmissionTracker is Ownable {
                     emit TokensRewarded(
                         company, 
                         reward,
-                        "Emission Efficiency"
+                        "Token Reward"
                     );
                 }
             }
