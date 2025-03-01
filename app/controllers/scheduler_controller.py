@@ -161,11 +161,13 @@ def update_blockchain_emissions():
                 is_seller = company['company_industry'] == 'seller'
                 is_transporter = company['company_industry'] == 'transporter'
 
-                current_emissions = float(company['co2_emission'])
+                current_emissions_total = float(company['co2_emission'])
                 quantity = int(float(company['total_quantity'])) 
-
+                
                 if quantity == 0:
                     continue
+
+                current_emissions = current_emissions_total / quantity if quantity > 0 else 0
                 
                 # Always get a fresh nonce right before the transaction
                 current_nonce = w3.eth.get_transaction_count(gas_sponsor, 'pending')
@@ -232,6 +234,7 @@ def update_blockchain_emissions():
     except Exception as e:
         print(f"Error in update_blockchain_emissions: {e}")
 
+   
 def run_scheduler():
     schedule.every(20).seconds.do(register_companies_with_eth)
     schedule.every(20).seconds.do(update_blockchain_emissions)
