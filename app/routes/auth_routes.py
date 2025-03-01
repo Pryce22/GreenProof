@@ -178,7 +178,8 @@ def mfa():
                 
         elif pending_registration:
             if user_controller.verify_token(token, pending_registration['email']):
-                if user_controller.create_user(
+
+                success, message = user_controller.create_user(
                     id=pending_registration['id'],
                     email=pending_registration['email'],
                     name=pending_registration['name'],
@@ -186,14 +187,15 @@ def mfa():
                     password=pending_registration['password'],
                     phone_number=pending_registration['phone_number'],
                     birthday=pending_registration['birth_date']
-                ):
+                )
+                if success:
                     session.pop('pending_registration', None)
                     user = user_controller.get_user_by_email(pending_registration['email'])
                     if user:
                         session['id'] = user['id']
                         session.pop('verification_attempts', None)
                         return jsonify({'success': True, 'redirect': url_for('main.home')})
-                return jsonify({'success': False, 'error': 'Failed to create account'})
+                return jsonify({'success': False, 'error': message})
             else:
                 attempts += 1
                 session['verification_attempts'] = attempts

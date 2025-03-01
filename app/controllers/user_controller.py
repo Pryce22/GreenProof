@@ -1,5 +1,4 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models import user as user_model
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -17,7 +16,11 @@ email_service = EmailService()
 def create_user(id, email, name, surname, password, phone_number, birthday):
     email=email.lower()
     if check_email_exists(email):
-        return False
+        return False, "There are problems with your account data"
+    
+    if check_phone_exists(phone_number):
+        return False, "There are problems with your account data"
+    
     
     try:
         # Inizia una transazione
@@ -36,7 +39,7 @@ def create_user(id, email, name, surname, password, phone_number, birthday):
         user_response = supabase.table('user').insert(user_data).execute()
         
         if not user_response.data:
-            return False
+            return False, "Failed to create user"
             
         # Crea il ruolo per l'utente
         role_data = {
@@ -48,12 +51,10 @@ def create_user(id, email, name, surname, password, phone_number, birthday):
         role_response = supabase.table('roles').insert(role_data).execute()
         
         if not role_response.data:
-            # Se l'inserimento del ruolo fallisce, dovresti gestire il rollback
-            # Elimina l'utente creato
             supabase.table('user').delete().eq('id', id).execute()
-            return False
+            return False, "Failed to assign role"
             
-        return True
+        return True,  "User created successfully"
         
     except Exception as e:
         print(f"Error creating user: {e}")
@@ -62,7 +63,7 @@ def create_user(id, email, name, surname, password, phone_number, birthday):
             supabase.table('user').delete().eq('id', id).execute()
         except Exception as e:
             print(f"Error rolling back user creation: {e}")
-        return False
+        return False, "An error occurred during registration"
 
 def login_user(email, password):
     try:
@@ -76,6 +77,15 @@ def login_user(email, password):
     except Exception as e:
         print(f"Error logging in user: {e}")
         return None
+
+def check_phone_exists(phone_number):
+    try:
+        response = supabase.table('user').select('phone_number').eq('phone_number', phone_number).execute()
+        return len(response.data) > 0
+    except Exception as e:
+        print(f"Error checking phone number: {e}")
+        return False
+
 
 def check_email_exists(email):
     try:
