@@ -6,7 +6,7 @@
 ![Platform](https://img.shields.io/badge/platform-Web-orange)
 
 <p align="center">
-  <img src="/app/static/images/logo.png" alt="GreenProof Platform" width="600">
+  <img src="/app/static/images/logo.png" alt="GreenProof Platform" width="300">
 </p>
 
 > GreenProof is a University project regarding a blockchain-based platform that tracks CO₂ emissions throughout the entire food supply chain, enabling transparency, accountability, and rewarding sustainable practices through tokenization.
