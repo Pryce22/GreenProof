@@ -29,7 +29,7 @@
 
 ## 🌍 Overview
 
-GreenProof connects the entire food supply chain on a unified platform to track environmental impact from farm to table. The system creates a transparent ecosystem where:
+GreenProof connects the entire food supply chain on a unified platform to track environmental impact from farm to the final consumer. The system creates a transparent ecosystem where:
 
 **Key Stakeholders:**
 - **Manufacturers** — Primary producers who create raw materials
