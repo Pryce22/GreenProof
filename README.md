@@ -228,6 +228,41 @@ All inputs are validated before being processed:
 - Emission data is verified against industry standards
 - User inputs are sanitized to prevent injection attacks
 
+### Multi-Factor Authentication (MFA)
+
+- Implemented email-based MFA for enhanced account security
+- Requires users to verify their identity via a code sent to their registered email address during login
+
+### Sensitive Data Encryption
+
+- Sensitive data (e.g., passwords, API keys) is encrypted at rest in the database
+- Utilizes industry-standard encryption algorithms to protect data confidentiality
+
+### Log-User Action
+
+- Comprehensive logging of user actions for auditing and security monitoring
+- Logs include timestamps, user IDs, action types, and affected data
+
+### Password Recovery
+
+- Secure password recovery process using email verification
+- Prevents unauthorized access to accounts during password resets
+
+### Login Attempt Limiting
+
+- Implemented rate limiting on login attempts to prevent brute-force attacks
+- Accounts are temporarily locked after a certain number of failed login attempts
+
+### Unique Sessions
+
+- Enforces unique user sessions to prevent session hijacking
+- Each user can only have one active session at a time
+
+### Robust Password Policies
+
+- Enforces strong password policies to ensure password complexity
+- Requires passwords to meet minimum length, character type, and complexity requirements
+
 ## ❓ Troubleshooting
 
 ### Common Issues
