@@ -160,7 +160,7 @@ SECRET_KEY=your_secret_key
 ### Database Schema
 
 <p align="center">
-  <img src="/app/static/images/database_schema.png" alt="GreenProof Platform" width="400">
+  <img src="/app/static/images/database_schema.png" alt="GreenProof Platform" width="800">
 </p>
 
 ### Database Setup
