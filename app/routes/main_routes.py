@@ -6,11 +6,12 @@ from app.utils.email_service import EmailService
 from time import time
 
 bp = Blueprint('main', __name__)
-# Dizionario per il rate limiting (chiave: IP, valore: timestamp dell'ultimo messaggio)
+
 contact_rate_limit = {}
 
-RATE_LIMIT_SECONDS = 300  # l'utente può inviare un messaggio ogni 300 secondi
+RATE_LIMIT_SECONDS = 300
 
+# Route for home page
 @bp.route('/')
 def home():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -24,17 +25,15 @@ def home():
                          notifications=notifications,
                          top_companies=top_companies)
 
-
+# Route for contact form submission
 @bp.route('/contact', methods=['POST'])
 def contact():
     user_ip = request.remote_addr
     now = time()
 
-    # Controlla se l'IP ha già inviato un messaggio di recente
     if user_ip in contact_rate_limit and now - contact_rate_limit[user_ip] < RATE_LIMIT_SECONDS:
-        return jsonify({'success': False, 'error': 'Messaggi inviati troppo frequentemente. Attendere qualche secondo.'}), 429
+        return jsonify({'success': False, 'error': 'Messages sent too frequently. Please wait a few seconds.'}), 429
 
-    # Se tutto ok, registra l'invio
     contact_rate_limit[user_ip] = now
 
     name = request.form.get('name', '').strip()
@@ -44,14 +43,14 @@ def contact():
     errors = {}
 
     if not (2 <= len(name) <= 50):
-        errors['name'] = "Il nome deve essere compreso tra 2 e 50 caratteri."
+        errors['name'] = "Name must be between 2 and 50 characters."
     
     email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
     if not re.match(email_pattern, email):
-        errors['email'] = "Inserisci una email valida."
+        errors['email'] = "Enter a valid email address."
     
     if len(message) > 500:
-        errors['message'] = "Il messaggio non deve superare 500 caratteri."
+        errors['message'] = "Message must not exceed 500 characters."
     
     if errors:
         return jsonify({'success': False, 'errors': errors}), 400
@@ -59,9 +58,9 @@ def contact():
     try:
         email_service = EmailService()
         if email_service.send_contact_email(name, email, message):
-            return jsonify({'success': True, 'message': 'Il tuo messaggio è stato inviato correttamente.'})
+            return jsonify({'success': True, 'message': 'Your message has been sent successfully.'})
         else:
-            return jsonify({'success': False, 'error': 'Errore durante l\'invio della mail.'}), 500
+            return jsonify({'success': False, 'error': 'Error sending the email.'}), 500
     except Exception as e:
-        print(f"Errore in /contact: {e}")
-        return jsonify({'success': False, 'error': 'Si è verificato un errore.'}), 500
+        print(f"Error in /contact: {e}")
+        return jsonify({'success': False, 'error': 'An error occurred.'}), 500

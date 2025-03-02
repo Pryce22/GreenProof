@@ -8,15 +8,17 @@ import os
 
 BLOCKCHAIN_INIT_FLAG = 'app/token/.blockchain_initialized'
 
+# Check if the blockchain has been initialized
 def is_blockchain_initialized():
     return os.path.exists(BLOCKCHAIN_INIT_FLAG)
 
+# Set the blockchain as initialized
 def set_blockchain_initialized():
     with open(BLOCKCHAIN_INIT_FLAG, 'w') as f:
         f.write('1')
 
+# Initialize the blockchain
 def init_blockchain():
-    # Wait for Ganache to be ready
     print("First time initialization...")
     print("Waiting for Docker containers to be ready... it takes some minutes")
     time.sleep(5)  # Wait for Docker containers
@@ -77,11 +79,9 @@ w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 # Get contract instance
 token_contract = w3.eth.contract(address=contract_address_green_token , abi=contract_abi)
 
-
+# Get token balance for a given address
 def get_token_balance(address):
-    """
-    Returns the token balance for a given address directly from blockchain
-    """
+
     try:
         if not address:
             return 0
@@ -101,11 +101,10 @@ def get_token_balance(address):
     except Exception as e:
         print(f"Error getting token balance: {e}")
         return 0
-    
+
+# Get transactions for a given company  
 def get_transactions_for_company(company_eth_address, from_block=0, to_block='latest'):
-    """
-    Recupera gli eventi Transfer dalla blockchain per la compagnia, sia in entrata che in uscita.
-    """
+
     try:
         checksum_address = Web3.to_checksum_address(company_eth_address)
         # Retrieve incoming events (company as recipient)
@@ -148,10 +147,9 @@ def get_transactions_for_company(company_eth_address, from_block=0, to_block='la
         print(f"Error retrieving transactions: {e}")
         return []
 
+# Get paginated transactions
 def get_paginated_transactions(company_eth_address, page=1, limit=20):
-    """
-    Returns a tuple: (transactions for the page, total number of pages)
-    """
+
     all_tx = get_transactions_for_company(company_eth_address)
     # Ensure transactions are ordered by date descending (most recent first)
     all_tx.sort(key=lambda t: t['date'], reverse=True)
@@ -162,11 +160,9 @@ def get_paginated_transactions(company_eth_address, page=1, limit=20):
     paged_tx = all_tx[start:end]
     return paged_tx, total_pages
 
+# Find companies with sufficient tokens
 def find_companies_with_sufficient_tokens(required_amount):
-    """
-    Find companies that have more than required_amount + 1000 tokens
-    Returns: list of company addresses with their balances
-    """
+
     try:
         minimum_balance = required_amount + 1000
         companies_with_balance = []
@@ -190,6 +186,7 @@ def find_companies_with_sufficient_tokens(required_amount):
         print(f"Error finding companies with sufficient tokens: {e}")
         return []
 
+# Initiate token transfer
 def initiate_token_transfer(from_address, to_address, amount):
     try:
         # Convert amount to token units (consider decimals)
@@ -230,6 +227,7 @@ def initiate_token_transfer(from_address, to_address, amount):
         print(f"Error preparing token transfer: {e}")
         return {'success': False, 'error': str(e)}
 
+# Verify connected account
 def verify_connected_account(eth_address):
     try:
         checksum_address = Web3.to_checksum_address(eth_address)

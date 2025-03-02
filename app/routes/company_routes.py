@@ -10,6 +10,7 @@ import re
 bp = Blueprint('company', __name__)
 gc = geonamescache.GeonamesCache()
 
+# Helper functions
 def allowed_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
     return '.' in filename and \
@@ -22,16 +23,17 @@ def validate_file_size(file):
     file.seek(0)
     return size <= MAX_FILE_SIZE
 
-import re
-
+# Validate email, phone, and website
 def validate_email(email):
     pattern = r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 
+# Validate phone number
 def validate_phone(phone):
     pattern = r'^\+?\d{10,15}$'
     return re.match(pattern, phone) is not None
 
+# Validate website
 def validate_website(website):
     http = website.startswith('http://')
     if not website:
@@ -40,6 +42,7 @@ def validate_website(website):
         website = 'https://' + website
     return http 
 
+# Validate website URL
 @bp.route('/company_register', methods=['GET', 'POST'])
 def company_register():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -121,6 +124,7 @@ def company_register():
 
     return render_template('company_register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications = notifications)
 
+# Route for searching companies
 @bp.route('/search_companies', methods=['GET'])
 def search_companies():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -153,6 +157,7 @@ def search_companies():
                              is_company_admin=is_company_admin,
                              notifications = notifications)
 
+# Route for company information
 @bp.route('/information_company/<int:company_id>')
 def information_company(company_id):
     user_id, user, is_admin, is_company_admin, notifications= get_user_info()
@@ -163,7 +168,6 @@ def information_company(company_id):
 
     info_of_admin = company_controller.get_admin_info_by_company(company_id)
         
-    # Permetti la visualizzazione solo se la company è approvata o l'utente è admin
     if not company['status'] and not is_admin:
         return "Unauthorized", 403
 
@@ -185,33 +189,30 @@ def information_company(company_id):
                          is_company_admin=is_company_admin,
                          notifications = notifications)
 
+# Route for getting countries
 @bp.route('/get_countries', methods=['GET'])
 def get_countries():
-    # Prendi il termine di ricerca dalla query
     query = request.args.get('query', '')
     
-    # Ottieni la lista di paesi
     countries = gc.get_countries()
     
-    # Filtra i paesi che corrispondono al termine di ricerca
     filtered_countries = [
         {"id": country_code, "text": country_info['name']}
         for country_code, country_info in countries.items()
-        if query.lower() in country_info['name'].lower()  # Controlla se il nome del paese contiene il termine
+        if query.lower() in country_info['name'].lower()
     ]
     
     return jsonify(filtered_countries)
 
+# Route for getting cities
 @bp.route('/get_cities', methods=['GET'])
 def get_cities():
-    country_code = request.args.get('country_code')  # Ottieni il codice del paese dalla query string
+    country_code = request.args.get('country_code')
     if not country_code:
         return jsonify({'error': 'Country code is required'}), 400
 
-    # Ottieni tutte le città dalla cache
     cities = gc.get_cities()
 
-    # Aggiungi un controllo per verificare che i dati siano nel formato corretto
     if isinstance(cities, dict):
         cities_in_country = []
         for city_key, city in cities.items():
@@ -222,17 +223,17 @@ def get_cities():
 
     return jsonify(cities_in_country)
 
+# Route for getting companies of administrator
 @bp.route('/companies_of_administrator', methods=['GET'])
 def companies_administrator():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     
     try:
-        # Verifica se l'utente è un amministratore di alcune compagnie
-        company_ids = company_controller.get_companyID_by_owner(user_id)  # Otteniamo gli ID delle compagnie
-        # Ora otteniamo le informazioni complete per ogni company_id
+        company_ids = company_controller.get_companyID_by_owner(user_id)
+
         companies = []
         for company_id in company_ids:
-            company = company_controller.get_company_by_id(company_id['company_id'])  # Otteniamo i dettagli della compagnia
+            company = company_controller.get_company_by_id(company_id['company_id'])
             if company:
                 companies.append(company)
         
@@ -256,6 +257,7 @@ def companies_administrator():
                              notifications=notifications,
                              is_company_admin=is_company_admin)
 
+# Route for modifying company
 @bp.route('/modify_company/<int:company_id>', methods=['GET', 'POST'])
 def modify_company(company_id):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -342,6 +344,7 @@ def modify_company(company_id):
                          is_company_admin=is_company_admin,
                          notifications=notifications)
 
+# Route for deleting company
 @bp.route('/delete_company/<int:company_id>', methods=['POST'])
 def delete_company(company_id):
     _, user, _, is_company_admin, _ = get_user_info()
@@ -351,6 +354,7 @@ def delete_company(company_id):
     success = company_controller.delete_company_notification(user["email"],company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to delete company'})
 
+# Route for managing products
 @bp.route('/manage_product/<int:company_id>', methods=['GET', 'POST'])
 def manage_product(company_id):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -361,7 +365,7 @@ def manage_product(company_id):
 
     if request.method == 'POST':
         try:
-            # Recupera i dati del prodotto dal modulo
+
             product_id = int(request.form['product_id'])
             updated_data = {
                 'name': request.form['product_name'],
@@ -369,14 +373,11 @@ def manage_product(company_id):
                 'quantity': int(request.form['product_quantity'])
             }
 
-            # Chiama la funzione per aggiornare il prodotto nella tabella 'products'
             response = company_controller.update_product_in_products_table(product_id, updated_data)
 
             if isinstance(response, dict) and 'error' in response:
-                # Gestisci l'errore se è presente nella risposta
                 return jsonify({'error': response['error']}), 500
 
-            # Se la risposta è positiva, fai un redirect alla stessa pagina per ricaricarla
             return redirect(url_for('company.manage_product', company_id=company_id))
 
 
@@ -384,7 +385,6 @@ def manage_product(company_id):
             print(f"Error updating product: {e}")
             return jsonify({'success': False, 'error': str(e)}), 500  # Return error message
 
-    # Se la richiesta è GET, ritorna il template con i prodotti
     return render_template('manage_product.html', 
                            user_id=user_id,
                            company_id=company_id, 
@@ -395,49 +395,37 @@ def manage_product(company_id):
                            is_company_admin=is_company_admin,
                            notifications=notifications)
 
+# Route for adding product
 @bp.route('/add_product', methods=['POST'])
 def add_product():
-    # Recupera i dati dal corpo della richiesta
     data = request.get_json()
 
-    # Estrai i dati del prodotto e company_id
     product_name = data.get('name')
     product_description = data.get('description')
     product_quantity = data.get('quantity')
-    company_id = data.get('company_id')  # Estrai company_id
+    company_id = data.get('company_id')
     type_of_company=data.get('type_of_company')   
     type_of_company=type_of_company.lower()
    
     response=False
-    # Verifica che tutti i campi richiesti siano presenti
+
     if not product_name or not company_id:
         return jsonify({'error': 'Product name, quantity, and company ID are required'}), 400
 
     if type_of_company =="manufacturer":
         if not product_quantity:
             return jsonify({'error': 'Product name, quantity, and company ID are required'}), 400
-        # Chiamata alla funzione per aggiungere il prodotto (questa è la funzione che abbiamo scritto in precedenza)
-        response = company_controller.new_product_by_farmer(company_id=company_id,  # Passa company_id ricevuto
+
+        response = company_controller.new_product_by_farmer(company_id=company_id,
                                         product_name=product_name,
                                         product_description=product_description,
                                         product_quantity=product_quantity)
     elif type_of_company == "processor":
-        response = company_controller.new_product_by_processor(company_id=company_id,  # Passa company_id ricevuto
+        response = company_controller.new_product_by_processor(company_id=company_id,
                                         product_name=product_name,
                                         product_description=product_description,
                                         product_quantity=product_quantity)
-    """elif type_of_company == "transporter":
-        response = company_controller.new_product_by_farmer(company_id=company_id,  # Passa company_id ricevuto
-                                        product_name=product_name,
-                                        product_description=product_description,
-                                        product_quantity=product_quantity)
-    elif type_of_company == "seller":
-        response = company_controller.new_product_by_farmer(company_id=company_id,  # Passa company_id ricevuto
-                                        product_name=product_name,
-                                        product_description=product_description,
-                                        product_quantity=product_quantity)"""
 
-    # Se la risposta è un errore, restituisci l'errore
     if response:
         return jsonify({'success': True, 'message': 'Product added successfully'}), 200
     else:   
@@ -445,45 +433,35 @@ def add_product():
     
     
     
-
+# Route for deleting product
 @bp.route('/delete_product/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
     try:
-        # Esegui la chiamata per eliminare il prodotto dalla tabella 'products'
         response = company_controller.delete_product(product_id)
 
-        # Verifica che il prodotto sia stato eliminato
         if response:
-            # Se il prodotto è stato eliminato, restituisci una risposta di successo
             return jsonify({'success': True, 'message': 'Product deleted successfully'}), 200
         else:
-            # Se non è stato possibile eliminare il prodotto, restituisci un errore
             return jsonify({'error': 'Failed to delete product'}), 500
 
     except Exception as e:
-        # Gestione degli errori
         return jsonify({'error': str(e)}), 500
      
-
+# Route for deleting product by seller
 @bp.route('/delete_product_by_seller/<int:product_id>', methods=['DELETE'])
 def delete_product_by_seller(product_id):
     try:
-        # Esegui la chiamata per eliminare il prodotto dalla tabella 'products'
         response = company_controller.delete_product_of_seller(product_id)
 
-        # Verifica che il prodotto sia stato eliminato
         if response:
-            # Se il prodotto è stato eliminato, restituisci una risposta di successo
             return jsonify({'success': True, 'message': 'Product deleted successfully'}), 200
         else:
-            # Se non è stato possibile eliminare il prodotto, restituisci un errore
             return jsonify({'error': 'Failed to delete product'}), 500
 
     except Exception as e:
-        # Gestione degli errori
         return jsonify({'error': str(e)}), 500  
 
-
+# Route for managing product by processor
 @bp.route('/manage_product_by_processor/<int:company_id>', methods=['GET', 'POST'])
 def manage_product_by_processor(company_id):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -492,7 +470,7 @@ def manage_product_by_processor(company_id):
     seen_names = set()
 
     for product in products_duplicate:
-        name = product["name"].lower()  # Ignora maiuscole/minuscole per evitare duplicati con differenze di case
+        name = product["name"].lower()
         if name not in seen_names:
             products.append(product)
             seen_names.add(name)
@@ -503,7 +481,6 @@ def manage_product_by_processor(company_id):
     
     if request.method == 'POST':
         try:
-            # Recupera i dati del prodotto dal modulo
             product_id = int(request.form['product_id'])
             updated_data = {
                 'name': request.form['product_name'],
@@ -511,14 +488,11 @@ def manage_product_by_processor(company_id):
                 'quantity': int(request.form['product_quantity'])
             }
 
-            # Chiama la funzione per aggiornare il prodotto nella tabella 'products'
             response = company_controller.update_product_in_products_table(product_id, updated_data)
 
             if isinstance(response, dict) and 'error' in response:
-                # Gestisci l'errore se è presente nella risposta
                 return jsonify({'error': response['error']}), 500
-
-            # Se la risposta è positiva, fai un redirect alla stessa pagina per ricaricarla
+            
             return redirect(url_for('company.manage_product_by_processor', company_id=company_id))
 
 
@@ -526,7 +500,6 @@ def manage_product_by_processor(company_id):
             print(f"Error updating product: {e}")
             return jsonify({'success': False, 'error': str(e)}), 500  # Return error message
 
-    # Se la richiesta è GET, ritorna il template con i prodotti
     return render_template('processor_manage_product.html', 
                            user_id=user_id,
                            company_id=company_id, 
@@ -537,6 +510,7 @@ def manage_product_by_processor(company_id):
                            is_company_admin=is_company_admin,
                            notifications=notifications)
 
+# Route for creating product request
 @bp.route('/request_creation_product/<product>/<int:company_id_buyer>/', methods=['GET'])
 def request_creation_product(product, company_id_buyer):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -554,7 +528,7 @@ def request_creation_product(product, company_id_buyer):
             manufacturers.append({'id': company_id, 'name': company['company_name']})
         
             products = company_controller.get_product_by_company_id(company_id)
-            products_by_manufacturer[company_id] = products  # Salva i prodotti per ogni azienda
+            products_by_manufacturer[company_id] = products
 
     for carrier in carriers:
         if carrier['eth_address']:
@@ -575,13 +549,12 @@ def request_creation_product(product, company_id_buyer):
         notifications=notifications
     )
 
+# Route for creating product request
 @bp.route('/create_product_request', methods=['POST'])
 def create_product_request():
-    # Ricevi i dati dal client (modificato per includere il nuovo parametro company_id)
     data = request.get_json()
    
-    # Ottieni i dati dal client
-    company_id = data.get('id_buyer')  # Aggiunto il nuovo parametro company_id
+    company_id = data.get('id_buyer')
     id_supplier = data.get('manufacturer')
     id_product = data.get('id_product')
     id_raw_material = data.get('id_raw_material')
@@ -591,13 +564,11 @@ def create_product_request():
     transport_date = data.get('transportDate')
     distance_to_travel = data.get('distance')
 
-    # Assicurati che company_id sia fornito, altrimenti lancia un errore
     if not company_id:
         return jsonify({"error": "Company ID is required"}), 400
 
-    # Chiama la funzione nel controller per creare la richiesta nel database
     result = company_controller.create_product_request(
-        company_id,  # Passa il company_id al controller
+        company_id,
         id_supplier,
         id_product,
         id_raw_material,
@@ -616,7 +587,6 @@ def create_product_request():
     sender_email = buyer_admins[0]['email'] if buyer_admins else None
 
     if sender_email:
-        # Notifica ai supplier
         for admin in supplier_admins:
             notifications_controller.create_notification_with_product(
                 type="order_request",
@@ -626,7 +596,6 @@ def create_product_request():
                 company_id=id_supplier
             )
 
-        # Notifica ai transporter
         for admin in transporter_admins:
             notifications_controller.create_notification_with_product(
                 type="transport_request",
@@ -636,37 +605,33 @@ def create_product_request():
                 company_id=id_transporter
             )
     else:
-        print("Nessun amministratore del buyer trovato, nessuna notifica inviata.")
+        print("No Amministrator found for the buyer company.")
 
 
     if result:
-    # Risultato riuscito, restituisci un messaggio con i dati
         return jsonify({
             "success": True,  # Include success here
             "status": "success",
             "data": result.data
         }), 200
     else:
-    # Se c'è un errore, mostra il messaggio di errore
         return jsonify({
             "status": "error"
         }), 400
 
-
-
-
+# Route for managing product by seller
 @bp.route('/manage_product_by_seller/<int:company_id>', methods=['GET', 'POST'])
 def manage_product_by_seller(company_id):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     products_of_seller = company_controller.get_products_by_seller(company_id)
-    merged_products = []  # Lista per memorizzare i dati uniti
+    merged_products = []
     
     for product in products_of_seller.data:
         product_details = company_controller.get_information_by_id_product(product['id_product'])
         
         matched_product = None
         for item in product_details.data:
-            if item['id'] == product['id_product']:  # Match based on id_product == id
+            if item['id'] == product['id_product']:
                 matched_product = item
                 break
         
@@ -686,7 +651,6 @@ def manage_product_by_seller(company_id):
     if request.method == 'POST':
         try:
             
-            # Retrieve product data from the form
             product_id = request.form.get('product_id')
             quantity = request.form.get('product_quantity')
             
@@ -721,18 +685,18 @@ def manage_product_by_seller(company_id):
                            is_company_admin=is_company_admin,
                            notifications=notifications)
 
+# Route for managing product by transporter
 @bp.route('/manage_product_by_transporter/<int:company_id>', methods=['GET', 'POST'])
 def manage_product_by_transporter(company_id):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     type_of_company = company_controller.type_of_company_by_id(company_id)
     today = datetime.today().date()
 
-    transports_list = []  # Lista per memorizzare i trasporti formattati
+    transports_list = []
 
-    # Recupera l'elenco dei trasporti per una determinata azienda
     transports = company_controller.get_information_of_transporter(company_id)
 
-    for transport in transports.data:  # Assumiamo che `.data` contenga la lista dei trasporti
+    for transport in transports.data:
         transport_dict = {
             'id': transport['id'],
             'date_delivery': transport['date_delivery'],
@@ -743,31 +707,26 @@ def manage_product_by_transporter(company_id):
             'id_transporter': transport['id_transporter']
         }
 
-        # 🔹 Recupera le informazioni del destinatario (buyer)
         buyer_response = company_controller.get_company_by_id(transport['id_buyer'])
         buyer = buyer_response['company_name']
-        transport_dict['buyer'] = buyer  # Aggiunge tutti i dettagli del buyer
+        transport_dict['buyer'] = buyer
 
-        # 🔹 Recupera le informazioni del mittente (seller)
         seller_response = company_controller.get_company_by_id(transport['id_seller'])
         seller = seller_response['company_name']
         
-        transport_dict['seller'] = seller  # Aggiunge tutti i dettagli del seller
+        transport_dict['seller'] = seller
 
         transport_date = datetime.strptime(transport['date_delivery'], "%Y-%m-%d").date()
 
         # Check if the transport is delivered
         transport_dict['delivered'] = transport_date <= today  # True if delivery date is before or on today, else False
 
-        # Aggiungi il trasporto formattato alla lista
         transports_list.append(transport_dict)
 
-    # Ora `transports_list` contiene tutti i trasporti ben formattati con i dettagli aggiuntivi
     
     comp_indu=type_of_company.data
     type_of_company = comp_indu[0]['company_industry']
 
-    # Se la richiesta è GET, ritorna il template con i prodotti
     return render_template('transporter_manage_product.html', 
                            user_id=user_id,
                            company_id=company_id, 
@@ -779,6 +738,7 @@ def manage_product_by_transporter(company_id):
                            is_company_admin=is_company_admin,
                            notifications=notifications)
 
+# Route for seller request
 @bp.route('/seller_request/<int:company_id_buyer>', methods=['GET'])
 def seller_request(company_id_buyer):
     # Retrieve user and company details
@@ -833,11 +793,11 @@ def seller_request(company_id_buyer):
     )
 
 
+# Route for selecting company to manage product
 @bp.route('/select_company_to_manage_product', methods=['GET', 'POST'])
 def select_company_to_manage_product():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     
-    # Recupera gli ID delle aziende di cui l'utente è admin
     company_ids = company_controller.get_companyID_by_owner(user_id)
     companies = []
     for cid in company_ids:
@@ -846,7 +806,6 @@ def select_company_to_manage_product():
             companies.append(comp)
 
     if request.method == 'POST':
-        # Quando l'utente seleziona un'azienda dal form
         selected_company_id = request.form.get('company_id')
 
         comp = company_controller.get_company_by_id(selected_company_id)
@@ -867,7 +826,7 @@ def select_company_to_manage_product():
                            is_company_admin=is_company_admin,
                            notifications=notifications)
 
-
+# Route for checking ETH address
 @bp.route('/check_eth_address', methods=['GET'])
 def check_eth_address():
     eth_address = request.args.get('address')
@@ -884,11 +843,11 @@ def check_eth_address():
     is_unique = company_controller.check_eth_address_unique(eth_address, company_id)
     return jsonify({'available': is_unique})
 
+# Route for managing tokens
 @bp.route('/manage_tokens', methods=['GET', 'POST'])
 def manage_tokens():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     
-    # Recupera gli ID delle aziende di cui l'utente è admin
     company_ids = company_controller.get_companyID_by_owner(user_id)
     companies = []
     for cid in company_ids:
@@ -900,7 +859,6 @@ def manage_tokens():
         return redirect(url_for('company.manage_tokens_detail', company_id=companies[0]['company_id']))
     
     if request.method == 'POST':
-        # Quando l'utente seleziona un'azienda dal form
         selected_company_id = request.form.get('company_id')
         return redirect(url_for('company.manage_tokens_detail', company_id=selected_company_id))
     
@@ -912,6 +870,7 @@ def manage_tokens():
                            is_company_admin=is_company_admin,
                            notifications=notifications)
 
+# Route for managing tokens details
 @bp.route('/manage_tokens_details/<int:company_id>', methods=['GET', 'POST'])
 def manage_tokens_detail(company_id):
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -920,7 +879,6 @@ def manage_tokens_detail(company_id):
     if company is None:
         return "Company not found", 404
 
-    # Controlla autorizzazioni
     if not company['status'] and not is_admin:
         return "Unauthorized", 403
 
@@ -961,6 +919,7 @@ def manage_tokens_detail(company_id):
                          total_pages=total_pages,
                          page_numbers=page_numbers)
 
+# Route for checking available companies
 @bp.route('/check_available_companies/<int:company_id>')
 def check_available_companies(company_id):
     amount = request.args.get('amount', type=float)
@@ -972,6 +931,7 @@ def check_available_companies(company_id):
     
     return jsonify({'companies': companies})
 
+# Route for submitting token request
 @bp.route('/submit_token_request', methods=['POST'])
 def submit_token_request():
     user_id, _, _, is_company_admin, _ = get_user_info()
@@ -1016,6 +976,7 @@ def submit_token_request():
         print(f"Error submitting token request: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
+# Route for approving token request
 @bp.route('/approve_token_request/<notification_id>', methods=['POST'])
 def approve_token_request(notification_id):
     user_id, _, _, is_company_admin, _ = get_user_info()
@@ -1070,7 +1031,7 @@ def approve_token_request(notification_id):
         print(f"Error in approve_token_request: {e}")
         return jsonify({'success': False, 'error': str(e)})
     
-
+# Route for rejecting token request
 @bp.route('/reject_token_request/<notification_id>', methods=['POST'])
 def reject_token_request(notification_id):
     user_id, _, _, is_company_admin, _ = get_user_info()
@@ -1092,6 +1053,7 @@ def reject_token_request(notification_id):
         print(f"Error rejecting token request: {e}")
         return jsonify({'success': False, 'error': str(e)})
 
+# Route for completing token transfer
 @bp.route('/complete_token_transfer/<notification_id>', methods=['POST'])
 def complete_token_transfer(notification_id):
     user_id, _, _, is_company_admin, _ = get_user_info()

@@ -3,6 +3,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from app.config import Config
 
+# Email service for sending emails
 class EmailService:
     def __init__(self):
         self.from_email = Config.EMAIL_ADDRESS
@@ -10,6 +11,7 @@ class EmailService:
         self.smtp_server = Config.SMTP_SERVER
         self.smtp_port = Config.SMTP_PORT
 
+    # Send an email
     def send_email(self, to_email, subject, html_content):
         try:
             msg = MIMEMultipart('alternative')
@@ -28,21 +30,25 @@ class EmailService:
             print(f"Error sending email: {e}")
             return False
 
+    # Send verification code email
     def send_verification_code(self, to_email, code):
         subject = "Email Verification"
         html_content = self._get_verification_email_template(code)
         return self.send_email(to_email, subject, html_content)
 
+    # Send password reset email
     def send_password_reset(self, to_email, reset_link):
         subject = "Password Reset Request"
         html_content = self._get_password_reset_template(reset_link)
         return self.send_email(to_email, subject, html_content)
-    
+
+    # Send company registration approved email 
     def send_company_approved_notification(self, to_email):
         subject = "Company Registration Approved"
         html_content = self._get_company_approved_template()
         return self.send_email(to_email, subject, html_content)
     
+    # Email templates
     def _get_company_approved_template(self):
         return """
         <html>
@@ -98,9 +104,7 @@ class EmailService:
         </html>
         """
 
-
-
-
+    # Email templates for verification and password reset
     def _get_verification_email_template(self, code):
         return f"""
         <html>
@@ -145,6 +149,7 @@ class EmailService:
         </html>
         """
 
+    # Email templates for password reset
     def _get_password_reset_template(self, reset_link):
         return f"""
         <html>
@@ -170,6 +175,7 @@ class EmailService:
         </html>
         """
     
+    # Email templates for contact form
     def _get_contact_email_template(self, name, email, message):
         return f"""
         <html>
@@ -220,18 +226,19 @@ class EmailService:
         </html>
         """
     
-
+    # Send contact email
     def send_contact_email(self, name, email, message):
         subject = f"Nuovo messaggio da {name}"
         html_content = self._get_contact_email_template(name, email, message)
-        # Scegli l'indirizzo di destinazione (ad esempio, l'indirizzo dell'admin)
         return self.send_email(to_email=self.from_email, subject=subject, html_content=html_content)
     
+    # Send admin notification for new company registration
     def send_admin_notification(self, user_info, company_data):
         subject = "New Company Registration Request"
         html_content = self._get_admin_notification_template(user_info, company_data)
         return self.send_email(to_email=self.from_email, subject=subject, html_content=html_content)
     
+    # Email templates for admin notification
     def _get_admin_notification_template(self, user_info, company_data):
         # Create HTML email content
         return f"""

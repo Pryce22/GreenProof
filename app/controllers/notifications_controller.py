@@ -3,6 +3,7 @@ import uuid
 
 from app.controllers import company_controller
 
+# Create a notification
 def create_notification(type, sender, receiver, company_id = None, amount = None, same_request = None, sender_company_id = None):
 
     try:
@@ -29,7 +30,7 @@ def create_notification(type, sender, receiver, company_id = None, amount = None
         print(f"Error creating notification: {e}")
         return False
     
-
+# Create a notification with product
 def create_notification_with_product(type, sender, receiver, product, company_id = None):
 
     try:
@@ -54,6 +55,7 @@ def create_notification_with_product(type, sender, receiver, product, company_id
         print(f"Error creating notification: {e}")
         return False
 
+# Get notifications by email
 def get_notifications_by_email(email):
     try:
         response = supabase.table('notifications').select('*').eq('receiver_email', email).order('created_at', desc=False).execute()
@@ -64,7 +66,7 @@ def get_notifications_by_email(email):
         print(f"Error getting notifications: {e}")
         return None
     
-
+# Get unread notifications count
 def get_unread_notifications_count(receiver_email):
     try:
         response = supabase.table('notifications').select('*').eq('receiver_email', receiver_email).eq('status', 'unread').execute()
@@ -75,6 +77,7 @@ def get_unread_notifications_count(receiver_email):
         print(f"Error getting notifications count: {e}")
         return 0
 
+# Delete a notification
 def delete_notification(notification_id):
     """Delete a notification and return success status"""
     try:
@@ -98,7 +101,8 @@ def delete_notification(notification_id):
     except Exception as e:
         print(f"Error deleting notification: {e}")
         return False
-    
+
+# Get a notification by ID    
 def get_notification_by_id(notification_id):
     try:
         notification = supabase.table('notifications') \
@@ -111,6 +115,7 @@ def get_notification_by_id(notification_id):
     notification = notification.data[0] if notification.data else None
     return notification
 
+# Send notification to all admins
 def send_notification_to_admin(type, sender, company_id):
     try:
         # Get all company admins
@@ -129,6 +134,7 @@ def send_notification_to_admin(type, sender, company_id):
         print(f"Error sending notification to admins: {e}")
         return False
 
+# Mark notification as read
 def mark_as_read(notification_id):
     try:
         response = supabase.table('notifications') \
@@ -140,6 +146,7 @@ def mark_as_read(notification_id):
         print(f"Error marking notification as read: {e}")
         return False
 
+# Delete notification for all admins of a company
 def delete_notification_for_all_admin_company(notification_id):
     try:
         # Get the notification to find related notifications
@@ -159,6 +166,7 @@ def delete_notification_for_all_admin_company(notification_id):
         print(f"Error deleting company notifications: {e}")
         return False
 
+# Send token notification to all company admins
 def send_token_notification_to_all_company_admin(type, notificaion_id):
     try:
         # Get the notification to find related notifications
@@ -189,12 +197,11 @@ def send_token_notification_to_all_company_admin(type, notificaion_id):
     except Exception as e:
         print(f"Error sending notification to company admins: {e}")
         return False
-    
-    
-
+     
+# Create notifications for product request
 def create_notifications_for_product_request(product_request_id):
     try:
-        # Recupera i dati da 'product_request'
+
         response = supabase.table('product_request') \
                             .select('id_transporter', 'id_buyer', 'id_supplier') \
                             .eq('id', product_request_id) \
@@ -218,7 +225,7 @@ def create_notifications_for_product_request(product_request_id):
         
         notifications_created = []
         if sender_email:
-            # Notifica ai supplier
+
             for admin in supplier_admins:
                 success = create_notification_with_product(
                     type="supplier confirmation",
@@ -229,7 +236,7 @@ def create_notifications_for_product_request(product_request_id):
                 )
                 notifications_created.append(success)
 
-            # Notifica ai transporter
+
             for admin in transporter_admins:
                 success = create_notification_with_product(
                     type="transport assignment",
@@ -250,17 +257,17 @@ def create_notifications_for_product_request(product_request_id):
                 )
                 notifications_created.append(success)
 
-        return all(notifications_created)  # Restituisce True solo se tutte le notifiche sono state create con successo
+        return all(notifications_created)
 
     except Exception as e:
         print(f"Errore nella creazione delle notifiche: {e}")
         return False
 
 
-
+# Create notifications for reject request
 def create_notifications_for_reject_request(product_request_id):
     try:
-        # Recupera i dati da 'product_request'
+
         response = supabase.table('product_request') \
                             .select('id_transporter', 'id_buyer', 'id_supplier') \
                             .eq('id', product_request_id) \
@@ -284,7 +291,7 @@ def create_notifications_for_reject_request(product_request_id):
         
         notifications_created = []
         if sender_email:
-            # Notifica ai supplier
+
             for admin in supplier_admins:
                 success = create_notification_with_product(
                     type="supplier rejection",
@@ -295,7 +302,6 @@ def create_notifications_for_reject_request(product_request_id):
                 )
                 notifications_created.append(success)
 
-            # Notifica ai transporter
             for admin in transporter_admins:
                 success = create_notification_with_product(
                     type="transport rejection",
@@ -316,7 +322,7 @@ def create_notifications_for_reject_request(product_request_id):
                 )
                 notifications_created.append(success)
 
-        return all(notifications_created)  # Restituisce True solo se tutte le notifiche sono state create con successo
+        return all(notifications_created)
 
     except Exception as e:
         print(f"Errore nella creazione delle notifiche: {e}")

@@ -5,7 +5,7 @@ from app.controllers import notifications_controller
 
 bp = Blueprint('admin', __name__)
 
-
+# Route for admin approve company
 @bp.route('/company/approve/<int:company_id>', methods=['POST'])
 def approve_company(company_id):
     _, _, is_admin, _, _ = get_user_info()
@@ -15,6 +15,7 @@ def approve_company(company_id):
     success = company_controller.approve_company(company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to approve company'})
 
+# Route for admin reject company
 @bp.route('/company/reject/<int:company_id>', methods=['POST'])
 def reject_company(company_id):
     _, _, is_admin, _, _ = get_user_info()
@@ -24,6 +25,7 @@ def reject_company(company_id):
     success = company_controller.reject_company(company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to reject company'})
 
+# Route for admin eliminate company
 @bp.route('/company/eliminate/<int:company_id>', methods=['POST'])
 def eliminate_company(company_id):
     _, _, is_admin, _, _ = get_user_info()
@@ -33,9 +35,9 @@ def eliminate_company(company_id):
     success = company_controller.eliminate_company(company_id)
     return jsonify({'success': success, 'error': None if success else 'Failed to eliminate company'})
 
+# Route for admin approve user
 @bp.route('/notification/<notification_id>/<action>', methods=['POST'])
 def process_notification(notification_id,action):
-    """Process a notification (approve/reject/eliminate) and delete it"""
     _, _, is_admin, _, _ = get_user_info()
     if not is_admin:
         return jsonify({'success': False, 'error': 'Unauthorized'})
@@ -71,7 +73,8 @@ def process_notification(notification_id,action):
     except Exception as e:
         print(f"Error processing notification: {e}")
         return jsonify({'success': False, 'error': 'An error occurred'})
-    
+
+# Route for admin manage company   
 @bp.route('/admin_manage_company', methods=['GET'])
 def admin_manage_company():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -106,16 +109,13 @@ def admin_manage_company():
                              search_query=search_query, 
                              is_company_admin=is_company_admin)
     
-
-
+# Route for admin manage user
 @bp.route('/admin_manage_user', methods=['GET', 'POST'])
 def admin_manage_user():
-    # Ottieni informazioni sull'utente
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     unique_admin=user_controller.get_unique_company_admins()
 
-    # Verifica se l'utente è autenticato
     if not user_id:
         return redirect(url_for('login'))
     
@@ -127,7 +127,6 @@ def admin_manage_user():
         users_info = [user for user in user_controller.get_all_users() if user["id"] != user_id]
 
 
-    # Se non è amministratore di una compagnia, solo le informazioni di base
     return render_template('manage_user.html', 
                            user_id=user_id, 
                            user=user, 
@@ -138,10 +137,10 @@ def admin_manage_user():
                            unique_admins=unique_admin,
                            notifications=notifications)
 
+# Route for admin delete user
 @bp.route('/delete_user/<int:user_id>', methods=['POST'])
 def delete_user(user_id):
     try:
-        # Esegui l'eliminazione dell'utente dal database (assumendo che tu stia usando un database con supabase)
         response = user_controller.delete_user(user_id)
         if response:
             return jsonify({'success': True})

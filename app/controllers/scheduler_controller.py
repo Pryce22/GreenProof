@@ -43,6 +43,7 @@ w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
 # Get contract instance
 token_contract = w3.eth.contract(address=contract_address_emission_tracker , abi=contract_abi)
 
+# Get token balance for a given address
 def update_co2_emission():
     try: 
         existing_data = supabase.table('companies') \
@@ -54,10 +55,8 @@ def update_co2_emission():
                 co2_emission = row['co2_emission']
                 total_quantity = row['total_quantity']
 
-                # Evita la divisione per zero
                 co2_old = round(co2_emission / total_quantity, 2) if total_quantity else 0
 
-                # Aggiorna il database
                 supabase.table('companies') \
                     .update({
                         'co2_old': co2_old,
@@ -72,7 +71,8 @@ def update_co2_emission():
         print(f"Error updating CO2 emission: {e}")
         return {'success': False, 'error': str(e)}
  
- 
+
+# Register companies with Ethereum
 def register_companies_with_eth():
     try:
         # Get gas sponsor details
@@ -141,6 +141,7 @@ def register_companies_with_eth():
     except Exception as e:
         print(f"Error in register_companies_with_eth: {e}")
 
+# Update blockchain emissions
 def update_blockchain_emissions():
     try:
         # Get gas sponsor details
@@ -196,7 +197,7 @@ def update_blockchain_emissions():
                     update_receipt = w3.eth.wait_for_transaction_receipt(update_hash, timeout=120)
                     
                     if update_receipt.status != 1:
-                        raise Exception("Update transaction failed")
+                        raise Web3.exceptions.TransactionError("Update transaction failed")
                                         
                     # Wait before sending next transaction
                     time.sleep(2)
@@ -234,7 +235,7 @@ def update_blockchain_emissions():
     except Exception as e:
         print(f"Error in update_blockchain_emissions: {e}")
 
-   
+# Scheduler
 def run_scheduler():
     schedule.every(20).seconds.do(register_companies_with_eth)
     schedule.every(20).seconds.do(update_blockchain_emissions)
@@ -244,6 +245,7 @@ def run_scheduler():
         schedule.run_pending()
         time.sleep(1)
 
+# Start the scheduler in a separate thread
 def start_scheduler():
     scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
     scheduler_thread.start()

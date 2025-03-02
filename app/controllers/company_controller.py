@@ -8,7 +8,7 @@ from app.utils.email_service import EmailService
 from app.controllers.eth_account_controller import get_token_balance
 
 
-
+# Create a new company
 def create_company(
     company_id,
     company_name,
@@ -38,7 +38,7 @@ def create_company(
             'company_address': company_address,
             'company_description': company_description,
             'company_website': company_website,
-            'status': False  # Stato iniziale non confermato
+            'status': False
         }
 
         # Upload image first if provided
@@ -72,7 +72,6 @@ def create_company(
                     if notifications_controller.create_notification('company_registration', sender_email, admin['email'], company_id):
                         return {'success': True, 'company_id': company_id}
                     else:
-                        # Optional: handle notification creation failure
                         print("Warning: Failed to create admin notifications")
                         return {'success': True, 'company_id': company_id, 'warning': 'Failed to notify admins'}
                     
@@ -94,14 +93,13 @@ def send_admin_notification(user_info, company_data):
     else:
         return False
 
+# Upload company image to Supabase storage
 def upload_company_image(company_id, image_file):
     try:
-        # Ottieni il nome originale e l'estensione del file
         original_filename = secure_filename(image_file.filename)
         file_extension = os.path.splitext(original_filename)[1]
         new_filename = f"company_{company_id}{file_extension}"
 
-        # Prima di caricare, verifica se esiste già un'immagine e rimuovila
         try:
             existing_images = supabase.storage.from_('company_logos').list()
             for item in existing_images:
@@ -111,11 +109,10 @@ def upload_company_image(company_id, image_file):
         except Exception as e:
             print(f"Warning when checking existing image: {e}")
 
-        # Leggi il contenuto del file
         file_content = image_file.read()
         image_file.seek(0)  # Reset file pointer after reading
 
-        # Carica il nuovo file su Supabase
+        
         response = supabase.storage.from_('company_logos').upload(
             path=new_filename,
             file=file_content,
@@ -123,7 +120,7 @@ def upload_company_image(company_id, image_file):
         )
 
         if response:
-            # Ottieni l'URL pubblico della nuova immagine
+            
             public_url = supabase.storage.from_('company_logos').get_public_url(new_filename)
             print(f"Image uploaded successfully: {public_url}")
             return public_url
@@ -135,6 +132,7 @@ def upload_company_image(company_id, image_file):
         print(f"Error uploading image: {e}")
         return None
 
+# Get company by ID
 def get_company_by_id(company_id):
     try:
         response = supabase.table('companies').select('*').eq('company_id', company_id).execute()
@@ -144,7 +142,8 @@ def get_company_by_id(company_id):
     except Exception as e:
         print(f"Error getting company: {e}")
         return None
-    
+
+# Get company by name
 def get_id_admin_by_company(company_id):  
     try:
         response = supabase.table('company_employe').select('user_id').eq('company_id', company_id).eq('company_admin', True).execute()
@@ -155,20 +154,20 @@ def get_id_admin_by_company(company_id):
         print(f"Error getting company: {e}")
         return None
 
+# Get admin info by company ID
 def get_admin_info_by_company(company_id):
     try:
-        # Ottieni gli ID degli admin per la compagnia
+        
         admin_ids_response = supabase.table('company_employe').select('user_id').eq('company_id', company_id).eq('company_admin', True).execute()
         
         if len(admin_ids_response.data) == 0:
-            return []  # Se non ci sono admin, ritorna una lista vuota
+            return []  
         
         admin_info_list = []
         
-        # Per ogni admin ID trovato, ottieni le informazioni dell'utente
         for admin in admin_ids_response.data:
             user_info = user_controller.get_user_by_id(admin['user_id'])
-            if user_info:  # Se le informazioni sono state trovate
+            if user_info:  
                 admin_info_list.append(user_info)
         
         return admin_info_list
@@ -177,7 +176,7 @@ def get_admin_info_by_company(company_id):
         print(f"Error getting admin info for company {company_id}: {e}")
         return None
 
-
+# Get company ID by owner
 def get_companyID_by_owner(user_id):
     try:
         # Query to get company IDs where the user is a company admin
@@ -196,7 +195,7 @@ def get_companyID_by_owner(user_id):
         print(f"Error checking user ownership: {e}")
         return []
 
-
+# Check if company exists
 def check_company_exists(company_name):
     try:
         response = supabase.table('companies').select('company_name').eq('company_name', company_name).execute()
@@ -204,29 +203,26 @@ def check_company_exists(company_name):
     except Exception as e:
         print(f"Error checking company: {e}")
         return False
-    
+
+# Get all pending companies
 def get_pending_companies():
     try:
-        # Assicuriamoci di selezionare tutti i campi necessari
-        result = supabase.from_('companies').select('*').eq('status', False).execute()
-        #print("Pending companies:", result.data)  # Debug print
+        result = supabase.from_('companies').select('*').eq('status', False).execute() 
         return result.data
     except Exception as e:
         print(f"Error fetching pending companies: {e}")
         return []
-
+    
+# Approve company
 def approve_company(sender_email, receiver_email, company_id):
     try:
         result = supabase.from_('companies').update({'status': True}).eq('company_id', company_id).execute()
         if result.data:
 
 
-            #EmailService.send_eth_credentials(receiver_email, eth_account, company['company_name'])
-
             user = user_controller.get_user_by_email(receiver_email)
             if user:
                 user_id = user.get('id')
-                # Inserisci nella tabella company_employe rendendo l'utente admin della compagnia
                 admin_response = supabase.from_('company_employe').insert({
                     'user_id': user_id,
                     'company_id': company_id,
@@ -248,7 +244,8 @@ def approve_company(sender_email, receiver_email, company_id):
     except Exception as e:
         print(f"Error approving company: {e}")
         return False
-    
+
+# Delete company notification 
 def delete_company_notification(sender_email, company_id):
     try:
         admin_response = supabase.table('roles').select('user_id').eq('admin', True).execute()
@@ -269,7 +266,8 @@ def delete_company_notification(sender_email, company_id):
     except Exception as e:
         print(f"Error deleting company notification: {e}")
         return False
-    
+
+# Eliminate company
 def eliminate_company(sender_email, receiver_email, company_id):
     try:
         success = delete_company(company_id)
@@ -281,6 +279,7 @@ def eliminate_company(sender_email, receiver_email, company_id):
         print(f"Error eliminating company: {e}")
         return False
 
+# Reject company
 def reject_company(sender_email, receiver_email, company_id):
     try:
         success = delete_company(company_id)
@@ -291,18 +290,16 @@ def reject_company(sender_email, receiver_email, company_id):
     except Exception as e:
         print(f"Error rejecting company: {e}")
         return False
-    
+
+# Delete company    
 def delete_company(company_id):
     try:
-        # Recupera il record della compagnia per controllare se esiste un'immagine associata
         company = get_company_by_id(company_id)
         filename = None
         if company and company.get('company_image'):
             image_url = company['company_image']
-            # Estrai il nome del file dall'URL
             filename = image_url.split('/')[-1].split('?')[0]
                 
-        # Procedi con la cancellazione della compagnia
         result = supabase.from_('companies').delete().eq('company_id', company_id).execute()
         if result and filename:
             storage_response = supabase.storage.from_('company_logos').remove([filename])
@@ -314,6 +311,7 @@ def delete_company(company_id):
         print(f"Error deleting company: {e}")
         return False
 
+# Search companies
 def search_companies(search_term):
     try:
         response = supabase.table('companies') \
@@ -326,6 +324,7 @@ def search_companies(search_term):
         print(f"Error searching companies: {e}")
         return []
 
+# Get all companies sorted
 def get_all_companies_sorted():
     try:
         response = supabase.table('companies') \
@@ -338,9 +337,10 @@ def get_all_companies_sorted():
         print(f"Error getting sorted companies: {e}")
         return []
 
+# Update company
 def update_company(company_id, company_name, company_phone_number, company_email, company_industry, company_website, company_description, company_image):
     try:
-        # Esegui l'update nella tabella 'companies' in Supabase
+
         update_data = {
             'company_name': company_name,
             'company_phone_number': company_phone_number,
@@ -350,17 +350,14 @@ def update_company(company_id, company_name, company_phone_number, company_email
             'company_description': company_description
         }
 
-        # Aggiungi 'company_image' solo se esiste
         if company_image:
             update_data['company_image'] = company_image
 
-        # Esegui l'update nella tabella 'companies' in Supabase
         update_response = supabase.table('companies') \
             .update(update_data) \
             .eq('company_id', company_id) \
             .execute()
 
-        # Verifica se l'operazione è andata a buon fine
         if update_response.data:
             return {'success': True, 'message': 'Company updated successfully'}
         else:
@@ -371,15 +368,14 @@ def update_company(company_id, company_name, company_phone_number, company_email
         return {'success': False, 'message': 'Error updating the company in the database'}
 
 
+# Get all company images
 def get_all_company_images():
     try:
-        # Query per ottenere tutte le immagini dalle aziende
         response = supabase.table('companies') \
             .select('company_image') \
             .eq('status', True) \
             .execute()
 
-        # Estrai tutte le immagini dalla risposta
         image_urls = [company['company_image'] for company in response.data if company.get('company_image')]
 
         return image_urls
@@ -387,10 +383,9 @@ def get_all_company_images():
         print(f"Error getting company images: {e}")
         return []
 
+# Update all companies token balances
 def update_all_companies_token_balances():
-    """
-    Updates token balances for all companies in the database
-    """
+
     try:
         # Get all companies with ETH addresses
         companies = get_all_companies_with_eth_address()
@@ -410,10 +405,9 @@ def update_all_companies_token_balances():
         print(f"Error updating companies token balances: {e}")
         return False
 
+# Get top companies by token balance
 def get_top_companies():
-    """
-    Returns top 3 companies by token balance
-    """
+
     try:
         update_all_companies_token_balances()
         # Get companies sorted by token balance
@@ -430,6 +424,7 @@ def get_top_companies():
         print(f"Error getting top companies: {e}")
         return []
     
+# Check if ETH address is unique
 def check_eth_address_unique(eth_address, exclude_company_id=None):
     try:
         query = supabase.table('companies').select('company_id').eq('eth_address', eth_address)
@@ -441,6 +436,7 @@ def check_eth_address_unique(eth_address, exclude_company_id=None):
         print(f"Error checking ETH address uniqueness: {e}")
         return False
 
+# Update company ETH address
 def update_company_eth_address(company_id, eth_address):
     try:
         # Check if the ETH address is unique (excluding current company)
@@ -458,6 +454,7 @@ def update_company_eth_address(company_id, eth_address):
         print(f"Error updating company ETH address: {e}")
         return False
 
+# Get all companies with ETH addresses
 def get_all_companies_with_eth_address():
     try:
         result = supabase.from_('companies') \
@@ -474,6 +471,7 @@ def get_all_companies_with_eth_address():
         print(f"Error getting companies with ETH addresses: {e}")
         return []
 
+# Get company by ETH address
 def get_company_by_eth_address(eth_address):
     try:
         response = supabase.table('companies').select('*').eq('eth_address', eth_address).execute()
@@ -482,6 +480,7 @@ def get_company_by_eth_address(eth_address):
         print(f"Error getting company by ETH address: {e}")
         return None
 
+# Create token request notification
 def create_token_request_notification(sender_email, sender_company_id ,receiver_company_id, amount, same_request):
     try:
 
@@ -510,7 +509,8 @@ def create_token_request_notification(sender_email, sender_company_id ,receiver_
     except Exception as e:
         print(f"Error creating token request notification: {e}")
         return False
-    
+
+# Get all products
 def get_products():
     try:
         response = supabase.table('products') \
@@ -521,7 +521,7 @@ def get_products():
         print(f"Error getting products: {e}")
         return []
     
-
+# Get product by company ID
 def get_product_by_company_id(company_id):
     try:    
         response2 = supabase.table('products') \
@@ -532,7 +532,7 @@ def get_product_by_company_id(company_id):
             merged_data = []
 
             for item2 in response2.data:
-                merged_item = {**item2}  # Unisce i due dizionari
+                merged_item = {**item2} 
                 merged_data.append(merged_item)
 
             return merged_data
@@ -543,7 +543,8 @@ def get_product_by_company_id(company_id):
     except Exception as e:
         print(f"Errore nel recupero dei prodotti: {e}")
         return []
-    
+
+# Get products by company ID   
 def get_products_by_company_id(company_id):
     try:
         response = supabase.table('chain_products') \
@@ -558,13 +559,11 @@ def get_products_by_company_id(company_id):
         if response.data and response2.data:
             merged_data = []
 
-            # Per ogni prodotto in response (chain_products)
             for item1 in response.data:
                 for item2 in response2.data:
-                    # Se gli ID corrispondono
+
                     if item1['id'] == item2['id']:
-                        # Fai il merge dei dati (aggiungi item2 ai dati di item1)
-                        merged_item = {**item1, **item2}  # Unisce i due dizionari
+                        merged_item = {**item1, **item2}  
                         merged_data.append(merged_item)
 
             return merged_data
@@ -575,7 +574,8 @@ def get_products_by_company_id(company_id):
     except Exception as e:
         print(f"Errore nel recupero dei prodotti: {e}")
         return []
-    
+
+# Update product in products table  
 def update_product_in_products_table(product_id, updated_data):
     try:
         old_value = supabase.table('products') \
@@ -610,9 +610,7 @@ def update_product_in_products_table(product_id, updated_data):
             .eq('id', product_id) \
             .execute()
 
-        # Verifica se l'aggiornamento è stato effettuato correttamente
         if response:
-            #print(f"Prodotto con ID {product_id} aggiornato correttamente nella tabella 'products'.")
             return True
         else:
             print(f"Errore nell'aggiornamento del prodotto con ID {product_id}.")
@@ -622,7 +620,7 @@ def update_product_in_products_table(product_id, updated_data):
         print(f"Errore nell'aggiornamento del prodotto con ID {product_id}: {e}")
         return False
 
-
+# Update total quantity and CO2 emission
 def update_total_quantity_co2_emission_processor(product_request_id):
     try:
         response = supabase.table('product_request') \
@@ -657,9 +655,7 @@ def update_total_quantity_co2_emission_processor(product_request_id):
         
         companies_emission(old_value.data[0]['company_id'],  new_co2, new_total_quantity)
 
-        # Verifica se l'aggiornamento è stato effettuato correttamente
         if response1:
-            #print(f"Prodotto con ID {product_id} aggiornato correttamente nella tabella 'products'.")
             return True
         else:
             print(f"Errore nell'aggiornamento del prodotto con ID {product_id}.")
@@ -669,7 +665,7 @@ def update_total_quantity_co2_emission_processor(product_request_id):
         print(f"Errore nell'aggiornamento del prodotto con ID {product_id}: {e}")
         return False
     
-
+# Get type of company by ID
 def type_of_company_by_id(company_id):
     try:
         
@@ -681,30 +677,34 @@ def type_of_company_by_id(company_id):
         return response
     
     except Exception as e:
-        # Gestisce eventuali errori
         print(f"An error occurred: {e}")
         return []
-    
+
+# Calculate emissions
 def farmer_emission(product_quantity):
     average_emission = round(random.uniform(0.5, 20), 2)
     emission = int(product_quantity)*average_emission
     return emission
 
+# Calculate emissions
 def processor_emission(product_quantity):
     average_emission = round(random.uniform(1, 20), 2)
     emission = int(product_quantity)*average_emission
     return emission
 
+# Calculate emissions
 def transporter_emission(product_quantity):
     average_emission = round(random.uniform(0.1, 0.4), 2)
     emission = int(product_quantity)*average_emission
     return emission
 
+# Calculate emissions
 def seller_emission(product_quantity):
     average_emission = round(random.uniform(0.1, 2), 2)
     emission = int(product_quantity)*average_emission
     return emission
 
+# Update company emissions
 def companies_emission(company_id, new_emission, new_quantity):
     try:
         emission_company=supabase.table('companies').select('*').eq('company_id', company_id).execute()
@@ -719,14 +719,12 @@ def companies_emission(company_id, new_emission, new_quantity):
     except Exception as e:
         return {'error': str(e)}
 
-
+# Create new product by farmer
 def new_product_by_farmer(company_id, product_name, product_description, product_quantity):
     try:
-        # Pulisci il nome del prodotto per evitare caratteri invisibili
-        product_name = product_name.strip()  # Rimuove spazi prima e dopo
-        product_name = ''.join(e for e in product_name if e.isalnum() or e.isspace())  # Rimuove caratteri speciali
+        product_name = product_name.strip() 
+        product_name = ''.join(e for e in product_name if e.isalnum() or e.isspace()) 
         product_name = product_name.lower()
-        # Verifica se il prodotto esiste già per questa compagnia
         existing_product = supabase.table('products').select('id').eq('company_id', company_id).eq('name', product_name).execute()
 
         if existing_product.data:
@@ -734,7 +732,6 @@ def new_product_by_farmer(company_id, product_name, product_description, product
 
         emission=farmer_emission(product_quantity)
         
-        # Inserisci il nuovo prodotto
         response = supabase.table('products').insert([{
             'name': product_name,
             'description': product_description,
@@ -746,11 +743,9 @@ def new_product_by_farmer(company_id, product_name, product_description, product
 
         companies_emission(company_id, emission, product_quantity)
 
-        # Verifica se l'inserimento è andato a buon fine
         if response.data:
             product_id = response.data[0]['id']
 
-            # Inserisci nella tabella 'chain_products'
             supabase.table('chain_products').insert([{
                 'id': product_id,
                 'farmer': company_id
@@ -765,7 +760,7 @@ def new_product_by_farmer(company_id, product_name, product_description, product
 
 
 
-   
+# Delete product
 def delete_product(product_id):
     try:
         response = supabase.table('products').delete().eq('id', product_id).execute() 
@@ -774,20 +769,17 @@ def delete_product(product_id):
         print(f"Error getting products: {e}")
         return False
     
-
+# Create new product by processor
 def new_product_by_processor(company_id, product_name, product_description, product_quantity):
     try:
-        # Pulisci il nome del prodotto per evitare caratteri invisibili
-        product_name = product_name.strip()  # Rimuove spazi prima e dopo
-        product_name = ''.join(e for e in product_name if e.isalnum() or e.isspace())  # Rimuove caratteri speciali
+        product_name = product_name.strip()
+        product_name = ''.join(e for e in product_name if e.isalnum() or e.isspace())
         product_name = product_name.lower()
-        # Verifica se il prodotto esiste già per questa compagnia
         existing_product = supabase.table('products').select('id').eq('company_id', company_id).eq('name', product_name).execute()
 
         if existing_product.data:
             return False
 
-        # Inserisci il nuovo prodotto
         response = supabase.table('products').insert([{
             'name': product_name,
             'description': product_description,
@@ -795,11 +787,9 @@ def new_product_by_processor(company_id, product_name, product_description, prod
             'company_id': company_id
         }]).execute()
 
-        # Verifica se l'inserimento è andato a buon fine
         if response.data:
             product_id = response.data[0]['id']
 
-            # Inserisci nella tabella 'chain_products'
             supabase.table('chain_products').insert([{
                 'id': product_id,
                 'transformer': company_id
@@ -811,7 +801,8 @@ def new_product_by_processor(company_id, product_name, product_description, prod
 
     except Exception as e:
         return {'error': str(e)}
-    
+
+# Get companies by industry 
 def get_companies_by_industry(company_industry):
     try:
         response = supabase.table('companies') \
@@ -823,17 +814,15 @@ def get_companies_by_industry(company_industry):
         return response.data
     
     except Exception as e:
-        # Gestisce eventuali errori
         print(f"An error occurred: {e}")
         return []
     
-
+# Create product request
 def create_product_request(id_buyer, id_supplier, id_product, id_raw_material, quantity, quantity_of_raw_material, 
                            id_transporter, transport_date, distance_to_travel):
     supplier_approve=None
     transporter_approve=None
 
-    # Imposta i dati per l'inserimento
     data = {
         "id_buyer": id_buyer,
         "id_supplier": id_supplier,
@@ -848,14 +837,13 @@ def create_product_request(id_buyer, id_supplier, id_product, id_raw_material, q
         "transporter_approve": transporter_approve,
     }
 
-    # Inserisci nella tabella
     response = supabase.table('product_request').insert(data).execute()
 
     return response
 
+# Get owners by company ID
 def get_owners_by_company(company_id):
     try:
-        # Trova gli user_id degli amministratori dell'azienda
         employees_response = supabase.table('company_employe')\
             .select('user_id')\
             .eq('company_id', company_id)\
@@ -867,29 +855,27 @@ def get_owners_by_company(company_id):
 
         user_ids = [employee['user_id'] for employee in employees_response.data]
 
-        # Recupera i dettagli degli utenti trovati
         users_response = supabase.table('user')\
             .select('*')\
             .in_('id', user_ids)\
             .execute()
 
-        # Aggiunge company_id ai risultati
         return [{'company_id': company_id, **user} for user in users_response.data] if users_response.data else []
     
     except Exception as e:
         print(f"Error getting company owners: {e}")
         return []
 
+# Get product request by ID
 def get_product_request_by_id(product_request_id):
-    # Esegui la query per ottenere il record dalla tabella product_request usando l'id
     response = supabase.table('product_request').select('*').eq('id', product_request_id).execute()
 
-    # Verifica se ci sono dati nella risposta
     if response.data:
-        return response.data[0]  # Restituisci il primo risultato (l'unico, poiché l'id è unico)
+        return response.data[0] 
     else:
-        return None  # Nessun risultato trovato, restituisci None
+        return None 
 
+# Get products by ID
 def get_products_by_id(product_id):
     try:
         response = supabase.table('products') \
@@ -907,56 +893,50 @@ def get_products_by_id(product_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Approve supplier   
 def approve_supplier(product_request_id):
-    # Esegui la query per aggiornare il campo 'supplier_approve' a true
     response = supabase.table('product_request').update({'supplier_approve': True}).eq('id', product_request_id).execute()
 
-    # Verifica se la risposta è positiva
     if response:
-        return True  # Successo nell'aggiornamento
+        return True
     else:
-        return False  # Qualcosa è andato storto
+        return False
     
- 
+# Approve transporter
 def approve_transporter(product_request_id):
-    # Esegui la query per aggiornare il campo 'supplier_approve' a true
     response = supabase.table('product_request').update({'transporter_approve': True}).eq('id', product_request_id).execute()
 
-    # Verifica se la risposta è positiva
     if response:
-        return True  # Successo nell'aggiornamento
+        return True
     else:
-        return False  # Qualcosa è andato storto 
+        return False
 
-  
+# Reject supplier
 def reject_supplier(product_request_id):
-    # Esegui la query per aggiornare il campo 'supplier_approve' a true
     response = supabase.table('product_request').update({'supplier_approve': False}).eq('id', product_request_id).execute()
 
-    # Verifica se la risposta è positiva
     if response:
-        return True  # Successo nell'aggiornamento
+        return True
     else:
-        return False  # Qualcosa è andato storto
+        return False
     
- 
+# Reject transporter
 def reject_transporter(product_request_id):
-    # Esegui la query per aggiornare il campo 'supplier_approve' a true
     response = supabase.table('product_request').update({'transporter_approve': False}).eq('id', product_request_id).execute()
 
-    # Verifica se la risposta è positiva
     if response:
-        return True  # Successo nell'aggiornamento
+        return True
     else:
-        return False  # Qualcosa è andato storto
+        return False
     
-
+# Check supplier approval
 def check_supplier_approve(product_request_id):
     response = supabase.table('product_request').select('quantity_of_raw_material').eq('supplier_approve', True).eq('id', product_request_id).execute()
     
     return response  
 
+# Get product ID from request
 def id_product_from_request(product_request_id):
     try:
         response = supabase.table('product_request').select('id_product').eq('id', product_request_id).execute()
@@ -965,7 +945,8 @@ def id_product_from_request(product_request_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Update quantity after reject   
 def update_quantity_after_reject(product_id, new_quantity):
     try:
         response = supabase.table('products').select('quantity').eq('id', product_id).execute()
@@ -973,38 +954,34 @@ def update_quantity_after_reject(product_id, new_quantity):
         update=supabase.table('products').update({'quantity': quantity}).eq('id', product_id).execute()
 
         if update:
-            return True  # Successo nell'aggiornamento
+            return True
         else:
             return False 
         
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Check approval status   
 def check_approval_status(product_request_id):
-    # Esegui la query per ottenere i valori dei campi 'supplier_approve' e 'transporter_approve'
     response = supabase.table('product_request').select('supplier_approve', 'transporter_approve').eq('id', product_request_id).execute()
 
-    # Verifica se la risposta contiene i dati
     if response and response.data:
-        # Ottieni i valori di 'supplier_approve' e 'transporter_approve'
         approval_data = response.data[0]
         supplier_approve = approval_data['supplier_approve']
         transporter_approve = approval_data['transporter_approve']
 
-        # Verifica se entrambi sono True
         if supplier_approve and transporter_approve:
-            return True  # Entrambi approvati
+            return True
         else:
-            return False  # Almeno uno dei due non è approvato
+            return False
     else:
-        return False  # La query non ha restituito risultati validi
+        return False
     
-   
+# Check if product and raw material are the same
 def check_equal_status_of_request_product(product_request_id):
     
     response = supabase.table('product_request').select('id_raw_material', 'id_product').eq('id', product_request_id).execute()
-    # Verifica se la risposta contiene i dati
     if response:
         approval_data = response.data[0]
         id_raw_material = approval_data['id_raw_material']
@@ -1016,100 +993,91 @@ def check_equal_status_of_request_product(product_request_id):
             return False  
     else:
         return False  
-    
+
+# Update product quantity after approval    
 def update_product_quantity_after_approval(product_request_id):
-    # Esegui la query per ottenere i dati di 'product_request' e 'products'
     response = supabase.table('product_request') \
                         .select('quantity_of_raw_material', 'id_raw_material') \
                         .eq('id', product_request_id) \
                         .execute()
-    # Verifica se la risposta contiene i dati
     if response:
         product_request_data = response.data[0]
         quantity_to_deduct = product_request_data['quantity_of_raw_material']
         id_raw_material = product_request_data['id_raw_material']
 
-        # Esegui la query per ottenere la quantità attuale nel prodotto corrispondente
         product_response = supabase.table('products') \
                                     .select('quantity') \
                                     .eq('id', id_raw_material) \
                                     .execute()
-        # Verifica se la risposta contiene i dati
+
         if product_response:
             product_data = product_response.data[0]
             current_quantity = product_data['quantity']
 
-            # Calcola la nuova quantità per il prodotto
+
             new_quantity = current_quantity - quantity_to_deduct
 
-            # Aggiorna la quantità nel prodotto
             update_response = supabase.table('products') \
                                         .update({'quantity': new_quantity}) \
                                         .eq('id', id_raw_material) \
                                         .execute()
-            # Verifica se l'aggiornamento è stato effettuato con successo
+
             if update_response:
-                return True  # Successo nell'aggiornamento
+                return True
             else:
-                return False  # Qualcosa è andato storto nell'aggiornamento del prodotto
+                return False
         else:
-            return False  # Non è stato trovato il prodotto con il corrispondente 'id_raw_material'
+            return False
     else:
-        return False  # Non è stato trovato 'product_request' con l'ID fornito
+        return False
 
 
-   
+# Update quantity of processed product  
 def update_quantity_of_processed_product(product_request_id):
-    # Esegui la query per ottenere i dati di 'product_request' e 'products'
+
     response = supabase.table('product_request') \
                         .select('quantity', 'id_product') \
                         .eq('id', product_request_id) \
                         .execute()
     
-    # Verifica se la risposta contiene i dati
     if response:
         product_request_data = response.data[0]
         quantity_to_deduct = product_request_data['quantity']
         id_processed_material = product_request_data['id_product']
 
-        # Esegui la query per ottenere la quantità attuale nel prodotto corrispondente
         product_response = supabase.table('products') \
                                     .select('quantity') \
                                     .eq('id', id_processed_material) \
                                     .execute()
         
-        # Verifica se la risposta contiene i dati
         if product_response:
             product_data = product_response.data[0]
             current_quantity = product_data['quantity']
 
-            # Calcola la nuova quantità per il prodotto
             new_quantity = current_quantity + quantity_to_deduct
 
-            # Aggiorna la quantità nel prodotto
             update_response = supabase.table('products') \
                                         .update({'quantity': new_quantity}) \
                                         .eq('id', id_processed_material) \
                                         .execute()
             
-            # Verifica se l'aggiornamento è stato effettuato con successo
             if update_response:
-                return True  # Successo nell'aggiornamento
+                return True
             else:
-                return False  # Qualcosa è andato storto nell'aggiornamento del prodotto
+                return False
         else:
-            return False  # Non è stato trovato il prodotto con il corrispondente 'id_raw_material'
+            return False
     else:
-        return False  # Non è stato trovato 'product_request' con l'ID fornito
+        return False
 
+# Add transport record from product request
 def add_transport_record_from_product_request(product_request_id):
 
-    # Esegui la query per ottenere i dati da 'product_request' (id_buyer, id_seller, id_transporter, distance_to_travel, transport_date)
     response = supabase.table('product_request') \
                         .select('id_buyer', 'id_supplier', 'id_transporter', 'distance_to_travel','id_product', 'transport_date') \
                         .eq('id', product_request_id) \
                         .execute()
-    # Verifica se la risposta contiene i dati
+    
     if response:
         product_request_data = response.data[0]
         id_buyer = product_request_data['id_buyer']
@@ -1120,36 +1088,34 @@ def add_transport_record_from_product_request(product_request_id):
         id_product= product_request_data['id_product']
         co2_emission=transporter_emission(distance_to_travel)
 
-        # Prepara i dati per la nuova riga nella tabella 'transport'
         new_transport_data = {
             'id_buyer': id_buyer,
             'id_seller': id_seller,
             'id_transporter': id_transporter,
-            'distance': distance_to_travel,  # Assumiamo che 'distance_to_travel' vada mappato in 'distance'
-            'date_delivery': transport_date,  # 'transport_date' mappato in 'date_delivery'
+            'distance': distance_to_travel,
+            'date_delivery': transport_date,
             'id_product' : id_product,
             'co2_emission' : co2_emission
         }
 
         companies_emission(id_transporter, co2_emission, distance_to_travel)
        
-        # Aggiungi una nuova riga nella tabella 'transport'
         insert_response = supabase.table('transport').insert(new_transport_data).execute()
-        # Verifica se l'inserimento è stato effettuato con successo
         if insert_response:
-            return insert_response.data[0]['id'] # Successo nell'inserimento del record
+            return insert_response.data[0]['id']
         else:
-            return False  # Qualcosa è andato storto nell'inserimento
+            return False
     else:
-        return False  # Non è stato trovato il 'product_request' con l'ID fornito
+        return False
     
+# Update or insert chain product   
 def update_or_insert_chain_product(product_request_id):
-    # Recupera i dati dalla tabella 'product_request'
+
     response = supabase.table('product_request') \
                         .select('id_product', 'id_transporter', 'id_supplier', 'id_buyer') \
                         .eq('id', product_request_id) \
                         .execute()
-    # Verifica se la risposta contiene dati validi
+
     if response:
         product_request_data = response.data[0]
         id_product = product_request_data['id_product']
@@ -1157,7 +1123,7 @@ def update_or_insert_chain_product(product_request_id):
         id_supplier = product_request_data['id_supplier']
         id_buyer = product_request_data['id_buyer']
 
-        # Recupera tutti i record di 'chain_product' che corrispondono a 'id_product'
+
         chain_product_response = supabase.table('chain_products') \
                                          .select('id', 'farmer', 'transporter1', 'transformer') \
                                          .eq('id', id_product) \
@@ -1168,7 +1134,7 @@ def update_or_insert_chain_product(product_request_id):
                 farmer = chain_product['farmer']
                 transporter1 = chain_product['transporter1']
 
-                # Se entrambi i campi sono NULL, sovrascrivi con i nuovi valori
+
                 if farmer is None and transporter1 is None:
                     update_response = supabase.table('chain_products') \
                                               .update({
@@ -1178,25 +1144,13 @@ def update_or_insert_chain_product(product_request_id):
                                               .eq('id', id_product) \
                                               .execute()
                 
-                    return bool(update_response)  # Restituisce True se l'aggiornamento è riuscito
+                    return bool(update_response)
 
-                # Se i valori coincidono, non fare nulla
+
                 if farmer == id_supplier and transporter1 == id_transporter:
-                    return True  # Nessuna azione necessaria
+                    return True
 
-            # Se nessun record coincide e nessuno dei due campi è NULL, crea una nuova riga
-            insert_response = supabase.table('chain_products') \
-                                      .insert({
-                                          'id': id_product,
-                                          'farmer': id_supplier,
-                                          'transporter1': id_transporter,
-                                          'transformer': id_buyer  # Usa 'id_buyer' come nuovo trasformatore
-                                      }) \
-                                      .execute()
 
-            return bool(insert_response)  # Restituisce True se l'inserimento è riuscito
-        else:
-            # Se non esiste alcun record con quell'id_product, crea direttamente una nuova riga
             insert_response = supabase.table('chain_products') \
                                       .insert({
                                           'id': id_product,
@@ -1206,18 +1160,30 @@ def update_or_insert_chain_product(product_request_id):
                                       }) \
                                       .execute()
 
-            return bool(insert_response)  # Restituisce True se l'inserimento è riuscito
-    else:
-        return False  # Il 'product_request' con l'ID specificato non esiste
+            return bool(insert_response)
+        else:
 
- 
+            insert_response = supabase.table('chain_products') \
+                                      .insert({
+                                          'id': id_product,
+                                          'farmer': id_supplier,
+                                          'transporter1': id_transporter,
+                                          'transformer': id_buyer
+                                      }) \
+                                      .execute()
+
+            return bool(insert_response)
+    else:
+        return False
+
+# Update or insert chain product for seller
 def update_or_insert_chain_product_for_seller(product_request_id):
-    # Recupera i dati dalla tabella 'product_request'
+
     response = supabase.table('product_request') \
                         .select('id_product', 'id_transporter', 'id_supplier', 'id_buyer') \
                         .eq('id', product_request_id) \
                         .execute()
-    # Verifica se la risposta contiene dati validi
+    
     if response:
         product_request_data = response.data[0]
         id_product = product_request_data['id_product']
@@ -1225,7 +1191,6 @@ def update_or_insert_chain_product_for_seller(product_request_id):
         
         id_buyer = product_request_data['id_buyer']
 
-        # Recupera tutti i record di 'chain_product' che corrispondono a 'id_product'
         chain_product_response = supabase.table('chain_products') \
                                          .select('id', 'farmer', 'transporter2', 'transporter1','transformer', 'seller') \
                                          .eq('id', id_product) \
@@ -1238,11 +1203,9 @@ def update_or_insert_chain_product_for_seller(product_request_id):
             transporter1 = chain_product['transporter1']
             seller = chain_product['seller']
 
-             # Se i valori coincidono, non fare nulla
             if seller == id_buyer and transporter2 == id_transporter:
-                return True  # Nessuna azione necessaria
+                return True
             
-            # Se entrambi i campi sono NULL, sovrascrivi con i nuovi valori
             if seller is None and transporter2 is None:
                 update_response = supabase.table('chain_products') \
                                     .insert({
@@ -1255,12 +1218,12 @@ def update_or_insert_chain_product_for_seller(product_request_id):
                                     }) \
                                     .execute()
             
-                return bool(update_response)  # Restituisce True se l'aggiornamento è riuscito
+                return bool(update_response)
     
     else:
-        return False  # Il 'product_request' con l'ID specificato non esiste
+        return False
 
-
+# Insert product seller
 def insert_product_seller(product_request_id):
    
     response = supabase.table('product_request') \
@@ -1324,7 +1287,7 @@ def insert_product_seller(product_request_id):
     else:
         return False
     
-
+# Get products by seller
 def get_products_by_seller(company_id):
     try:
         response = supabase.table('seller_products') \
@@ -1335,7 +1298,8 @@ def get_products_by_seller(company_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Get information by product ID    
 def get_information_by_id_product(product_id):
     try:
         response = supabase.table('products') \
@@ -1346,8 +1310,8 @@ def get_information_by_id_product(product_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
-    
+
+# Get information of transporter    
 def get_information_of_transporter(company_id):
     try:
         response = supabase.table('transport') \
@@ -1358,7 +1322,8 @@ def get_information_of_transporter(company_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Update quantity of seller   
 def update_quantity_of_seller(id, quantity):
     try:
         
@@ -1372,7 +1337,8 @@ def update_quantity_of_seller(id, quantity):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Delete product of seller   
 def delete_product_of_seller(product_id):
     try:
         response = supabase.table('seller_products').delete().eq('id_product', product_id).execute() 
@@ -1381,6 +1347,7 @@ def delete_product_of_seller(product_id):
         print(f"Error getting products: {e}")
         return []
     
+# Get companies of chain product
 def get_companies_of_chain_product(product_id, company_id):
     try:
         response = supabase.table('chain_products').select('*').eq('id', product_id).eq('seller',company_id).execute() 
@@ -1388,28 +1355,23 @@ def get_companies_of_chain_product(product_id, company_id):
     except Exception as e:
         print(f"Error getting products: {e}")
         return []
-    
+
+# Get company CO2 contribution  
 def get_company_co2_contribution(company_id, product_id):
-    """
-    Calcola il contributo di CO2 di una specifica compagnia per un prodotto
-    """
+
     try:
         company_info = get_company_by_id(company_id)
         company_type = company_info['company_industry']
         
-        # Ottieni la quantità di prodotto coinvolta
         if company_type == 'farmer':
-            # Per un farmer, usa la quantità totale del prodotto
             product_info = get_products_by_id(product_id)
             quantity = product_info['total_quantity'] if product_info else 0
             emission = farmer_emission(quantity)
         elif company_type == 'processor':
-            # Per un processor, calcola in base alla quantità processata
             product_info = get_products_by_id(product_id)
             quantity = product_info['total_quantity'] if product_info else 0
             emission = processor_emission(quantity)
         elif company_type in ['transporter', 'logistics']:
-            # Per un transporter, ottieni i dati dalla tabella transport
             transport_data = supabase.table('transport')\
                 .select('co2_emission')\
                 .eq('id_product', product_id)\
@@ -1421,7 +1383,6 @@ def get_company_co2_contribution(company_id, product_id):
             else:
                 emission = 0
         elif company_type == 'seller':
-            # Per un seller, usa la quantità venduta
             seller_product = supabase.table('seller_products')\
                 .select('co2_emission')\
                 .eq('id_product', product_id)\
@@ -1437,13 +1398,11 @@ def get_company_co2_contribution(company_id, product_id):
     except Exception as e:
         print(f"Error calculating company CO2 contribution: {e}")
         return 0
-    
+
+# Get sellers with products  
 def get_sellers_with_products():
-    """
-    Restituisce solo le aziende di tipo seller che hanno prodotti disponibili
-    """
+
     try:
-        # Ottieni tutti i seller_id che hanno prodotti con quantità > 0
         seller_products = supabase.table('seller_products') \
             .select('id_seller') \
             .gt('quantity', 0) \
@@ -1452,10 +1411,8 @@ def get_sellers_with_products():
         if not seller_products.data:
             return []
         
-        # Estrai gli ID univoci dei seller con prodotti
         seller_ids = set(item['id_seller'] for item in seller_products.data)
         
-        # Ottieni i dettagli completi solo per i seller che hanno prodotti
         sellers = supabase.table('companies') \
             .select('*') \
             .eq('company_industry', 'seller') \

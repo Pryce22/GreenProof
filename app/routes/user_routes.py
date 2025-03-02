@@ -11,14 +11,17 @@ def validate_email(email):
     pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
     return bool(pattern.match(email))
 
+# validation function for name and surname
 def validate_name(name):
     pattern = re.compile(r'^[A-Za-z]{2,50}$')
     return bool(pattern.match(name))
 
+# validation function for phone number
 def validate_phone_number(phone):
     pattern = re.compile(r'^\+?\d{10,15}$')
     return bool(pattern.match(phone))
 
+# validation function for birthday
 def validate_birthday(birth_date_str):
     try:
         birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
@@ -28,6 +31,7 @@ def validate_birthday(birth_date_str):
     except ValueError:
         return False
 
+# validation function for all fields
 def validate_field(field, value):
     validators = {
         'email': (validate_email, 'Invalid email format'),
@@ -44,6 +48,7 @@ def validate_field(field, value):
     is_valid = validator_func(value)
     return is_valid, error_message if not is_valid else None
 
+# Route for user profile
 @bp.route('/user_profile', methods=['GET', 'POST'])
 def user_profile():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -59,7 +64,7 @@ def user_profile():
     
     return render_template('user_profile.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, companies=companies, notifications = notifications)
 
-
+# Route for notifications
 @bp.route('/notifications', methods=['GET'])
 def notifications():
     user_id, user, is_admin, is_company_admin, notifications= get_user_info()
@@ -109,17 +114,16 @@ def notifications():
                     notification_dict['supplier']=supplier['company_name']
 
 
-                    # Ottieni il prodotto associato al product_request
                     product_id = product_request['id_raw_material']
                     product_info = company_controller.get_products_by_id(product_id)
                     if product_info:
                         notification_dict['product_name']=product_info['name']
                         
                     else:
-                        notification_dict['product'] = None  # Se non c'è un prodotto associato
+                        notification_dict['product'] = None
                 else:
-                    notification_dict['product_request'] = None  # Se non c'è una product_requestne
-            #print(processed_notifications)
+                    notification_dict['product_request'] = None
+
             processed_notifications.append(notification_dict)
     else:
         processed_notifications = []
@@ -133,6 +137,7 @@ def notifications():
                          notifications=notifications,
                          notifications_info=processed_notifications)
 
+# Route for approving supplier
 @bp.route("/approve_supplier/<int:product_request_id>", methods=["POST"])
 def approve_supplier_route(product_request_id):
     try:
@@ -158,7 +163,8 @@ def approve_supplier_route(product_request_id):
             return jsonify({"success": False, "error": "Update failed"}), 400
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-    
+
+# Route for approving transporter 
 @bp.route("/approve_transporter/<int:transport_request_id>", methods=["POST"])
 def approve_transporter_route(transport_request_id):
     try:
@@ -184,7 +190,7 @@ def approve_transporter_route(transport_request_id):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-
+# Route for rejecting supplier
 @bp.route('/reject_supplier/<int:request_id>', methods=['POST'])
 def reject_supplier(request_id):
     try:
@@ -194,10 +200,10 @@ def reject_supplier(request_id):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
+# Route for rejecting transporter
 @bp.route('/reject_transporter/<int:request_id>', methods=['POST'])
 def reject_transporter(request_id):
     try:
-    # Simula il rifiuto nel database
 
         success = company_controller.reject_transporter(request_id)
         notifications_controller.create_notifications_for_reject_request(request_id)
@@ -212,7 +218,7 @@ def reject_transporter(request_id):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-    
+# Route for updating user information 
 @bp.route('/update_user', methods=['POST'])
 def update_user():
     if not session.get('id'):
@@ -248,6 +254,7 @@ def update_user():
         
     return jsonify({'success': False, 'error': 'Update failed'})
 
+# Route for handling company invitations
 @bp.route('/handle_invitation/<notification_id>/<action>', methods=['POST'])
 def handle_invitation(notification_id, action):
     user_id, _, _, _, _ = get_user_info()
@@ -282,16 +289,14 @@ def handle_invitation(notification_id, action):
         print(f"Error handling invitation: {e}")
         return jsonify({'success': False, 'error': 'An error occurred'})
 
+# Route for managing employees
 @bp.route('/manage_employee', methods=['GET', 'POST'])
 def manage_employee():
-    # Ottieni informazioni sull'utente
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
 
-    # Verifica se l'utente è autenticato
     if not user_id:
         return redirect(url_for('login'))
 
-    # Ottieni le company_id per l'utente
     companies = user_controller.get_companies_by_user_id(user_id)
     
     info_company = user_controller.get_companies_information_by_user_id(user_id)
@@ -300,18 +305,15 @@ def manage_employee():
 
     email = user_controller.get_all_user_emails()
     
-    # Se l'utente è un amministratore di una compagnia
     if is_company_admin:
         unique_company_admin = user_controller.is_unique_company_admin(user_id)
         unique_admin = user_controller.get_company_ids_where_user_is_unique_admin(user_id)
 
-        # Ottieni i dettagli degli employee per le compagnie dell'utente
         if search_query:
             employees_by_name_or_surname = user_controller.get_users_by_name_or_surname(search_query)
             
             all_employees=user_controller.get_employees_by_companies(user_id)
            
-            # Filtra solo i dipendenti che appartengono a una delle aziende dell'utente
             employees = [employee for employee in all_employees
                         if any(emp['id'] == employee['id'] for emp in employees_by_name_or_surname)]
             
@@ -320,7 +322,6 @@ def manage_employee():
 
         employees_json=json.dumps(employees)
 
-        # Passa tutte le informazioni alla template
         return render_template('manage_employee.html',
                                user_id=user_id,
                                user=user,
@@ -335,7 +336,6 @@ def manage_employee():
                                email=email,
                                notifications=notifications)
 
-    # Se non è amministratore di una compagnia, solo le informazioni di base
     return render_template('manage_employee.html',
                            user_id=user_id,
                            user=user,
@@ -347,7 +347,7 @@ def manage_employee():
                            notifications=notifications)
 
 
-
+# Route for sending company invitation
 @bp.route('/send_company_invitation', methods=['POST'])
 def send_company_invitation():
     user_id, user, _, is_company_admin, _ = get_user_info()
@@ -382,7 +382,7 @@ def send_company_invitation():
     else:
         return jsonify({'success': False, 'error': 'Failed to create invitation'})
     
-
+# Route for marking notification as read
 @bp.route('/mark_notification_read/<notification_id>', methods=['POST'])
 def mark_notification_read(notification_id):
     try:
@@ -392,7 +392,7 @@ def mark_notification_read(notification_id):
         print(f"Error in mark_notification_read: {e}")
         return jsonify({'success': False, 'error': str(e)})
     
-
+# Route for deleting employee
 @bp.route('/delete_employee', methods=['POST'])
 def delete_employee_route():
     try:
@@ -402,7 +402,6 @@ def delete_employee_route():
 
         response = user_controller.delete_employee(user_id, company_id)
         
-        # Se la risposta della funzione di eliminazione è positiva, ritorniamo success
         if response:
             return jsonify({'success': True})
         else:
@@ -411,7 +410,7 @@ def delete_employee_route():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-
+# Route for promoting employee to admin
 @bp.route('/promote_to_admin', methods=['POST'])
 def promote_to_admin():
     try:
@@ -436,6 +435,7 @@ def promote_to_admin():
         print(f"Error in route: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
+# Route for submitting Ethereum address
 @bp.route('/submit_eth_address', methods=['POST'])
 def submit_eth_address():
     user_id, _, _, is_company_admin, _ = get_user_info()
@@ -470,9 +470,7 @@ def submit_eth_address():
         print(f"Error submitting ETH address: {e}")
         return jsonify({'success': False, 'error': 'An error occurred'})
     
-
-
-
+# Route for searching products
 @bp.route('/search_product', methods=['GET'])
 def search_product():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
@@ -503,7 +501,8 @@ def search_product():
                              is_admin=is_admin, 
                              is_company_admin=is_company_admin,
                              notifications = notifications)
-    
+
+# Route for viewing products of a seller    
 @bp.route('/product_of_seller/<int:company_id>', methods=['GET'])
 def product_of_seller(company_id):
     # Retrieve user and company details
@@ -513,11 +512,9 @@ def product_of_seller(company_id):
     products = company_controller.get_products_by_seller(company_id)
 
     
-    # Dizionario per raggruppare i prodotti
     grouped_products = {}
 
     for product in products.data:
-        # Ottenere le informazioni del prodotto
         info_product = company_controller.get_information_by_id_product(product['id_product'])
         companies_of_production = company_controller.get_companies_of_chain_product(product['id_product'], company_id)
 
@@ -545,17 +542,15 @@ def product_of_seller(company_id):
                 'transporter2_names': set(),
                 'serial_ids': set(),
                 'co2_emission': 0,
-                'company_emissions': {}  # Nuovo dizionario per le emissioni specifiche per compagnia
+                'company_emissions': {}
             }
         
-        # Aggiungi informazioni sulle compagnie e le loro emissioni
         for comp in companies_of_production.data:
             if comp['farmer']:
                 farmer_id = comp['farmer']
                 farmer_name = company_controller.get_company_by_id(farmer_id)['company_name']
                 grouped_products[product_name]['farmer_names'].add(farmer_name)
                 
-                # Calcola le emissioni per questa compagnia
                 farmer_emission = company_controller.get_company_co2_contribution(farmer_id, product['id_product'])
                 grouped_products[product_name]['company_emissions'][farmer_name] = farmer_emission
                 
@@ -564,11 +559,9 @@ def product_of_seller(company_id):
                 transformer_name = company_controller.get_company_by_id(transformer_id)['company_name']
                 grouped_products[product_name]['transformer_names'].add(transformer_name)
                 
-                # Calcola le emissioni per questa compagnia
                 transformer_emission = company_controller.get_company_co2_contribution(transformer_id, product['id_product'])
                 grouped_products[product_name]['company_emissions'][transformer_name] = transformer_emission
-                
-            # Simile per transporter1, transporter2...
+
             if comp['transporter1']:
                 transporter1_id = comp['transporter1']
                 transporter1_name = company_controller.get_company_by_id(transporter1_id)['company_name']
@@ -585,13 +578,11 @@ def product_of_seller(company_id):
                 transporter2_emission = company_controller.get_company_co2_contribution(transporter2_id, product['id_product'])
                 grouped_products[product_name]['company_emissions'][transporter2_name] = transporter2_emission
             
-            # Aggiungi emissioni del seller stesso
             seller_emission = company_controller.get_company_co2_contribution(company_id, product['id_product'])
             grouped_products[product_name]['company_emissions'][info_company['company_name']] = seller_emission
             
             grouped_products[product_name]['serial_ids'].add(comp['serial_id'])
 
-    # Convertire i set in liste per il template
     for product in grouped_products.values():
         total_co2 = sum(product['company_emissions'].values())
         product['co2_emission'] = total_co2

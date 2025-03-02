@@ -1,8 +1,7 @@
 from datetime import datetime
 
-
+# Format a date string to a more readable format
 def format_date(value):
-    """Format a date string to a more readable format"""
     if not value:
         return ""
     try:

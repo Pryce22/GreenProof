@@ -8,6 +8,7 @@ from datetime import datetime, date
 
 bp = Blueprint('auth', __name__)
 
+# Utility function to get user info
 def get_user_info():
     user_id = session.get('id')
     user = None
@@ -22,6 +23,7 @@ def get_user_info():
         notifications = notifications_controller.get_unread_notifications_count(user['email'])
     return user_id, user, is_admin, is_company_admin, notifications
 
+# Route for login
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -56,6 +58,7 @@ def login():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     return render_template('login.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications=notifications)
 
+# Route for registration
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -117,9 +120,9 @@ def register():
     user_id, user, is_admin, is_company_admin, notifications = get_user_info()
     return render_template('register.html', user_id=user_id, user=user, is_admin=is_admin, is_company_admin=is_company_admin, notifications=notifications)
 
+# Route for resending verification email
 @bp.route('/resend-verification', methods=['POST'])
 def resend_verification():
-    # Controlla sia login che registrazione
     pending_login = session.get('pending_login')
     pending_registration = session.get('pending_registration')
     
@@ -130,21 +133,18 @@ def resend_verification():
     else:
         return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
     
-    # Reset dei tentativi quando si richiede un nuovo codice
     session.pop('verification_attempts', None)
     
     if user_controller.send_verification_email(email):
-        # Salva il timestamp del nuovo codice
         session['verification_start_time'] = time.time()
         return jsonify({'success': True})
     return jsonify({'success': False, 'error': 'Failed to send verification email'})
 
+# Route for MFA verification
 @bp.route('/mfa', methods=['GET', 'POST'])
 def mfa():
     if request.method == 'GET':
-        # Resetta il timer ad ogni caricamento della pagina MFA
         session['verification_start_time'] = time.time()
-        # (Opzionalmente, resetta anche i tentativi)
         session.pop('verification_attempts', None)
     
     if request.method == 'POST':
@@ -166,7 +166,6 @@ def mfa():
                 attempts += 1
                 session['verification_attempts'] = attempts
                 if attempts >= 3:
-                    # Raggiunto il limite di tentativi: rinvia un nuovo codice
                     user_controller.send_verification_email(pending_login['email'])
                     session['verification_start_time'] = time.time()
                     session.pop('verification_attempts', None)
@@ -215,6 +214,7 @@ def mfa():
     return render_template('MFA.html', user_id=user_id, user=user, is_admin=is_admin,
                            is_company_admin=is_company_admin, notifications=notifications)
 
+# Route for password recovery
 @bp.route('/password_recover', methods=['GET', 'POST'])
 def password_recover():
     if request.method == 'GET':
@@ -260,7 +260,6 @@ def password_recover():
             
             # Verifica che il token sia stato salvato correttamente
             stored_tokens = session.get('reset_tokens', {})
-            #print(f"Tokens after storing: {stored_tokens}")  # Debug print
             
             # Send reset email
             if user_controller.send_password_reset_email(email, reset_token):
@@ -275,7 +274,7 @@ def password_recover():
             })
             
         except Exception as e:
-            print(f"Error in password reset: {e}")  # Debug print
+            print(f"Error in password reset: {e}")
             return jsonify({
                 'success': False,
                 'error': 'An error occurred during password reset.'
@@ -283,11 +282,10 @@ def password_recover():
     
     return render_template('password_recover.html')
 
+# Route for password recovery step 2
 @bp.route('/password_recover_2/<token>', methods=['GET', 'POST'])
 def password_recover_2(token):
-    #print(f"Accessing password_recover_2 with token: {token}")  # Debug print
     email = user_controller.validate_reset_token(token)
-    #print(email)
     
     if not email:
         return render_template('error.html', 
@@ -310,9 +308,8 @@ def password_recover_2(token):
                 'error': 'Passwords do not match'
             })
         
-        # Aggiorna la password
         if user_controller.update_user_password(email, password):
-            # Rimuovi il token usato
+
             reset_tokens = session.get('reset_tokens', {})
             if token in reset_tokens:
                 del reset_tokens[token]
@@ -330,6 +327,7 @@ def password_recover_2(token):
     
     return render_template('password_recover_2.html', token=token, email=email)
 
+# Route for logout
 @bp.route('/logout')
 def logout():
     session.clear()
