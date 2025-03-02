@@ -84,6 +84,7 @@
                                 <i class="bi bi-pencil-square fs-5"></i>
                             </a>
                             
+                            {% if not is_admin %}
                             {% if company.eth_address %}
                                 {% if company.company_industry == "manufacturer" %}
                                     <a href="/manage_product/{{ company.company_id }}" class="text-success me-2" title="Products">
@@ -103,6 +104,7 @@
                                     <i class="bi bi-truck fs-5"></i>
                                 </a>
                                 {% endif %}
+                            {% endif %}
                             {% endif %}
                             <a href="#" class="text-danger" title="Delete" data-bs-toggle="modal" data-bs-target="#deleteModal" data-company-id="{{ company.company_id }}">
                                 <i class="bi bi-trash fs-5"></i>
