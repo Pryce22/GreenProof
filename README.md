@@ -29,7 +29,7 @@
 
 ## 🌍 Overview
 
-GreenProof connects the entire food supply chain on a unified platform to track environmental impact from farm to table. The system creates a transparent ecosystem where:
+GreenProof connects the entire food supply chain on a unified platform to track environmental impact from farm to the final consumer. The system creates a transparent ecosystem where:
 
 **Key Stakeholders:**
 - **Manufacturers** — Primary producers who create raw materials
@@ -285,5 +285,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  Made by Loris Bottegoni, Leonardo Cambiotti, Valerio Crocetti, Angelo Kollcaku, Alex Voltattorni.
+  Made by:
+  <a href="https://github.com/L041B">Loris Bottegoni</a>,
+  <a href="https://github.com/LeoC-02">Leonardo Cambiotti</a>,
+  <a href="https://github.com/Pryce22">Valerio Crocetti</a>,
+  <a>Angelo Kollcaku</a>,
+  <a>Alex Voltattorni</a>.
 </p>

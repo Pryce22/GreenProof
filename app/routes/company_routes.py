@@ -1,8 +1,7 @@
 from datetime import datetime
-from flask import Blueprint, flash, render_template, request, redirect, url_for, jsonify, session
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, session
 from app.controllers import company_controller, user_controller, notifications_controller, eth_account_controller
 from app.routes.auth_routes import get_user_info
-from werkzeug.utils import secure_filename
 import os
 import geonamescache
 import uuid
