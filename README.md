@@ -155,6 +155,7 @@ EMAIL_USER=notification_email_address
 EMAIL_PASSWORD=notification_email_password(preferred email app password)
 
 # Application Configuration
+WERKZEUG_RUN_MAIN = "True"
 SECRET_KEY=your_secret_key
 ```
 ### Database Schema
