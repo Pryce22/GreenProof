@@ -19,6 +19,7 @@
 - [Prerequisites](#-prerequisites)
 - [Installation](#-installation)
 - [Configuration](#configuration)
+- [Database](#database-schema)
 - [Usage](#usage)
 - [Project Structure](#-project-structure)
 - [Security Measures](#-security-measures)
@@ -156,6 +157,11 @@ EMAIL_PASSWORD=notification_email_password(preferred email app password)
 # Application Configuration
 SECRET_KEY=your_secret_key
 ```
+### Database Schema
+
+<p align="center">
+  <img src="/app/static/images/database_schema.png" alt="GreenProof Platform" width="400">
+</p>
 
 ### Database Setup
 
