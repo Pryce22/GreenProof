@@ -9,7 +9,7 @@
   <img src="https://via.placeholder.com/600x300?text=GreenProof+Platform" alt="GreenProof Platform" width="600">
 </p>
 
-> GreenProof is a revolutionary blockchain-based platform that tracks CO₂ emissions throughout the entire food supply chain, enabling transparency, accountability, and rewarding sustainable practices through tokenization.
+> GreenProof is a University project regarding a blockchain-based platform that tracks CO₂ emissions throughout the entire food supply chain, enabling transparency, accountability, and rewarding sustainable practices through tokenization.
 
 ## 📋 Table of Contents
 
@@ -55,20 +55,10 @@ Each transaction and transfer in the supply chain is recorded on the blockchain,
   - Industry-specific emission models
   - Historical emission trends and analytics
 
-- **🔐 Digital Signature Verification**
-  - RSA-SHA256 cryptographic verification
-  - Secure data submission and validation
-  - Protection against fraudulent emission reports
-
 - **🏆 Token Economy**
   - ERC20-based green tokens
   - Performance-based token rewards
   - Trading capabilities between supply chain participants
-
-- **👁️ Supply Chain Transparency**
-  - QR code product tracking
-  - Consumer-facing product journey visualization
-  - Environmental impact metrics for consumers
 
 - **👥 User Management**
   - Role-based access control
@@ -97,7 +87,7 @@ GreenProof uses a layered architecture that combines blockchain, web services, a
             │
 ┌───────────▼─────────────┐     ┌────────────────────┐
 │     Storage Layer       │────▶│     Supabase      │
-│  (Database & Chain)     │     │     Database      │
+│  (Database & Chain)     │     │     Database       │
 └───────────┬─────────────┘     └────────────────────┘
             │
 ┌───────────▼─────────────┐
@@ -143,23 +133,9 @@ Before installing GreenProof, ensure you have the following:
    npm install -g truffle
    ```
 
-### Blockchain Setup
-
-1. **Start Docker services**
+5.  **Start Docker services**
    ```bash
    docker-compose up -d
-   ```
-
-2. **Deploy smart contracts**
-   ```bash
-   cd app/token
-   truffle migrate --reset
-   ```
-
-3. **Verify deployment**
-   ```bash
-   truffle console
-   truffle(development)> GreenToken.deployed().then(instance => instance.name())
    ```
 
 ## ⚙️ Configuration
@@ -170,8 +146,7 @@ Create a `.env` file in the root directory with the following variables:
 
 ```ini
 # Blockchain Configuration
-PRIVATE_KEY=your_ethereum_private_key
-INFURA_PROJECT_ID=your_infura_project_id
+PRIVATE_KEY=the_first_key_of_the_first_account_in_the_genesis_file_in_QBFT-Network
 
 # Database Configuration
 SUPABASE_URL=your_supabase_url
@@ -179,23 +154,26 @@ SUPABASE_KEY=your_supabase_key
 
 # Email Configuration
 EMAIL_USER=notification_email_address
-EMAIL_PASSWORD=notification_email_password
-EMAIL_SERVER=smtp.your-email-provider.com
-EMAIL_PORT=587
+EMAIL_PASSWORD=notification_email_password(preferred email app password)
 
 # Application Configuration
-DEBUG=True
 SECRET_KEY=your_secret_key
 ```
 
 ### Database Setup
 
 1. Create a Supabase project from the [Supabase Dashboard](https://app.supabase.io/)
-2. Import the database schema:
-   ```bash
-   psql -h your-supabase-host -d postgres -U postgres -f database/schema.sql
-   ```
-3. Configure the connection in your `.env` file
+2. Import the database schema using one of these methods:
+   - **Option A**: Using the command line (if you have PostgreSQL client installed):
+     ```bash
+     psql -h your-supabase-host -d postgres -U postgres -f database/schema.sql
+     ```
+   - **Option B**: Using the Supabase interface:
+     1. Go to Supabase SQL Editor
+     2. Create a new query
+     3. Copy and paste the entire content of [schema.sql](http://_vscodecontentref_/0) file
+     4. Execute the query
+3. Configure the connection in your [.env](http://_vscodecontentref_/1) file with your Supabase credentials
 
 ## 🖥️ Usage
 
@@ -206,7 +184,7 @@ SECRET_KEY=your_secret_key
    python main.py
    ```
 
-2. **Access the web interface** at `http://localhost:5001`
+2. **Access the web interface** at `http://localhost:5000`
 
 ### User Roles
 
@@ -218,106 +196,41 @@ SECRET_KEY=your_secret_key
 
 ```
 /
-├── app/                  # Main application code
-│   ├── controllers/      # Business logic controllers
-│   ├── routes/           # API endpoints
-│   ├── templates/        # HTML templates
-│   ├── token/            # Smart contract code
-│   └── utils/            # Helper functions
-├── static/               # Static assets
-│   ├── css/              # Stylesheets
-│   ├── js/               # JavaScript files
-│   └── images/           # Image resources
-├── tests/                # Test suites
-├── database/             # Database migrations and schemas
-├── docker/               # Docker configuration
-├── docs/                 # Documentation
-└── scripts/              # Utility scripts
-```
+├── app/                      # Main application code
+│   ├── controllers/          # Business logic controllers
+│   ├── routes/               # API endpoints
+│   ├── QBFT-Network/         # Blockchain network configuration
+│   ├── templates/            # HTML templates
+│   │   └── includes/         # Template partials and components
+│   ├── token/                # Smart contract code
+│   │   ├── contracts/        # Solidity smart contracts
+│   │   ├── migrations/       # Contract migration scripts
+│   │   └── build/            # Contract compilation artifacts
+│   ├── static/               # Static assets
+│   │   ├── css/              # Stylesheets
+│   │   ├── js/               # JavaScript files
+│   │   ├── images/           # Image resources
+│   │   └── favicon/          # Favicon files
+│   │
+│   │ 
+│    └── utils/        # Helper functions
 
-## 📝 Smart Contracts
-
-GreenProof uses two primary smart contracts:
-
-### GreenToken Contract
-
-An ERC20-compliant token used for rewarding sustainable practices:
-
-```solidity
-// Simplified GreenToken contract
-contract GreenToken is ERC20 {
-    address private _minter;
-    
-    constructor(address initialOwner) ERC20("GreenToken", "GRN") {
-        _minter = initialOwner;
-    }
-    
-    function mint(address to, uint256 amount) external {
-        require(msg.sender == _minter, "Only minter can mint tokens");
-        _mint(to, amount);
-    }
-    
-    function setMinter(address minter, bool status) external {
-        // Logic to set minter permissions
-    }
-}
-```
-
-### EmissionTracker Contract
-
-Tracks and verifies emissions data on-chain:
-
-```solidity
-// Simplified EmissionTracker contract
-contract EmissionTracker {
-    GreenToken private _token;
-    
-    struct EmissionRecord {
-        uint256 timestamp;
-        uint256 amount;
-        string dataHash;
-        bool verified;
-    }
-    
-    mapping(address => EmissionRecord[]) private _emissionRecords;
-    
-    constructor(address tokenAddress) {
-        _token = GreenToken(tokenAddress);
-    }
-    
-    function recordEmission(uint256 amount, string memory dataHash) external {
-        // Record emissions and reward tokens based on performance
-    }
-}
 ```
 
 ## 🔒 Security Measures
-
-### Digital Signature Verification
-
-The system uses RSA-SHA256 signatures to verify the authenticity of emissions data:
-
-```javascript
-const verifier = crypto.createVerify('RSA-SHA256');
-verifier.update(data);
-verifier.end();
-return verifier.verify(publicKey, signature, 'base64');
-```
 
 ### Data Validation
 
 All inputs are validated before being processed:
 - Emission data is verified against industry standards
 - User inputs are sanitized to prevent injection attacks
-- API endpoints are protected with authentication and rate limiting
 
 ## ❓ Troubleshooting
 
 ### Common Issues
 
 1. **Smart contract deployment fails**
-   - Ensure Ganache is running and accessible
-   - Check your Ethereum account has sufficient funds
+   - Ensure Docker is running and accessible
 
 2. **Database connection errors**
    - Verify your Supabase credentials
@@ -326,18 +239,6 @@ All inputs are validated before being processed:
 3. **Token transfer issues**
    - Ensure MetaMask is connected to the correct network
    - Verify the sender has sufficient token balance
-
-## 🤝 Contributing
-
-We welcome contributions to GreenProof! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add some amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a pull request
-
-Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
 
 ## 📄 License
 
@@ -352,5 +253,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  Made with ❤️ by the GreenProof Team
+  Made by Loris Bottegoni, Leonardo Cambiotti, Valerio Crocetti, Angelo Kollcaku, Alex Voltattorni.
 </p>
