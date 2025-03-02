@@ -1,4 +1,3 @@
-from itertools import product
 import random
 from app import supabase
 import os

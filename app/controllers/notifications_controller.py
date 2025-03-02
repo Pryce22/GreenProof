@@ -1,7 +1,7 @@
 from app import supabase
 import uuid
 
-from app.controllers import company_controller, user_controller
+from app.controllers import company_controller
 
 def create_notification(type, sender, receiver, company_id = None, amount = None, same_request = None, sender_company_id = None):
 

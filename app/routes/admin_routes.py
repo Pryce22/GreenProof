@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, jsonify, g, request
+from flask import Blueprint, render_template, redirect, url_for, jsonify, request
 from app.routes.auth_routes import get_user_info
 from app.controllers import company_controller, user_controller
 from app.controllers import notifications_controller
