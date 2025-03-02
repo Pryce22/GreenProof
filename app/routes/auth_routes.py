@@ -20,7 +20,7 @@ def get_user_info():
         is_admin = user_controller.is_admin(user_id)
         is_company_admin = user_controller.is_company_admin(user_id)
         notifications = notifications_controller.get_unread_notifications_count(user['email'])
-    return user_id, user, is_admin, is_company_admin, notifications, 
+    return user_id, user, is_admin, is_company_admin, notifications
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -334,3 +334,4 @@ def password_recover_2(token):
 def logout():
     session.clear()
     return redirect(url_for('main.home'))
+

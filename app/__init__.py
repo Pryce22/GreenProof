@@ -20,8 +20,11 @@ app.secret_key = app.config['SECRET_KEY']
 
 app.jinja_env.filters['format_date'] = format_date
 
+
 # Import routes after app is created to avoid circular imports
 from app.routes import auth_routes, user_routes, company_routes, main_routes, admin_routes, log_user_action
+
+
 
 # Register blueprints
 app.register_blueprint(auth_routes.bp)
