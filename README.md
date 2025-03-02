@@ -15,17 +15,14 @@
 
 - [Overview](#-overview)
 - [Features](#-features)
-- [System Architecture](#-system-architecture)
+- [System Architecture](#system-architecture)
 - [Prerequisites](#-prerequisites)
 - [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
+- [Configuration](#configuration)
+- [Usage](#usage)
 - [Project Structure](#-project-structure)
-- [Smart Contracts](#-smart-contracts)
-- [API Reference](#-api-reference)
 - [Security Measures](#-security-measures)
 - [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
 - [License](#-license)
 - [Acknowledgments](#-acknowledgments)
 
@@ -65,7 +62,7 @@ Each transaction and transfer in the supply chain is recorded on the blockchain,
   - Company verification process
   - Administrative approval workflow
 
-## 🏗️ System Architecture
+## System Architecture
 
 GreenProof uses a layered architecture that combines blockchain, web services, and data analytics:
 
@@ -138,7 +135,7 @@ Before installing GreenProof, ensure you have the following:
    docker-compose up -d
    ```
 
-## ⚙️ Configuration
+## Configuration
 
 ### Environment Setup
 
@@ -175,7 +172,7 @@ SECRET_KEY=your_secret_key
      4. Execute the query
 3. Configure the connection in your [.env](http://_vscodecontentref_/1) file with your Supabase credentials
 
-## 🖥️ Usage
+## Usage
 
 ### Running the Application
 
@@ -213,7 +210,7 @@ SECRET_KEY=your_secret_key
 │   │   └── favicon/          # Favicon files
 │   │
 │   │ 
-│    └── utils/        # Helper functions
+│   └── utils/        # Helper functions
 
 ```
 
@@ -243,12 +240,6 @@ All inputs are validated before being processed:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👏 Acknowledgments
-
-- The Ethereum community for their incredible tools and documentation
-- Our early adopter companies for valuable feedback
-- All contributors who have helped shape this project
 
 ---
 
