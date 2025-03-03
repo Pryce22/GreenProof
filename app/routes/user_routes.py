@@ -194,9 +194,9 @@ def approve_transporter_route(transport_request_id):
 @bp.route('/reject_supplier/<int:request_id>', methods=['POST'])
 def reject_supplier(request_id):
     try:
-        success = company_controller.reject_supplier(request_id)
+        company_controller.reject_supplier(request_id)
         notifications_controller.create_notifications_for_reject_request(request_id)
-        return jsonify({"success": success})
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
@@ -205,16 +205,18 @@ def reject_supplier(request_id):
 def reject_transporter(request_id):
     try:
 
-        success = company_controller.reject_transporter(request_id)
+        company_controller.reject_transporter(request_id)
         notifications_controller.create_notifications_for_reject_request(request_id)
         check= company_controller.check_supplier_approve(request_id)
-        check= check.data[0]['quantity_of_raw_material']
-        if check or check == 0:
+        check1=None
+        if check.data:
+            check1= check.data[0]['quantity_of_raw_material']
+        if check1 or check1 == 0:
             id_product=company_controller.id_product_from_request(request_id)
             id_product=id_product.data[0]['id_product']
             company_controller.update_quantity_after_reject(id_product, check)
             
-        return jsonify({"success": success})
+        return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
