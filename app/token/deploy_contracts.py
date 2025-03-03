@@ -7,15 +7,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+# Initialize Web3 and account
 class ContractDeployer:
     def __init__(self):
         self.w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
         self.account = Account.from_key(os.getenv('PRIVATE_KEY'))
         self.contract_addresses = self.load_existing_addresses()
 
+    # Load existing addresses from file
     def load_existing_addresses(self):
-        """Load contract addresses from JSON file"""
         file_path = os.path.join('app', 'token', 'contract_addresses.json')
         try:
             if os.path.exists(file_path):
@@ -41,21 +41,21 @@ class ContractDeployer:
         except Exception as e:
             print(f"Error loading contract addresses: {e}")
             return {}
-
+        
+    # Verify contracts on the blockchain
     def verify_contracts(self, addresses):
         try:
-            # Verifica che i contratti esistano sulla blockchain
             if 'green_token' in addresses:
                 code = self.w3.eth.get_code(addresses['green_token'])
                 if len(code) <= 2:  # Empty contract returns '0x'
                     return False
-                # Verifica che il contratto sia accessibile
+
                 contract_json = self.load_contract('GreenToken')
                 contract = self.w3.eth.contract(
                     address=addresses['green_token'],
                     abi=contract_json['abi']
                 )
-                # Prova a chiamare una funzione del contratto
+
                 try:
                     contract.functions.name().call()
                     print(f"Contract verified at address: {addresses['green_token']}")
@@ -66,18 +66,17 @@ class ContractDeployer:
         except Exception as e:
             print(f"Error verifying contracts: {e}")
             return False
-
+        
+    # Compile and deploy contracts
     def compile_contracts(self):
         print("Compiling contracts...")
         try:
-            # Assicurati di essere nella directory corretta
             original_dir = os.getcwd()
         
             # Change to token directory using absolute path
             token_dir = os.path.join(original_dir, 'app', 'token')
             os.chdir(token_dir)
         
-            # Esegui truffle compile
             result = subprocess.run(['truffle', 'compile'], 
                                  capture_output=True, 
                                  text=True,
@@ -94,6 +93,7 @@ class ContractDeployer:
         # Restore original directory
             os.chdir(original_dir)
 
+    # Deploy contracts
     def deploy_contracts(self):
         try:
             self.compile_contracts()
@@ -127,19 +127,21 @@ class ContractDeployer:
             tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
             self.w3.eth.wait_for_transaction_receipt(tx_hash)
             
-            print(f"Minting permissions granted to EmissionTracker")
+            print("Minting permissions granted to EmissionTracker")
             
             self.save_addresses()
             return True
         except Exception as e:
             print(f"Deployment error: {e}")
             return False
-
+        
+    # Load contract JSON
     def load_contract(self, name):
         with open(f'app/token/build/contracts/{name}.json') as f:
             contract_json = json.load(f)
         return contract_json
 
+    # Deploy GreenToken contract
     def deploy_green_token(self):
         contract_json = self.load_contract('GreenToken')
         GreenToken = self.w3.eth.contract(
@@ -162,6 +164,7 @@ class ContractDeployer:
         self.contract_addresses['green_token'] = tx_receipt.contractAddress
         return tx_receipt.contractAddress
     
+    # Deploy EmissionTracker contract
     def deploy_emission_tracker(self):
         contract_json = self.load_contract('EmissionTracker')
         EmissionTracker = self.w3.eth.contract(
@@ -187,6 +190,7 @@ class ContractDeployer:
         self.contract_addresses['emission_tracker'] = tx_receipt.contractAddress
         return tx_receipt.contractAddress
 
+    # Save contract addresses to file
     def save_addresses(self):
         with open('app/token/contract_addresses.json', 'w') as f:
             json.dump(self.contract_addresses, f, indent=4)

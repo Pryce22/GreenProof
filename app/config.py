@@ -4,6 +4,7 @@ from secrets import token_hex
 
 load_dotenv() 
 
+# Configurations for the Flask application
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY') or token_hex(32)
     DEBUG = True

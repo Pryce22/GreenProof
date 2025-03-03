@@ -4,11 +4,12 @@ from app.controllers.log_action_controller import log_user_action
 
 bp = Blueprint('log_user', __name__)
 
-
+# Middleware to log user actions
 @bp.before_app_request
 def log_request():
     g.start_time = datetime.now(timezone.utc)
 
+# Middleware to log user actions
 @bp.after_app_request
 def log_response(response):
     if hasattr(g, 'start_time'):
