@@ -3,6 +3,7 @@ from eth_account import Account
 import json
 import os
 import subprocess
+import platform
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,11 +13,16 @@ class ContractDeployer:
     def __init__(self):
         self.w3 = Web3(Web3.HTTPProvider('http://localhost:8545'))
         self.account = Account.from_key(os.getenv('PRIVATE_KEY'))
+        self.operating_system = platform.system()  # 'Linux', 'Windows', o 'Darwin' (macOS)
+        print(f"Detected operating system: {self.operating_system}")
         self.contract_addresses = self.load_existing_addresses()
 
     # Load existing addresses from file
     def load_existing_addresses(self):
-        file_path = os.path.join('app', 'token', 'contract_addresses.json')
+        if self.operating_system == 'Windows':
+            file_path = os.path.join('app', 'token', 'contract_addresses.json')
+        else:  # Linux
+            file_path = os.path.expanduser("~/Software-Security-and-Blockchain/app/token/contract_addresses.json")
         try:
             if os.path.exists(file_path):
                 with open(file_path, 'r') as f:
@@ -74,7 +80,15 @@ class ContractDeployer:
             original_dir = os.getcwd()
         
             # Change to token directory using absolute path
-            token_dir = os.path.join(original_dir, 'app', 'token')
+            if self.operating_system == 'Windows':
+                token_dir = os.path.join(original_dir, 'app', 'token')
+            else:  # Linux
+                token_dir = os.path.expanduser("~/Software-Security-and-Blockchain/app/token")
+
+            if not os.path.exists(token_dir):
+                print(f"Directory does not exist: {token_dir}")
+                return False
+            
             os.chdir(token_dir)
         
             result = subprocess.run(['truffle', 'compile'], 

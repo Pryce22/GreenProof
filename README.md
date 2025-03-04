@@ -18,6 +18,7 @@
 - [System Architecture](#system-architecture)
 - [Prerequisites](#-prerequisites)
 - [Installation](#-installation)
+- [Operating System Compatibility](#operating-system-compatibility)
 - [Configuration](#configuration)
 - [Database](#database-schema)
 - [Usage](#usage)
@@ -135,6 +136,34 @@ Before installing GreenProof, ensure you have the following:
    ```bash
    docker-compose up -d
    ```
+
+## Operating System Compatibility
+
+GreenProof has been developed and tested with different levels of compatibility across operating systems:
+
+### Windows
+
+- **Fully supported and tested** on Windows 11
+- Complete functionality is available
+- Recommended platform for production use
+- All installation steps in this documentation are verified on Windows 11
+
+### Linux
+
+- **Basic support available** with limited testing
+- May require additional configuration in some environments
+- Known limitations:
+  - Some Docker networking features may need manual configuration
+  - Performance may vary depending on distribution
+
+### macOS
+
+- **Not officially supported**
+- The application was not designed or tested to run on macOS
+- Users may encounter unexpected issues if attempting to deploy on macOS
+- No official troubleshooting support is available for macOS-specific problems
+
+For the best experience and stability, we recommend deploying GreenProof on Windows 11.
 
 ## Configuration
 

@@ -148,24 +148,22 @@
             const formData = new FormData();
             formData.append('verificationCode', document.getElementById('verificationCode').value);
             
-            fetch('/mfa', {  // Aggiornato percorso
+            fetch('/mfa', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Mostra un messaggio di successo verde prima del redirect
                     const alertDiv = document.createElement('div');
                     alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
                     alertDiv.role = 'alert';
                     alertDiv.innerHTML = `
-                        Registration successful! Redirecting...
+                        Successful! Redirecting...
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     `;
                     form.insertAdjacentElement('beforebegin', alertDiv);
                     
-                    // Attendi un attimo prima di reindirizzare per mostrare il messaggio
                     setTimeout(() => {
                         window.location.href = data.redirect;
                     }, 1000);
@@ -181,7 +179,7 @@
                     
                     if (data.maxAttempts) {
                         document.getElementById('verificationCode').value = '';
-                        startTimer(); // Riavvia il timer per il nuovo codice
+                        startTimer();
                     }
                 }
             })
