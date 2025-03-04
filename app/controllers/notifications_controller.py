@@ -312,7 +312,7 @@ def create_notifications_for_reject_request(product_request_id):
                 )
                 notifications_created.append(success)
 
-            for admin in transporter_admins:
+            for admin in buyer_admins:
                 success = create_notification_with_product(
                     type="buyer rejection",
                     sender=sender_email,
