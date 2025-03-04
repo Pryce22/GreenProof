@@ -254,6 +254,15 @@
       tomorrow.setDate(today.getDate() + 1);
       let minDate = tomorrow.toISOString().split("T")[0];
       dateInput.setAttribute("min", minDate);
+
+      dateInput.addEventListener("keydown", function (event) {
+      event.preventDefault();
+    });
+
+    // Impedisce l'incollamento di una data manualmente
+    dateInput.addEventListener("paste", function (event) {
+      event.preventDefault();
+    });
     });
 
     // Validazione del campo distanza
