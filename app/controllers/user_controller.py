@@ -104,10 +104,12 @@ def generate_verification_token():
 # Function to send a verification email
 def send_verification_email(to_email):
     token = generate_verification_token()
+    normalized_email = to_email.lower().strip()
+
     if email_service.send_verification_code(to_email, token):
         session['verification_token'] = {
             'token': str(token),
-            'email': to_email,
+            'email': normalized_email,
             'timestamp': time.time()
         }
         return True
@@ -387,6 +389,9 @@ def verify_login(email, password):
 # Function to update user information
 def update_user_info(user_id, field, value):
     try:
+        if field == 'email':
+            value = value.lower().strip()
+            
         response = supabase.table('user') \
             .update({field: value}) \
             .eq('id', user_id) \

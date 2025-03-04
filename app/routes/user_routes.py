@@ -239,11 +239,17 @@ def update_user():
     # Additional email-specific checks
     if field == 'email':
         # Check if email already exists
-        if user_controller.check_email_exists(value):
+        normalized_email = value.lower().strip()
+
+        current_user = user_controller.get_user_by_id(session['id'])
+        if current_user and current_user['email'].lower() == normalized_email:
+            return jsonify({'success': False, 'error': 'The email is already set to this value'})
+        
+        if user_controller.check_email_exists(normalized_email):
             return jsonify({'success': False, 'error': 'Email already in use'})
             
         # Update the email
-        if user_controller.update_user_info(session['id'], field, value):
+        if user_controller.update_user_info(session['id'], field, normalized_email):
             # Clear the session to force logout
             session.clear()
             return jsonify({'success': True, 'requireLogout': True})

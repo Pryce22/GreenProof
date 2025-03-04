@@ -129,7 +129,7 @@ def resend_verification():
     if pending_login:
         email = pending_login['email']
     elif pending_registration:
-        email = pending_registration['email']
+        email = pending_registration['email'].lower().strip()
     else:
         return jsonify({'success': False, 'error': 'Session expired. Please try again.'})
     
@@ -176,11 +176,12 @@ def mfa():
                 return jsonify({'success': False, 'error': 'Invalid verification code'})
                 
         elif pending_registration:
-            if user_controller.verify_token(token, pending_registration['email']):
+            normalized_email = pending_registration['email'].lower().strip()
+            if user_controller.verify_token(token, normalized_email):
 
                 success, message = user_controller.create_user(
                     id=pending_registration['id'],
-                    email=pending_registration['email'],
+                    email=normalized_email,
                     name=pending_registration['name'],
                     surname=pending_registration['surname'],
                     password=pending_registration['password'],
@@ -189,11 +190,14 @@ def mfa():
                 )
                 if success:
                     session.pop('pending_registration', None)
-                    user = user_controller.get_user_by_email(pending_registration['email'])
+                    user = user_controller.get_user_by_email(normalized_email)
                     if user:
                         session['id'] = user['id']
                         session.pop('verification_attempts', None)
                         return jsonify({'success': True, 'redirect': url_for('main.home')})
+                    else:
+                        # Add error handling for when user retrieval fails
+                        return jsonify({'success': False, 'error': 'Failed to retrieve user information'})
                 return jsonify({'success': False, 'error': message})
             else:
                 attempts += 1
