@@ -99,8 +99,8 @@ GreenProof uses a layered architecture that combines blockchain, web services, a
 
 Before installing GreenProof, ensure you have the following:
 
-- **Python 3.8+** - For backend services
-- **Node.js 14+** and npm - For smart contract development
+- **Python 3.10+** - For backend services
+- **Node.js 21+** and npm - For smart contract development
 - **Docker** and Docker Compose - For containerization
 - **Truffle** - Ethereum development framework
 - **MetaMask** - Ethereum wallet for testing
