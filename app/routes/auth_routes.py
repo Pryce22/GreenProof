@@ -29,6 +29,7 @@ def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        email = email.lower().strip()
         
         result = user_controller.verify_login(email, password)
         
@@ -228,6 +229,7 @@ def password_recover():
     
     if request.method == 'POST':
         email = request.form.get('email')
+        email = email.lower().strip()
         
         if not email:
             return jsonify({
