@@ -132,7 +132,7 @@ Before installing GreenProof, ensure you have the following:
    npm install -g truffle
    ```
 
-5.  **Start Docker services**
+5. **Start Docker services**
    ```bash
    docker-compose up -d
    ```
