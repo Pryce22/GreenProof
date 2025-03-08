@@ -112,7 +112,7 @@ Before installing GreenProof, ensure you have the following:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/Software-Security-and-Blockchain.git
+   git clone https://github.com/Pryce22/GreenProof.git
    cd Software-Security-and-Blockchain
    ```
 
