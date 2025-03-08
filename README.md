@@ -212,12 +212,15 @@ SECRET_KEY=your_secret_key
 
 ### Running the Application
 
-1. **Start the Flask server**:
+1. **Wait for Docker container** to be ready
+
+
+2. **Start the Flask server**:
    ```bash
    python main.py
    ```
 
-2. **Access the web interface** at `http://localhost:5000`
+3. **Access the web interface** at `http://localhost:5000`
 
 ### User Roles
 
