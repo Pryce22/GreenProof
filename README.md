@@ -322,6 +322,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <a href="https://github.com/L041B">Loris Bottegoni</a>,
   <a href="https://github.com/LeoC-02">Leonardo Cambiotti</a>,
   <a href="https://github.com/Pryce22">Valerio Crocetti</a>,
-  <a>Angelo Kollcaku</a>,
-  <a>Alex Voltattorni</a>.
 </p>
