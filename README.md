@@ -173,19 +173,19 @@ Create a `.env` file in the root directory with the following variables:
 
 ```ini
 # Blockchain Configuration
-PRIVATE_KEY=the_first_key_of_the_first_account_in_the_genesis_file_in_QBFT-Network
+PRIVATE_KEY="the_first_key_of_the_first_account_in_the_genesis_file_in_QBFT-Network"
 
 # Database Configuration
-SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
+SUPABASE_URL="your_supabase_url"
+SUPABASE_KEY="your_supabase_key"
 
 # Email Configuration
-EMAIL_USER=notification_email_address
-EMAIL_PASSWORD=notification_email_password(preferred email app password)
+EMAIL_USER="notification_email_address"
+EMAIL_PASSWORD="notification_email_password(preferred email app password)"
 
 # Application Configuration
 WERKZEUG_RUN_MAIN = "True"
-SECRET_KEY=your_secret_key
+SECRET_KEY="your_secret_key"
 ```
 ### Database Schema
 
